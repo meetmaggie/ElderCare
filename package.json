@@ -8,12 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.4",
+    "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.52.0",
-    "@tailwindcss/postcss7-compat": "^2.2.17",
     "@types/node": "^22.13.11",
     "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "framer-motion": "^12.23.6",
     "lucide-react": "^0.525.0",
     "next": "^15.4.2",
     "postcss": "^8.5.6",

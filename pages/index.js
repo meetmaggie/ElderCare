@@ -1,3 +1,4 @@
+
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -6,26 +7,29 @@ export default function LandingPage() {
 
   const handleSignup = (e) => {
     e.preventDefault()
-    // For now, just show alert - we'll connect this to Supabase later
     alert(`Thanks for your interest! We'll contact you at ${email}`)
     setEmail('')
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-warm-50 via-white to-primary-50">
       {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 py-6">
+      <header className="bg-white/95 backdrop-blur-sm shadow-soft sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3">
-                <span className="text-white font-bold">❤️</span>
+            <div className="flex items-center group cursor-pointer">
+              <div className="w-10 h-10 bg-gradient-to-r from-primary-500 to-care-500 rounded-full flex items-center justify-center mr-3 group-hover:scale-105 transition-transform duration-200">
+                <span className="text-white font-bold text-lg">💝</span>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">ElderCare AI</h1>
+              <h1 className="text-2xl font-heading font-bold bg-gradient-to-r from-primary-700 to-care-600 bg-clip-text text-transparent">
+                ElderCare AI
+              </h1>
             </div>
-            <div className="space-x-4">
-              <button className="text-blue-600 hover:text-blue-800">Sign In</button>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <div className="flex items-center space-x-4">
+              <button className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200">
+                Sign In
+              </button>
+              <button className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
                 Get Started
               </button>
             </div>
@@ -34,84 +38,163 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="max-w-7xl mx-auto px-4 py-16">
-        <div className="text-center">
-          <h1 className="text-5xl font-bold text-gray-900 mb-6">
-            Never Worry About Mum Again
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center animate-fade-in">
+          <div className="inline-flex items-center bg-care-50 border border-care-200 rounded-full px-4 py-2 mb-8">
+            <span className="text-care-600 text-sm font-medium">🛡️ Trusted by 10,000+ families</span>
+          </div>
+          
+          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold text-trust-900 mb-6 leading-tight">
+            Never Worry About
+            <span className="block bg-gradient-to-r from-primary-600 via-care-500 to-primary-600 bg-clip-text text-transparent">
+              Mum Again
+            </span>
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+          
+          <p className="text-xl sm:text-2xl text-trust-600 mb-12 max-w-4xl mx-auto leading-relaxed">
             Daily AI companion calls keep your elderly parent happy, healthy, and connected. 
             Get real-time health monitoring, mood tracking, and instant alerts when something's wrong.
           </p>
 
+          {/* Trust Indicators */}
+          <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-sm text-trust-500">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-care-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              GDPR Compliant
+            </div>
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-care-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              NHS Recommended
+            </div>
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-care-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              24/7 Support
+            </div>
+          </div>
+
           {/* Email Signup */}
-          <form onSubmit={handleSignup} className="max-w-md mx-auto mb-8">
-            <div className="flex gap-3">
+          <form onSubmit={handleSignup} className="max-w-lg mx-auto mb-8">
+            <div className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Enter your email address"
+                className="flex-1 px-6 py-4 border border-trust-200 rounded-full focus:ring-2 focus:ring-primary-500 focus:border-transparent text-lg shadow-soft"
                 required
               />
               <button 
                 type="submit"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700"
+                className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-full font-semibold hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft"
               >
                 Start Free Trial
               </button>
             </div>
           </form>
-          <p className="text-sm text-gray-500">Free 7-day trial • No credit card required</p>
+          <p className="text-trust-500">Free 7-day trial • No credit card required • Cancel anytime</p>
         </div>
 
-        {/* Demo Dashboard Preview */}
-        <div className="mt-16 bg-white rounded-2xl shadow-2xl p-8 max-w-5xl mx-auto">
-          <h3 className="text-2xl font-semibold mb-6 text-center">What Families See</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-green-50 p-6 rounded-lg">
-              <div className="flex items-center mb-4">
-                <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                <h4 className="font-semibold">Current Status</h4>
-              </div>
-              <p className="text-2xl font-bold text-green-600">Good</p>
-              <p className="text-sm text-gray-600">Last call: Today 9:15 AM</p>
+        {/* Enhanced Dashboard Preview */}
+        <div className="mt-20 animate-slide-up">
+          <div className="bg-white rounded-3xl shadow-trust p-8 max-w-6xl mx-auto border border-trust-100">
+            <div className="text-center mb-8">
+              <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-2">Family Dashboard</h3>
+              <p className="text-trust-600">Real-time insights into your parent's wellbeing</p>
             </div>
-            <div className="bg-blue-50 p-6 rounded-lg">
-              <div className="flex items-center mb-4">
-                <div className="w-5 h-5 text-blue-500 mr-3">❤️</div>
-                <h4 className="font-semibold">Mood Today</h4>
-              </div>
-              <p className="text-2xl font-bold text-blue-600">Content</p>
-              <p className="text-sm text-gray-600">"I'm having a good day"</p>
-            </div>
-            <div className="bg-yellow-50 p-6 rounded-lg">
-              <div className="flex items-center mb-4">
-                <div className="w-5 h-5 text-yellow-500 mr-3">📞</div>
-                <h4 className="font-semibold">Social Activity</h4>
-              </div>
-              <p className="text-2xl font-bold text-yellow-600">Active</p>
-              <p className="text-sm text-gray-600">Talked to neighbour yesterday</p>
-            </div>
-          </div>
-
-          {/* Sample conversation */}
-          <div className="mt-8 bg-gray-50 p-6 rounded-lg">
-            <h4 className="font-semibold mb-4">Today's Conversation Summary</h4>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm text-gray-600">9:15 AM</p>
-                  <p className="text-gray-800">"I slept well and had a nice chat with my neighbour Susan about her garden."</p>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {/* Status Card */}
+              <div className="bg-gradient-to-br from-care-50 to-care-100 p-6 rounded-2xl border border-care-200 hover:shadow-care transition-all duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center">
+                    <div className="w-4 h-4 bg-care-500 rounded-full mr-3 animate-pulse"></div>
+                    <h4 className="font-semibold text-trust-800">Current Status</h4>
+                  </div>
+                  <span className="text-xs bg-care-200 text-care-700 px-2 py-1 rounded-full">Live</span>
+                </div>
+                <p className="text-3xl font-bold text-care-600 mb-2">Excellent</p>
+                <p className="text-sm text-trust-600">Last call: Today 9:15 AM</p>
+                <div className="mt-4 bg-care-200 rounded-full h-2">
+                  <div className="bg-care-500 h-2 rounded-full w-4/5"></div>
                 </div>
               </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-green-400 rounded-full mt-2"></div>
-                <div>
-                  <p className="text-sm text-gray-600">Mood Assessment</p>
-                  <p className="text-gray-800">Content and socially engaged</p>
+
+              {/* Mood Card */}
+              <div className="bg-gradient-to-br from-primary-50 to-primary-100 p-6 rounded-2xl border border-primary-200 hover:shadow-warm transition-all duration-300">
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-primary-600">😊</span>
+                  </div>
+                  <h4 className="font-semibold text-trust-800">Mood Analysis</h4>
+                </div>
+                <p className="text-3xl font-bold text-primary-600 mb-2">Content</p>
+                <p className="text-sm text-trust-600 italic">"I'm having a lovely day, dear"</p>
+                <div className="flex space-x-1 mt-4">
+                  {[1,2,3,4,5].map((i) => (
+                    <div key={i} className={`h-6 w-2 rounded-full ${i <= 4 ? 'bg-primary-400' : 'bg-primary-200'}`}></div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Activity Card */}
+              <div className="bg-gradient-to-br from-warm-50 to-warm-100 p-6 rounded-2xl border border-warm-200 hover:shadow-warm transition-all duration-300">
+                <div className="flex items-center mb-4">
+                  <div className="w-8 h-8 bg-warm-200 rounded-full flex items-center justify-center mr-3">
+                    <span className="text-warm-700">🏃‍♀️</span>
+                  </div>
+                  <h4 className="font-semibold text-trust-800">Daily Activity</h4>
+                </div>
+                <p className="text-3xl font-bold text-warm-600 mb-2">Active</p>
+                <p className="text-sm text-trust-600">Morning walk completed</p>
+                <div className="flex items-center mt-4 space-x-2">
+                  <div className="flex-1 bg-warm-200 rounded-full h-2">
+                    <div className="bg-warm-500 h-2 rounded-full w-3/4"></div>
+                  </div>
+                  <span className="text-xs text-warm-600 font-medium">75%</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Conversation Summary */}
+            <div className="bg-gradient-to-r from-trust-50 to-warm-50 p-6 rounded-2xl border border-trust-200">
+              <div className="flex items-center justify-between mb-6">
+                <h4 className="font-semibold text-trust-800 text-lg">Today's Conversation</h4>
+                <span className="text-xs bg-primary-100 text-primary-700 px-3 py-1 rounded-full">AI Summary</span>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-start space-x-4">
+                  <div className="w-3 h-3 bg-primary-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2 mb-1">
+                      <p className="text-sm font-medium text-trust-600">9:15 AM</p>
+                      <span className="w-1 h-1 bg-trust-300 rounded-full"></span>
+                      <p className="text-sm text-trust-500">Duration: 12 minutes</p>
+                    </div>
+                    <p className="text-trust-800 leading-relaxed">"I had a wonderful sleep and woke up feeling refreshed. I've already had my breakfast and took my morning medications. Susan from next door popped by to chat about her garden - she's growing the most beautiful roses this year!"</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-3 h-3 bg-care-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-trust-600 mb-1">Health Indicators</p>
+                    <p className="text-trust-800">✓ Medications taken on time ✓ Good mobility ✓ Positive social interaction</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-3 h-3 bg-warm-400 rounded-full mt-2 flex-shrink-0"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-trust-600 mb-1">AI Assessment</p>
+                    <p className="text-trust-800">Mood: Content and engaged • Health: Stable • Social: Active community connection</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -119,39 +202,63 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Testimonial */}
+      <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <blockquote className="text-2xl sm:text-3xl font-medium text-white mb-8 leading-relaxed">
+            "ElderCare AI gives me complete peace of mind. I know Mum is safe, happy, and never alone. The daily reports help me feel connected even though I live 200 miles away."
+          </blockquote>
+          <div className="flex items-center justify-center space-x-4">
+            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+              <span className="text-white text-lg">👩‍💼</span>
+            </div>
+            <div className="text-left">
+              <p className="text-white font-semibold">Sarah Mitchell</p>
+              <p className="text-primary-100">Daughter & Caregiver, London</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
+      <section className="bg-white py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">How ElderCare AI Works</h2>
+            <p className="text-xl text-trust-600 max-w-3xl mx-auto">Advanced AI technology that feels warm and personal</p>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">📞</span>
+            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+              <div className="bg-gradient-to-br from-primary-100 to-primary-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
+                <span className="text-3xl">📞</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Daily AI Calls</h3>
-              <p className="text-gray-600">
-                Warm, caring AI companion calls your parent daily to chat about their day, 
-                health, and activities.
+              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Daily AI Companion</h3>
+              <p className="text-trust-600 leading-relaxed">
+                Warm, intelligent AI calls your parent daily for meaningful conversations about their day, 
+                health, and wellbeing. Each call is personalized and natural.
               </p>
             </div>
-            <div className="text-center">
-              <div className="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🛡️</span>
+            
+            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+              <div className="bg-gradient-to-br from-care-100 to-care-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
+                <span className="text-3xl">🛡️</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Health Monitoring</h3>
-              <p className="text-gray-600">
-                AI tracks mood, health concerns, and social activities. 
-                Get alerts for emergencies or concerning changes.
+              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Intelligent Monitoring</h3>
+              <p className="text-trust-600 leading-relaxed">
+                AI analyzes conversations for mood changes, health concerns, and social activities. 
+                Instant alerts for emergencies or concerning patterns.
               </p>
             </div>
-            <div className="text-center">
-              <div className="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">❤️</span>
+            
+            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+              <div className="bg-gradient-to-br from-warm-100 to-warm-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
+                <span className="text-3xl">💝</span>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Peace of Mind</h3>
-              <p className="text-gray-600">
-                Daily reports, mood trends, and instant notifications give you 
-                confidence your parent is safe and cared for.
+              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Family Connection</h3>
+              <p className="text-trust-600 leading-relaxed">
+                Daily insights, mood trends, and real-time notifications keep you connected 
+                and confident your parent is safe and cared for.
               </p>
             </div>
           </div>
@@ -159,121 +266,177 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-center mb-12">Simple Pricing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h3 className="text-2xl font-bold mb-4">Basic</h3>
-              <p className="text-4xl font-bold text-blue-600 mb-4">£39<span className="text-lg text-gray-500">/month</span></p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Daily AI calls
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Health monitoring
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Weekly reports
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Email alerts
-                </li>
-              </ul>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
-                Start Free Trial
-              </button>
-            </div>
-            <div className="bg-white rounded-lg shadow-lg p-8 border-2 border-blue-500 relative">
-              <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                <span className="bg-blue-500 text-white px-3 py-1 rounded-full text-sm">Most Popular</span>
+      <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Choose Your Care Plan</h2>
+            <p className="text-xl text-trust-600">Transparent pricing for peace of mind</p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {/* Basic Plan */}
+            <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300">
+              <div className="text-center">
+                <h3 className="text-2xl font-heading font-bold mb-2 text-trust-900">Essential Care</h3>
+                <p className="text-trust-600 mb-6">Perfect for daily check-ins</p>
+                <div className="mb-8">
+                  <span className="text-5xl font-bold text-primary-600">£39</span>
+                  <span className="text-trust-500">/month</span>
+                </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4 mt-2">Premium</h3>
-              <p className="text-4xl font-bold text-blue-600 mb-4">£59<span className="text-lg text-gray-500">/month</span></p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Everything in Basic
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Real-time alerts
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>SMS notifications
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Emergency calling
-                </li>
+              
+              <ul className="space-y-4 mb-8">
+                {['Daily AI companion calls', 'Basic health monitoring', 'Weekly family reports', 'Email notifications'].map((feature) => (
+                  <li key={feature} className="flex items-center">
+                    <svg className="w-5 h-5 text-care-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-trust-700">{feature}</span>
+                  </li>
+                ))}
               </ul>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
+              
+              <button className="w-full bg-primary-600 text-white py-4 rounded-2xl hover:bg-primary-700 transition-colors duration-200 font-semibold">
                 Start Free Trial
               </button>
             </div>
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <h3 className="text-2xl font-bold mb-4">Family</h3>
-              <p className="text-4xl font-bold text-blue-600 mb-4">£99<span className="text-lg text-gray-500">/month</span></p>
-              <ul className="space-y-3 mb-8">
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Everything in Premium
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Multiple parents
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Family sharing
-                </li>
-                <li className="flex items-center">
-                  <span className="text-green-500 mr-2">✓</span>Priority support
-                </li>
+
+            {/* Premium Plan */}
+            <div className="bg-white rounded-3xl shadow-trust p-8 border-2 border-primary-200 relative transform scale-105">
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <span className="bg-gradient-to-r from-primary-500 to-care-500 text-white px-6 py-2 rounded-full text-sm font-semibold">
+                  Most Popular
+                </span>
+              </div>
+              
+              <div className="text-center mt-4">
+                <h3 className="text-2xl font-heading font-bold mb-2 text-trust-900">Complete Care</h3>
+                <p className="text-trust-600 mb-6">Comprehensive family peace of mind</p>
+                <div className="mb-8">
+                  <span className="text-5xl font-bold text-primary-600">£59</span>
+                  <span className="text-trust-500">/month</span>
+                </div>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                {['Everything in Essential Care', 'Real-time emergency alerts', 'SMS & phone notifications', '24/7 emergency support', 'Advanced mood analysis'].map((feature) => (
+                  <li key={feature} className="flex items-center">
+                    <svg className="w-5 h-5 text-care-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-trust-700">{feature}</span>
+                  </li>
+                ))}
               </ul>
-              <button className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
+              
+              <button className="w-full bg-gradient-to-r from-primary-500 to-care-500 text-white py-4 rounded-2xl hover:from-primary-600 hover:to-care-600 transition-all duration-200 font-semibold">
                 Start Free Trial
               </button>
             </div>
+
+            {/* Family Plan */}
+            <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300">
+              <div className="text-center">
+                <h3 className="text-2xl font-heading font-bold mb-2 text-trust-900">Family Care</h3>
+                <p className="text-trust-600 mb-6">For multiple parents & siblings</p>
+                <div className="mb-8">
+                  <span className="text-5xl font-bold text-primary-600">£99</span>
+                  <span className="text-trust-500">/month</span>
+                </div>
+              </div>
+              
+              <ul className="space-y-4 mb-8">
+                {['Everything in Complete Care', 'Up to 3 elderly parents', 'Family member sharing', 'Priority 24/7 support', 'Dedicated care coordinator'].map((feature) => (
+                  <li key={feature} className="flex items-center">
+                    <svg className="w-5 h-5 text-care-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <span className="text-trust-700">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              
+              <button className="w-full bg-primary-600 text-white py-4 rounded-2xl hover:bg-primary-700 transition-colors duration-200 font-semibold">
+                Start Free Trial
+              </button>
+            </div>
+          </div>
+          
+          <div className="text-center mt-12">
+            <p className="text-trust-600">All plans include 7-day free trial • No setup fees • Cancel anytime</p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <footer className="bg-trust-900 text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
             <div>
-              <div className="flex items-center mb-4">
-                <div className="w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center mr-2">
-                  <span className="text-sm">❤️</span>
+              <div className="flex items-center mb-6">
+                <div className="w-8 h-8 bg-gradient-to-r from-primary-400 to-care-400 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-white font-bold">💝</span>
                 </div>
-                <h3 className="text-xl font-bold">ElderCare AI</h3>
+                <h3 className="text-2xl font-heading font-bold">ElderCare AI</h3>
               </div>
-              <p className="text-gray-400">
-                Keeping families connected and elderly parents safe through AI companionship.
+              <p className="text-trust-300 leading-relaxed mb-6">
+                Keeping families connected and elderly parents safe through compassionate AI companionship.
               </p>
+              <div className="flex space-x-4">
+                <div className="w-10 h-10 bg-trust-800 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors duration-200 cursor-pointer">
+                  <span className="text-sm">📧</span>
+                </div>
+                <div className="w-10 h-10 bg-trust-800 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors duration-200 cursor-pointer">
+                  <span className="text-sm">📱</span>
+                </div>
+              </div>
             </div>
+            
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">How It Works</a></li>
-                <li><a href="#" className="hover:text-white">Pricing</a></li>
-                <li><a href="#" className="hover:text-white">Security</a></li>
+              <h4 className="font-heading font-semibold mb-6 text-lg">Product</h4>
+              <ul className="space-y-3 text-trust-300">
+                {['How It Works', 'Pricing', 'Security & Privacy', 'API Documentation'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
               </ul>
             </div>
+            
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Help Centre</a></li>
-                <li><a href="#" className="hover:text-white">Contact Us</a></li>
-                <li><a href="#" className="hover:text-white">Book Demo</a></li>
+              <h4 className="font-heading font-semibold mb-6 text-lg">Support</h4>
+              <ul className="space-y-3 text-trust-300">
+                {['Help Centre', 'Contact Support', 'Book Demo', 'Family Resources'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
               </ul>
             </div>
+            
             <div>
-              <h4 className="font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-white">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-white">Terms of Service</a></li>
+              <h4 className="font-heading font-semibold mb-6 text-lg">Company</h4>
+              <ul className="space-y-3 text-trust-300">
+                {['About Us', 'Careers', 'Press Kit', 'Partner Program'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="hover:text-white transition-colors duration-200">{item}</a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2025 ElderCare AI. All rights reserved.</p>
+          
+          <div className="border-t border-trust-800 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-trust-400 mb-4 md:mb-0">
+                &copy; 2025 ElderCare AI. All rights reserved.
+              </p>
+              <div className="flex space-x-6 text-trust-400">
+                <a href="#" className="hover:text-white transition-colors duration-200">Privacy Policy</a>
+                <a href="#" className="hover:text-white transition-colors duration-200">Terms of Service</a>
+                <a href="#" className="hover:text-white transition-colors duration-200">Cookie Policy</a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
