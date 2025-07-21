@@ -2,6 +2,177 @@
 import Link from 'next/link'
 import { useState } from 'react'
 
+function AIVoiceDemo() {
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [audioRef, setAudioRef] = useState(null)
+  
+  // Demo conversation segments
+  const conversationSegments = [
+    { time: 0, speaker: 'AI', text: "Good morning, Mary! How are you feeling today?" },
+    { time: 3, speaker: 'Mary', text: "Oh hello dear! I'm doing well, thank you for asking." },
+    { time: 6, speaker: 'AI', text: "That's wonderful to hear! Did you remember to take your morning medications?" },
+    { time: 10, speaker: 'Mary', text: "Yes, I took them with my breakfast. I had some lovely porridge with berries." },
+    { time: 15, speaker: 'AI', text: "Berries are excellent for you! How has your mood been since our last chat?" },
+    { time: 19, speaker: 'Mary', text: "I've been feeling quite content. My neighbor Susan visited yesterday." },
+    { time: 23, speaker: 'AI', text: "Social visits are so important. I'll make sure to note that you're feeling well today." }
+  ]
+
+  const handlePlayPause = () => {
+    if (audioRef) {
+      if (isPlaying) {
+        audioRef.pause()
+      } else {
+        audioRef.play()
+      }
+      setIsPlaying(!isPlaying)
+    }
+  }
+
+  const getCurrentSegment = () => {
+    return conversationSegments.find((segment, index) => {
+      const nextSegment = conversationSegments[index + 1]
+      return currentTime >= segment.time && (!nextSegment || currentTime < nextSegment.time)
+    })
+  }
+
+  const currentSegment = getCurrentSegment()
+
+  return (
+    <div className="space-y-6">
+      {/* Audio Player Controls */}
+      <div className="flex items-center justify-center space-x-4 p-6 bg-gradient-to-r from-primary-50 to-care-50 rounded-xl border border-primary-100">
+        <button
+          onClick={handlePlayPause}
+          className="w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full flex items-center justify-center hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft"
+        >
+          {isPlaying ? (
+            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+          ) : (
+            <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+            </svg>
+          )}
+        </button>
+        
+        <div className="flex-1 max-w-md">
+          <div className="flex items-center justify-between text-sm text-trust-600 mb-2">
+            <span>Sample Conversation</span>
+            <span>{Math.floor(currentTime)}s / 30s</span>
+          </div>
+          <div className="bg-trust-200 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-primary-500 to-care-500 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${(currentTime / 30) * 100}%` }}
+            ></div>
+          </div>
+        </div>
+        
+        <div className="text-center">
+          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-soft border border-trust-100">
+            <span className="text-2xl animate-pulse">🎵</span>
+          </div>
+          <p className="text-xs text-trust-500 mt-1">ElevenLabs AI</p>
+        </div>
+      </div>
+
+      {/* Conversation Display */}
+      <div className="bg-gradient-to-br from-trust-50 to-warm-50 rounded-xl p-6 min-h-[200px] border border-trust-100">
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-trust-800">Live Conversation</h4>
+          <div className="flex items-center space-x-2">
+            <div className="w-2 h-2 bg-care-500 rounded-full animate-pulse"></div>
+            <span className="text-xs text-trust-500">Real-time Analysis</span>
+          </div>
+        </div>
+
+        {currentSegment ? (
+          <div className="space-y-4">
+            <div className={`flex ${currentSegment.speaker === 'AI' ? 'justify-start' : 'justify-end'}`}>
+              <div className={`max-w-xs p-4 rounded-2xl ${
+                currentSegment.speaker === 'AI' 
+                  ? 'bg-primary-100 text-primary-800 rounded-bl-md' 
+                  : 'bg-care-100 text-care-800 rounded-br-md'
+              }`}>
+                <div className="flex items-center space-x-2 mb-1">
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                    currentSegment.speaker === 'AI' ? 'bg-primary-200 text-primary-700' : 'bg-care-200 text-care-700'
+                  }`}>
+                    {currentSegment.speaker === 'AI' ? '🤖' : '👵'}
+                  </div>
+                  <span className="text-xs font-medium">
+                    {currentSegment.speaker === 'AI' ? 'ElderCare AI' : 'Mary'}
+                  </span>
+                </div>
+                <p className="text-sm leading-relaxed">{currentSegment.text}</p>
+              </div>
+            </div>
+
+            {/* AI Insights */}
+            {currentSegment.speaker === 'Mary' && (
+              <div className="bg-white rounded-lg p-4 border border-trust-200 shadow-soft">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="w-4 h-4 bg-warm-400 rounded-full"></div>
+                  <span className="text-xs font-medium text-trust-600">AI Analysis</span>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-xs">
+                  <div>
+                    <span className="text-trust-500">Mood:</span>
+                    <span className="ml-1 text-care-600 font-medium">Content 😊</span>
+                  </div>
+                  <div>
+                    <span className="text-trust-500">Health:</span>
+                    <span className="ml-1 text-primary-600 font-medium">Good ✓</span>
+                  </div>
+                  <div>
+                    <span className="text-trust-500">Social:</span>
+                    <span className="ml-1 text-warm-600 font-medium">Active 👥</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="flex items-center justify-center h-32 text-trust-500">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-trust-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl">▶️</span>
+              </div>
+              <p>Click play to hear a sample conversation</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Hidden audio element for demo */}
+      <audio
+        ref={setAudioRef}
+        onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+        onEnded={() => {
+          setIsPlaying(false)
+          setCurrentTime(0)
+        }}
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
+      >
+        {/* You would replace this with your actual ElevenLabs generated audio file */}
+        <source src="/demo-conversation.mp3" type="audio/mpeg" />
+      </audio>
+
+      {/* Demo Note */}
+      <div className="text-center">
+        <p className="text-sm text-trust-500 italic">
+          This is a demonstration of our AI conversation flow. 
+          <br />
+          <span className="text-primary-600 font-medium">Replace with your actual ElevenLabs audio file.</span>
+        </p>
+      </div>
+    </div>
+  )
+}
+
 export default function LandingPage() {
   const [email, setEmail] = useState('')
 
@@ -100,8 +271,54 @@ export default function LandingPage() {
           <p className="text-trust-500">Free 7-day trial • No credit card required • Cancel anytime</p>
         </div>
 
+        {/* AI Voice Explainer Section */}
+        <div className="mt-20 mb-20">
+          <div className="bg-gradient-to-br from-primary-50 via-white to-care-50 rounded-3xl shadow-trust p-8 lg:p-12 max-w-5xl mx-auto border border-primary-100">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center bg-primary-100 border border-primary-200 rounded-full px-4 py-2 mb-6">
+                <span className="text-primary-700 text-sm font-medium">🎤 Powered by ElevenLabs AI</span>
+              </div>
+              <h3 className="text-3xl lg:text-4xl font-heading font-bold text-trust-900 mb-4">
+                Hear How Our AI Companion Works
+              </h3>
+              <p className="text-xl text-trust-600 max-w-3xl mx-auto leading-relaxed">
+                Experience a real conversation between our AI and an elderly parent. 
+                Natural, caring, and intelligent - just like talking to family.
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-soft p-6 lg:p-8 border border-trust-100">
+              <AIVoiceDemo />
+            </div>
+
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="text-center p-4">
+                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🗣️</span>
+                </div>
+                <h4 className="font-semibold text-trust-800 mb-2">Natural Speech</h4>
+                <p className="text-sm text-trust-600">ElevenLabs AI creates warm, human-like conversations</p>
+              </div>
+              <div className="text-center p-4">
+                <div className="w-12 h-12 bg-care-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">🧠</span>
+                </div>
+                <h4 className="font-semibold text-trust-800 mb-2">Intelligent Responses</h4>
+                <p className="text-sm text-trust-600">Understands context and responds appropriately</p>
+              </div>
+              <div className="text-center p-4">
+                <div className="w-12 h-12 bg-warm-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">❤️</span>
+                </div>
+                <h4 className="font-semibold text-trust-800 mb-2">Emotional Intelligence</h4>
+                <p className="text-sm text-trust-600">Detects mood and provides compassionate support</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Enhanced Dashboard Preview */}
-        <div className="mt-20 animate-slide-up">
+        <div className="mt-20 animate-slide-up"></div>
           <div className="bg-white rounded-3xl shadow-trust p-8 max-w-6xl mx-auto border border-trust-100">
             <div className="text-center mb-8">
               <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-2">Family Dashboard</h3>
