@@ -318,7 +318,7 @@ export default function LandingPage() {
         </div>
 
         {/* Enhanced Dashboard Preview */}
-        <div className="mt-20 animate-slide-up"></div>
+        <div className="mt-20 animate-slide-up">
           <div className="bg-white rounded-3xl shadow-trust p-8 max-w-6xl mx-auto border border-trust-100">
             <div className="text-center mb-8">
               <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-2">Family Dashboard</h3>
