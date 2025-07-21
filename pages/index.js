@@ -41,19 +41,19 @@ export default function LandingPage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center animate-fade-in">
           <div className="inline-flex items-center bg-care-50 border border-care-200 rounded-full px-4 py-2 mb-8">
-            <span className="text-care-600 text-sm font-medium">🛡️ Trusted by 10,000+ families</span>
+            <span className="text-care-600 text-sm font-medium">🛡️ Trusted by 10,000+ families nationwide</span>
           </div>
           
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold text-trust-900 mb-6 leading-tight">
-            Never Worry About
-            <span className="block bg-gradient-to-r from-primary-600 via-care-500 to-primary-600 bg-clip-text text-transparent">
-              Mum Again
+            <span className="bg-gradient-to-r from-primary-700 via-care-600 to-primary-700 bg-clip-text text-transparent">
+              Peace of Mind
             </span>
+            <span className="block text-trust-800">for Every Family</span>
           </h1>
           
           <p className="text-xl sm:text-2xl text-trust-600 mb-12 max-w-4xl mx-auto leading-relaxed">
-            Daily AI companion calls keep your elderly parent happy, healthy, and connected. 
-            Get real-time health monitoring, mood tracking, and instant alerts when something's wrong.
+            Professional AI companion calls provide daily check-ins for elderly family members. 
+            Real-time health monitoring, mood analysis, and instant alerts ensure comprehensive care and family connection.
           </p>
 
           {/* Trust Indicators */}
@@ -206,7 +206,7 @@ export default function LandingPage() {
       <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <blockquote className="text-2xl sm:text-3xl font-medium text-white mb-8 leading-relaxed">
-            "ElderCare AI gives me complete peace of mind. I know Mum is safe, happy, and never alone. The daily reports help me feel connected even though I live 200 miles away."
+            "ElderCare AI provides exceptional peace of mind for our entire family. The comprehensive monitoring and professional care coordination keeps our loved ones safe and connected, no matter the distance."
           </blockquote>
           <div className="flex items-center justify-center space-x-4">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -214,7 +214,7 @@ export default function LandingPage() {
             </div>
             <div className="text-left">
               <p className="text-white font-semibold">Sarah Mitchell</p>
-              <p className="text-primary-100">Daughter & Caregiver, London</p>
+              <p className="text-primary-100">Family Care Coordinator, London</p>
             </div>
           </div>
         </div>
