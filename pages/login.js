@@ -41,6 +41,8 @@ export default function Login() {
         throw error
       }
 
+      console.log('Login successful for:', data.user.email)
+      
       // Redirect to dashboard on success
       router.push('/dashboard')
     } catch (error) {

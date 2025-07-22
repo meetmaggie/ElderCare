@@ -90,7 +90,14 @@ export default function Dashboard() {
 
       if (elderlyError) {
         console.error('Error fetching elderly user:', elderlyError)
-        // If no elderly user found, redirect to setup
+        // Check if this is a demo account - demo accounts should have elderly users
+        if (session.user.email && session.user.email.includes('.demo@')) {
+          console.log('Demo account missing elderly user data - this should not happen')
+          // For demo accounts, show an error message instead of redirecting
+          setLoading(false)
+          return
+        }
+        // If no elderly user found for regular account, redirect to setup
         router.push('/signup')
         return
       }
