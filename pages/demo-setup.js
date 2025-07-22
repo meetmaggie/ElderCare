@@ -140,6 +140,22 @@ export default function DemoSetup() {
 
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch('/api/fix-demo-data', { method: 'POST' })
+                      const data = await response.json()
+                      alert(`Demo data fix completed. Check console for details.`)
+                      console.log('Fix results:', data)
+                    } catch (error) {
+                      alert('Error fixing demo data')
+                      console.error(error)
+                    }
+                  }}
+                  className="flex-1 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-yellow-600 hover:to-yellow-700 transition-all"
+                >
+                  Fix Demo Data
+                </button>
+                <button
                   onClick={populateDemoData}
                   className="flex-1 bg-gradient-to-r from-care-500 to-care-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-care-600 hover:to-care-700 transition-all"
                 >
