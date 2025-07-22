@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import Head from 'next/head'
@@ -65,7 +64,7 @@ export default function DemoSetup() {
               className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100"
             >
               <h2 className="text-2xl font-heading font-semibold text-trust-900 mb-6">Setup Demo Accounts</h2>
-              
+
               <div className="space-y-6 mb-8">
                 <div className="border border-trust-200 rounded-xl p-6">
                   <h3 className="font-semibold text-trust-800 mb-2">👩‍💼 Sarah Johnson - Premium Plan</h3>
@@ -74,15 +73,15 @@ export default function DemoSetup() {
                 </div>
 
                 <div className="border border-trust-200 rounded-xl p-6">
-                  <h3 className="font-semibold text-trust-800 mb-2">👨‍💻 David Chen - Basic Plan</h3>
-                  <p className="text-trust-600 text-sm mb-1">Email: demo@family2.com | Password: password123</p>
-                  <p className="text-trust-500 text-sm">Caring for Li Chen (father) • Basic monitoring</p>
+                  <h3 className="font-semibold text-trust-800 mb-2">👨‍💼 David Chen - Basic Plan</h3>
+                  <p className="text-trust-600 text-sm mb-1">Email: david.chen.demo@example.com | Password: password123</p>
+                  <p className="text-trust-500 text-sm">Caring for Li Chen (father) • Essential features</p>
                 </div>
 
                 <div className="border border-trust-200 rounded-xl p-6">
-                  <h3 className="font-semibold text-trust-800 mb-2">👩‍👧 Emma Thompson - Family Plan</h3>
-                  <p className="text-trust-600 text-sm mb-1">Email: demo@family3.com | Password: password123</p>
-                  <p className="text-trust-500 text-sm">Caring for Robert Thompson (grandfather) • Full family features</p>
+                  <h3 className="font-semibold text-trust-800 mb-2">👩‍💼 Emma Thompson - Family Plan</h3>
+                  <p className="text-trust-600 text-sm mb-1">Email: emma.thompson.demo@example.com | Password: password123</p>
+                  <p className="text-trust-500 text-sm">Caring for Robert Thompson (grandfather) • All features</p>
                 </div>
               </div>
 
