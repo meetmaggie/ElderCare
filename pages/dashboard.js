@@ -54,7 +54,7 @@ export default function Dashboard() {
     try {
       // Check if user is authenticated
       const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      
+
       if (sessionError) {
         console.error('Session error:', sessionError)
         router.push('/login')
@@ -132,12 +132,12 @@ export default function Dashboard() {
       // Calculate stats
       const recentCalls = callRecords || []
       const recentAlerts = alerts || []
-      
+
       const lastCall = recentCalls.length > 0 ? recentCalls[0] : null
       const lastCallFormatted = lastCall ? formatDate(lastCall.call_date) : 'No calls yet'
-      
+
       const moodToday = lastCall ? (lastCall.mood_assessment || 'Unknown').charAt(0).toUpperCase() + (lastCall.mood_assessment || 'unknown').slice(1) : 'Unknown'
-      
+
       // Count alerts from this week
       const weekAgo = new Date()
       weekAgo.setDate(weekAgo.getDate() - 7)
@@ -151,13 +151,13 @@ export default function Dashboard() {
         const date = new Date()
         date.setDate(date.getDate() - i)
         const dateStr = `${date.getMonth() + 1}/${date.getDate()}`
-        
+
         // Find call for this date
         const callForDate = recentCalls.find(call => {
           const callDate = new Date(call.call_date)
           return callDate.toDateString() === date.toDateString()
         })
-        
+
         const moodValue = callForDate ? getMoodValue(callForDate.mood_assessment) : 3
         moodTrends.push({ date: dateStr, mood: moodValue })
       }
@@ -254,7 +254,7 @@ export default function Dashboard() {
 
   const testWebhook = async () => {
     if (!elderlyUser) return
-    
+
     setTestingWebhook(true)
     try {
       const response = await fetch('/api/test-webhook', {
@@ -266,10 +266,10 @@ export default function Dashboard() {
           elderlyUserId: elderlyUser.id
         })
       })
-      
+
       const result = await response.json()
       console.log('Webhook test result:', result)
-      
+
       if (response.ok) {
         alert('Webhook test successful! Check console for details. Refreshing data...')
         // Refresh dashboard data
@@ -760,7 +760,7 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white rounded-2xl shadow-soft p-6 border border-trust-100"
+            className="bg-white rounded-2xlshadow-soft p-6 border border-trust-100"
           >
             <h3 className="font-semibold text-trust-800 mb-4">This Week's Alerts</h3>
             <p className="text-3xl font-bold text-primary-600 mb-2">{dashboardData.stats.automatedAlertsThisWeek}</p>
