@@ -68,20 +68,20 @@ export default function DemoSetup() {
               <div className="space-y-6 mb-8">
                 <div className="border border-trust-200 rounded-xl p-6">
                   <h3 className="font-semibold text-trust-800 mb-2">👩‍💼 Sarah Johnson - Premium Plan</h3>
-                  <p className="text-trust-600 text-sm mb-1">Email: sarah.johnson.demo@example.com | Password: password123</p>
+                  <p className="text-trust-600 text-sm mb-1">Email: sarah.johnson.demo@gmail.com | Password: password123</p>
                   <p className="text-trust-500 text-sm">Caring for Margaret Johnson (grandmother) • Premium features</p>
                 </div>
 
                 <div className="border border-trust-200 rounded-xl p-6">
-                  <h3 className="font-semibold text-trust-800 mb-2">👨‍💼 David Chen - Basic Plan</h3>
-                  <p className="text-trust-600 text-sm mb-1">Email: david.chen.demo@example.com | Password: password123</p>
+                  <h3 className="font-semibold text-trust-800 mb-2">👨‍💻 David Chen - Basic Plan</h3>
+                  <p className="text-trust-600 text-sm mb-1">Email: david.chen.demo@gmail.com | Password: password123</p>
                   <p className="text-trust-500 text-sm">Caring for Li Chen (father) • Essential features</p>
                 </div>
 
                 <div className="border border-trust-200 rounded-xl p-6">
-                  <h3 className="font-semibold text-trust-800 mb-2">👩‍💼 Emma Thompson - Family Plan</h3>
-                  <p className="text-trust-600 text-sm mb-1">Email: emma.thompson.demo@example.com | Password: password123</p>
-                  <p className="text-trust-500 text-sm">Caring for Robert Thompson (grandfather) • All features</p>
+                  <h3 className="font-semibold text-trust-800 mb-2">👩‍🏫 Emma Thompson - Family Plan</h3>
+                  <p className="text-trust-600 text-sm mb-1">Email: emma.thompson.demo@gmail.com | Password: password123</p>
+                  <p className="text-trust-500 text-sm">Caring for Robert Thompson (grandfather) • Full features</p>
                 </div>
               </div>
 

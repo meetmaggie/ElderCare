@@ -185,7 +185,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => {
-                        setFormData({ email: 'sarah.johnson.demo@example.com', password: 'password123' })
+                        setFormData({ email: 'sarah.johnson.demo@gmail.com', password: 'password123' })
                       }}
                       className="w-full text-sm bg-primary-50 text-primary-700 py-2 px-4 rounded-lg hover:bg-primary-100 transition-colors"
                     >
@@ -194,7 +194,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => {
-                        setFormData({ email: 'david.chen.demo@example.com', password: 'password123' })
+                        setFormData({ email: 'david.chen.demo@gmail.com', password: 'password123' })
                       }}
                       className="w-full text-sm bg-care-50 text-care-700 py-2 px-4 rounded-lg hover:bg-care-100 transition-colors"
                     >
@@ -203,7 +203,7 @@ export default function Login() {
                     <button
                       type="button"
                       onClick={() => {
-                        setFormData({ email: 'emma.thompson.demo@example.com', password: 'password123' })
+                        setFormData({ email: 'emma.thompson.demo@gmail.com', password: 'password123' })
                       }}
                       className="w-full text-sm bg-warm-50 text-warm-700 py-2 px-4 rounded-lg hover:bg-warm-100 transition-colors"
                     >

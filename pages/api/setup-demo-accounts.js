@@ -16,17 +16,17 @@ export default async function handler(req, res) {
       loginInstructions: {
         accounts: [
           {
-            email: 'sarah.johnson.demo@example.com',
+            email: 'sarah.johnson.demo@gmail.com',
             password: 'password123',
             description: 'Sarah Johnson - Premium plan with Margaret (grandmother)'
           },
           {
-            email: 'david.chen.demo@example.com', 
+            email: 'david.chen.demo@gmail.com', 
             password: 'password123',
             description: 'David Chen - Basic plan with Li (father)'
           },
           {
-            email: 'emma.thompson.demo@example.com',
+            email: 'emma.thompson.demo@gmail.com',
             password: 'password123', 
             description: 'Emma Thompson - Family plan with Robert (grandfather)'
           }
