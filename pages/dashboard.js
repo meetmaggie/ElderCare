@@ -248,56 +248,74 @@ export default function Dashboard() {
         const demoDashboardData = {
           stats: {
             currentStatus: 'All Good',
-            lastCall: 'Today at 10:30 AM',
-            moodToday: 'Content',
-            alertsCount: 0,
-            automatedAlertsThisWeek: 2
+            lastCall: 'Today at 2:15 PM',
+            moodToday: 'Happy',
+            alertsCount: 1,
+            automatedAlertsThisWeek: 3
           },
           recentCalls: [
             {
               id: 'demo-1',
               call_date: new Date().toISOString(),
-              call_duration: '8 minutes',
-              mood_assessment: 'content',
-              conversation_summary: 'Had a lovely chat about the garden. Mentioned some back pain but spirits are good.',
-              ai_analysis: 'AI detected content mood with minor health mentions about back discomfort.',
-              health_concerns: ['back pain']
+              call_duration: '14 minutes',
+              mood_assessment: 'happy',
+              conversation_summary: 'Wonderful conversation about the grandchildren visiting this weekend. Very excited about baking cookies together. Mentioned sleeping much better lately and feeling energetic.',
+              ai_analysis: 'AI detected very positive mood with excellent engagement. Sleep improvements noted as positive health indicator.',
+              health_concerns: []
             },
             {
               id: 'demo-2',
               call_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-              call_duration: '12 minutes',
-              mood_assessment: 'happy',
-              conversation_summary: 'Talked about family visit last week. Very engaged and cheerful throughout the call.',
-              ai_analysis: 'AI detected happy mood with positive engagement indicators.',
+              call_duration: '11 minutes',
+              mood_assessment: 'content',
+              conversation_summary: 'Discussed the beautiful weather and morning walk in the park. Enjoyed feeding the ducks. Mentioned taking medication on time and feeling well overall.',
+              ai_analysis: 'AI detected stable, content mood with positive activity engagement and medication compliance.',
               health_concerns: []
             },
             {
               id: 'demo-3',
               call_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-              call_duration: '6 minutes',
+              call_duration: '9 minutes',
               mood_assessment: 'worried',
-              conversation_summary: 'Discussed weekly shopping trip. Mentioned feeling tired and knee bothering them.',
-              ai_analysis: 'AI detected worried mood with health concerns about fatigue and joint pain.',
-              health_concerns: ['tired', 'knee pain']
+              conversation_summary: 'Talked about upcoming doctor appointment. Concerned about some dizziness when standing up quickly. Otherwise feeling okay but wants to discuss with doctor.',
+              ai_analysis: 'AI detected mild concern about dizziness symptoms. Appropriate medical follow-up planned.',
+              health_concerns: ['dizziness', 'doctor appointment']
             },
             {
               id: 'demo-4',
               call_date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              call_duration: '10 minutes',
-              mood_assessment: 'content',
-              conversation_summary: 'Great conversation about the new book they are reading. Very engaged and happy.',
-              ai_analysis: 'AI detected content mood with positive engagement indicators.',
+              call_duration: '16 minutes',
+              mood_assessment: 'cheerful',
+              conversation_summary: 'Long chat about the new mystery novel from the library. Very engaged in discussing the plot. Mentioned enjoying the new puzzle books and doing crosswords daily.',
+              ai_analysis: 'AI detected cheerful mood with strong cognitive engagement. Regular mental activities noted positively.',
               health_concerns: []
             },
             {
               id: 'demo-5',
               call_date: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-              call_duration: '7 minutes',
-              mood_assessment: 'cheerful',
-              conversation_summary: 'Spoke about old memories. Mentioned chest feeling tight but said it is probably nothing.',
-              ai_analysis: 'AI detected cheerful mood but noted potential health concern mention.',
-              health_concerns: ['chest tightness']
+              call_duration: '8 minutes',
+              mood_assessment: 'content',
+              conversation_summary: 'Discussed weekly grocery delivery and meal planning. Mentioned trying a new soup recipe. Appetite good and enjoying varied meals.',
+              ai_analysis: 'AI detected stable mood with good nutritional habits and meal planning.',
+              health_concerns: []
+            },
+            {
+              id: 'demo-6',
+              call_date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+              call_duration: '13 minutes',
+              mood_assessment: 'happy',
+              conversation_summary: 'Excited about video call with family yesterday. Shared stories about old times and laughed a lot. Mentioned feeling connected and loved.',
+              ai_analysis: 'AI detected elevated positive mood with strong social connection indicators.',
+              health_concerns: []
+            },
+            {
+              id: 'demo-7',
+              call_date: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+              call_duration: '10 minutes',
+              mood_assessment: 'neutral',
+              conversation_summary: 'Quiet day at home. Watched some TV and did light housework. Mentioned feeling a bit lonely but managing well. Looking forward to tomorrow\'s activities.',
+              ai_analysis: 'AI detected neutral mood with mild loneliness indicators but good coping strategies.',
+              health_concerns: ['loneliness']
             }
           ],
           automatedAlerts: [
@@ -305,28 +323,46 @@ export default function Dashboard() {
               id: 'alert-1',
               created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
               severity: 'medium',
-              message: 'Health concerns mentioned: back pain',
-              triggered_by: 'Health mention detected in conversation',
-              action_taken: 'Family notified via email',
-              keywords_detected: ['back pain']
+              message: 'Health symptoms mentioned: dizziness when standing',
+              triggered_by: 'Health keyword detection: "dizziness"',
+              action_taken: 'Family notified via email and SMS',
+              keywords_detected: ['dizziness', 'standing up']
             },
             {
               id: 'alert-2',
-              created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+              created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
               severity: 'low',
-              message: 'Mood analysis indicates worried state during call',
-              triggered_by: 'Mood change detection',
+              message: 'Social isolation indicators detected',
+              triggered_by: 'Loneliness keywords in conversation analysis',
               action_taken: 'Family notified via email',
-              keywords_detected: []
+              keywords_detected: ['lonely', 'quiet day']
             },
             {
               id: 'alert-3',
-              created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+              created_at: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString(),
+              severity: 'low',
+              message: 'Medication compliance check - positive confirmation',
+              triggered_by: 'AI detected medication adherence mention',
+              action_taken: 'Positive update logged, no action needed',
+              keywords_detected: ['medication', 'on time']
+            },
+            {
+              id: 'alert-4',
+              created_at: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+              severity: 'high',
+              message: 'Missed scheduled call - elderly user did not answer',
+              triggered_by: 'Automated call system - no response after 3 attempts',
+              action_taken: 'Family contacted immediately, neighbor check requested',
+              keywords_detected: []
+            },
+            {
+              id: 'alert-5',
+              created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
               severity: 'medium',
-              message: 'Health concerns mentioned: chest tightness',
-              triggered_by: 'Health mention detected in conversation',
-              action_taken: 'Family notified via email',
-              keywords_detected: ['chest tightness']
+              message: 'Sleep quality concerns mentioned',
+              triggered_by: 'Health keyword detection: sleep issues',
+              action_taken: 'Family notified, doctor consultation suggested',
+              keywords_detected: ['sleep', 'tired', 'restless']
             }
           ],
           moodTrends: [
@@ -336,7 +372,7 @@ export default function Dashboard() {
             { date: '1/19', mood: 5 },
             { date: '1/20', mood: 4 },
             { date: '1/21', mood: 4 },
-            { date: '1/22', mood: 4 }
+            { date: '1/22', mood: 5 }
           ]
         }
         
