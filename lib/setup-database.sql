@@ -10,6 +10,30 @@ ALTER TABLE family_users ADD COLUMN IF NOT EXISTS call_frequency TEXT DEFAULT 'd
 ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS health_conditions TEXT;
 ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS special_instructions TEXT;
 
+-- Create alerts table if it doesn't exist
+CREATE TABLE IF NOT EXISTS alerts (
+  id SERIAL PRIMARY KEY,
+  elderly_user_id INTEGER REFERENCES elderly_users(id) ON DELETE CASCADE,
+  alert_type TEXT NOT NULL,
+  message TEXT NOT NULL,
+  severity TEXT NOT NULL DEFAULT 'low',
+  resolved_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Create call_records table if it doesn't exist
+CREATE TABLE IF NOT EXISTS call_records (
+  id SERIAL PRIMARY KEY,
+  elderly_user_id INTEGER REFERENCES elderly_users(id) ON DELETE CASCADE,
+  call_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  duration INTEGER, -- in seconds
+  mood TEXT,
+  health_status TEXT,
+  summary TEXT,
+  transcript TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create tables if they don't exist (run these in Supabase SQL editor)
 -- Note: Use UUID as primary key to match Supabase Auth user IDs
 CREATE TABLE IF NOT EXISTS family_users (
