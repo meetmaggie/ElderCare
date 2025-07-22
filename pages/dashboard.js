@@ -425,7 +425,18 @@ export default function Dashboard() {
     }
   }
 
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const formatDate = (dateString) => {
+    if (!isClient) {
+      // Return a simple format for SSR to avoid hydration mismatch
+      return new Date(dateString).toLocaleDateString()
+    }
+    
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = (now - date) / (1000 * 60 * 60)

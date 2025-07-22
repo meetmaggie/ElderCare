@@ -1,5 +1,4 @@
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -9,6 +8,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 export default function DemoPreview() {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [showFullReport, setShowFullReport] = useState(false)
+  const [isClient, setIsClient] = useState(false)
 
   // Rich demo data
   const demoData = {
@@ -88,7 +88,14 @@ export default function DemoPreview() {
     ]
   }
 
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
   const formatDate = (dateString) => {
+    if (!isClient) {
+      return 'Loading...' // Or any placeholder you prefer
+    }
     const date = new Date(dateString)
     const now = new Date()
     const diffInHours = (now - date) / (1000 * 60 * 60)
@@ -393,7 +400,7 @@ export default function DemoPreview() {
               className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100"
             >
               <h2 className="text-2xl font-heading font-bold text-trust-900 mb-6">Alert Settings Configuration</h2>
-              
+
               <div className="space-y-8">
                 {/* Emergency Keywords */}
                 <div>
@@ -453,7 +460,7 @@ export default function DemoPreview() {
               className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100"
             >
               <h2 className="text-2xl font-heading font-bold text-trust-900 mb-6">Care Settings Configuration</h2>
-              
+
               <div className="space-y-8">
                 {/* Call Schedule */}
                 <div>
