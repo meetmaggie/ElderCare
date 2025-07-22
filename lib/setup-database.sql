@@ -1,4 +1,3 @@
-
 -- First, let's add the missing 'plan' column to family_users table
 ALTER TABLE family_users ADD COLUMN IF NOT EXISTS plan TEXT;
 ALTER TABLE family_users ADD COLUMN IF NOT EXISTS plan_price INTEGER;
@@ -10,32 +9,14 @@ ALTER TABLE family_users ADD COLUMN IF NOT EXISTS call_frequency TEXT DEFAULT 'd
 ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS health_conditions TEXT;
 ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS special_instructions TEXT;
 
--- Create alerts table if it doesn't exist
-CREATE TABLE IF NOT EXISTS alerts (
-  id SERIAL PRIMARY KEY,
-  elderly_user_id INTEGER REFERENCES elderly_users(id) ON DELETE CASCADE,
-  alert_type TEXT NOT NULL,
-  message TEXT NOT NULL,
-  severity TEXT NOT NULL DEFAULT 'low',
-  resolved_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+-- Drop existing tables if they have conflicts (only run if needed)
+DROP TABLE IF EXISTS alerts CASCADE;
+DROP TABLE IF EXISTS call_records CASCADE;
+DROP TABLE IF EXISTS elderly_users CASCADE;
+DROP TABLE IF EXISTS family_users CASCADE;
 
--- Create call_records table if it doesn't exist
-CREATE TABLE IF NOT EXISTS call_records (
-  id SERIAL PRIMARY KEY,
-  elderly_user_id INTEGER REFERENCES elderly_users(id) ON DELETE CASCADE,
-  call_date TIMESTAMP WITH TIME ZONE NOT NULL,
-  duration INTEGER, -- in seconds
-  mood TEXT,
-  health_status TEXT,
-  summary TEXT,
-  transcript TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create tables if they don't exist (run these in Supabase SQL editor)
--- Note: Use UUID as primary key to match Supabase Auth user IDs
+-- Create tables with consistent data types
+-- Note: Use UUID as primary key for family_users to match Supabase Auth user IDs
 CREATE TABLE IF NOT EXISTS family_users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
@@ -50,11 +31,12 @@ CREATE TABLE IF NOT EXISTS family_users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Use INTEGER for elderly_users to keep it simple
 CREATE TABLE IF NOT EXISTS elderly_users (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   phone TEXT,
-  family_user_id UUID REFERENCES family_users(id),
+  family_user_id UUID REFERENCES family_users(id) ON DELETE CASCADE,
   emergency_contact TEXT,
   emergency_phone TEXT,
   call_schedule TEXT,
@@ -63,39 +45,16 @@ CREATE TABLE IF NOT EXISTS elderly_users (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create call_records table for conversation tracking
+-- Create call_records table with INTEGER foreign key to match elderly_users
 CREATE TABLE IF NOT EXISTS call_records (
   id SERIAL PRIMARY KEY,
-  elderly_user_id INTEGER REFERENCES elderly_users(id),
-  call_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  call_duration TEXT,
-  mood_assessment TEXT,
-  conversation_summary TEXT,
-  health_concerns TEXT[],
-  ai_analysis TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create alerts table for automated monitoring
-CREATE TABLE IF NOT EXISTS alerts (
-  id SERIAL PRIMARY KEY,
-  elderly_user_id INTEGER REFERENCES elderly_users(id),
-  family_user_id UUID REFERENCES family_users(id),
-  alert_type TEXT NOT NULL,
-  severity TEXT DEFAULT 'medium',
-  triggered_by TEXT,
-  message TEXT NOT NULL,
-  action_taken TEXT,
-  keywords_detected TEXT[],
-  is_resolved BOOLEAN DEFAULT FALSE,
-  resolved_at TIMESTAMP WITH TIME ZONE,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE TABLE IF NOT EXISTS call_records (
-  id SERIAL PRIMARY KEY,
-  elderly_user_id INTEGER REFERENCES elderly_users(id),
-  call_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  elderly_user_id INTEGER REFERENCES elderly_users(id) ON DELETE CASCADE,
+  call_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  duration INTEGER, -- in seconds
+  mood TEXT,
+  health_status TEXT,
+  summary TEXT,
+  transcript TEXT,
   call_duration TEXT,
   mood_assessment TEXT,
   conversation_summary TEXT,
@@ -103,16 +62,21 @@ CREATE TABLE IF NOT EXISTS call_records (
   ai_analysis TEXT,
   conversation_id TEXT,
   call_status TEXT,
-  transcript TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Create alerts table with INTEGER foreign key to match elderly_users
 CREATE TABLE IF NOT EXISTS alerts (
   id SERIAL PRIMARY KEY,
-  elderly_user_id INTEGER REFERENCES elderly_users(id),
+  elderly_user_id INTEGER REFERENCES elderly_users(id) ON DELETE CASCADE,
+  family_user_id UUID REFERENCES family_users(id) ON DELETE CASCADE,
   alert_type TEXT NOT NULL,
   message TEXT NOT NULL,
-  severity TEXT DEFAULT 'medium',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  resolved_at TIMESTAMP WITH TIME ZONE
+  severity TEXT NOT NULL DEFAULT 'low',
+  triggered_by TEXT,
+  action_taken TEXT,
+  keywords_detected TEXT[],
+  is_resolved BOOLEAN DEFAULT FALSE,
+  resolved_at TIMESTAMP WITH TIME ZONE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
