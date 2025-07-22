@@ -40,6 +40,7 @@ export default function Dashboard() {
     emergencyContact: '',
     emergencyPhone: ''
   })
+  const [testingWebhook, setTestingWebhook] = useState(false)
 
   useEffect(() => {
     loadDashboardData()
@@ -138,6 +139,34 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error saving care settings:', error)
       alert('Error saving settings. Please try again.')
+    }
+  }
+
+  const testWebhook = async () => {
+    setTestingWebhook(true)
+    try {
+      const response = await fetch('/api/test-webhook', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      const result = await response.json()
+      console.log('Webhook test result:', result)
+      
+      if (response.ok) {
+        alert('Webhook test successful! Check console for details. Refresh page to see new data.')
+        // Refresh dashboard data
+        await loadDashboardData()
+      } else {
+        alert('Webhook test failed: ' + result.error)
+      }
+    } catch (error) {
+      console.error('Error testing webhook:', error)
+      alert('Error testing webhook. Check console for details.')
+    } finally {
+      setTestingWebhook(false)
     }
   }
 
@@ -610,8 +639,25 @@ export default function Dashboard() {
           </motion.div>
         </div>
 
+        {/* Development Tools */}
+        <div className="mb-8">
+          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <h3 className="font-semibold text-blue-800 mb-2">Development Tools</h3>
+            <button
+              onClick={testWebhook}
+              disabled={testingWebhook}
+              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+            >
+              {testingWebhook ? 'Testing...' : 'Test ElevenLabs Webhook'}
+            </button>
+            <p className="text-sm text-blue-600 mt-2">
+              Simulates an ElevenLabs call webhook to test data flow
+            </p>
+          </div>
+        </div>
+
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
           <motion.button
             onClick={() => setShowAlertSettings(true)}
             initial={{ opacity: 0, y: 20 }}

@@ -72,8 +72,12 @@ CREATE TABLE IF NOT EXISTS call_records (
   call_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   call_duration TEXT,
   mood_assessment TEXT,
-  health_concerns TEXT,
   conversation_summary TEXT,
+  health_concerns TEXT[],
+  ai_analysis TEXT,
+  conversation_id TEXT,
+  call_status TEXT,
+  transcript TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
