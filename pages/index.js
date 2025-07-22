@@ -199,9 +199,14 @@ export default function LandingPage() {
               <Link href="/login" className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200">
                 Sign In
               </Link>
-              <Link href="/signup" className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
-                Get Started
-              </Link>
+              <div className="flex items-center space-x-3">
+                <Link href="/demo-preview" className="bg-gradient-to-r from-care-500 to-care-600 text-white px-6 py-2.5 rounded-full hover:from-care-600 hover:to-care-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
+                  Quick Demo
+                </Link>
+                <Link href="/signup" className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
+                  Get Started
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -248,22 +253,31 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Email Signup */}
-          <form onSubmit={handleSignup} className="max-w-lg mx-auto mb-8">
-            <div className="flex flex-col sm:flex-row gap-3">
+          {/* Quick Actions */}
+          <div className="max-w-lg mx-auto mb-8">
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+              <Link href="/demo-preview" className="flex-1 bg-gradient-to-r from-care-500 to-care-600 text-white px-8 py-4 rounded-full font-semibold hover:from-care-600 hover:to-care-700 transform hover:scale-105 transition-all duration-200 shadow-soft text-center">
+                🚀 See Live Demo
+              </Link>
+              <Link href="/signup" className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-full font-semibold hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft text-center">
+                Start Free Trial
+              </Link>
+            </div>
+            
+            <form onSubmit={handleSignup} className="flex flex-col sm:flex-row gap-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email address"
-                className="flex-1 px-6 py-4 border border-trust-200 rounded-full focus:ring-2 focus:ring-primary-500 focus:border-transparent text-lg shadow-soft"
+                placeholder="Enter your email for updates"
+                className="flex-1 px-6 py-3 border border-trust-200 rounded-full focus:ring-2 focus:ring-primary-500 focus:border-transparent text-lg shadow-soft"
                 required
               />
               <button 
                 type="submit"
-                className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-full font-semibold hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft"
+                className="bg-white text-primary-600 border-2 border-primary-200 px-6 py-3 rounded-full font-semibold hover:bg-primary-50 transition-all duration-200 shadow-soft"
               >
-                Start Free Trial
+                Get Updates
               </button>
             </div>
           </form>
