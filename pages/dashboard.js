@@ -243,9 +243,8 @@ export default function Dashboard() {
       const recentCalls = callRecords || []
       const recentAlerts = alerts || []
 
-      // Always provide demo data when no real data exists
-      if (true) {
-        const demoDashboardData = {
+      // Always provide demo data for demonstration
+      const demoDashboardData = {
           stats: {
             currentStatus: 'All Good',
             lastCall: 'Today at 2:15 PM',
@@ -376,65 +375,11 @@ export default function Dashboard() {
           ]
         }
         
-        setDashboardData(demoDashboardData)
-        setLoading(false)
-        return
-      }
-
-      const lastCall = recentCalls.length > 0 ? recentCalls[0] : null
-      const lastCallFormatted = lastCall ? formatDate(lastCall.call_date) : 'No calls yet'
-
-      const moodToday = lastCall ? (lastCall.mood_assessment || 'Unknown').charAt(0).toUpperCase() + (lastCall.mood_assessment || 'unknown').slice(1) : 'Unknown'
-
-      // Count alerts from this week
-      const weekAgo = new Date()
-      weekAgo.setDate(weekAgo.getDate() - 7)
-      const alertsThisWeek = recentAlerts.filter(alert => 
-        new Date(alert.created_at) > weekAgo
-      ).length
-
-      // Generate mood trends from recent calls (last 7 days)
-      const moodTrends = []
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date()
-        date.setDate(date.getDate() - i)
-        const dateStr = `${date.getMonth() + 1}/${date.getDate()}`
-
-        // Find call for this date
-        const callForDate = recentCalls.find(call => {
-          const callDate = new Date(call.call_date)
-          return callDate.toDateString() === date.toDateString()
-        })
-
-        const moodValue = callForDate ? getMoodValue(callForDate.mood_assessment) : 3
-        moodTrends.push({ date: dateStr, mood: moodValue })
-      }
-
-      const dashboardData = {
-        stats: {
-          currentStatus: determineOverallStatus(recentCalls, recentAlerts),
-          lastCall: lastCallFormatted,
-          moodToday: moodToday,
-          alertsCount: recentAlerts.filter(a => !a.resolved_at).length,
-          automatedAlertsThisWeek: alertsThisWeek
-        },
-        recentCalls: recentCalls.slice(0, 5).map(call => ({
-          ...call,
-          health_concerns: call.health_concerns || [],
-          conversation_summary: call.conversation_summary || 'Call completed successfully.',
-          ai_analysis: call.ai_analysis || 'Analysis completed.'
-        })),
-        automatedAlerts: recentAlerts.slice(0, 5).map(alert => ({
-          ...alert,
-          triggered_by: alert.message,
-          action_taken: 'Family notified via email',
-          keywords_detected: []
-        })),
-        moodTrends: moodTrends
-      }
-
-      setDashboardData(dashboardData)
+      setDashboardData(demoDashboardData)
       setLoading(false)
+      return
+
+      
     } catch (error) {
       console.error('Error loading dashboard:', error)
       // Set fallback demo data on error
