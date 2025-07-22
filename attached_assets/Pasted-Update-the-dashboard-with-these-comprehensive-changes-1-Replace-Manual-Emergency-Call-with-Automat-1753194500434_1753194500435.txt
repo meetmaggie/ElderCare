@@ -1,0 +1,58 @@
+Update the dashboard with these comprehensive changes:
+1. Replace Manual Emergency Call with Automated Alert Settings:
+
+Remove the 'Schedule Emergency Call' button completely
+Replace with 'Alert Settings' button that opens a comprehensive settings page
+Show history of alerts that were automatically sent based on AI conversation analysis
+Display why each alert was triggered and what the AI detected
+
+2. Create Alert Settings Page:
+
+Emergency Keywords Management: Editable list of words that trigger alerts (chest pain, fell, dizzy, can't breathe, etc.)
+Contact Escalation Rules:
+
+Email first, then SMS after 30 minutes, then call after 1 hour
+Override for high-urgency (immediate call + SMS)
+
+
+Sensitivity Levels: Conservative (alerts often) vs Balanced vs Relaxed (only serious concerns)
+Multiple Family Contacts: Primary, secondary, emergency contacts with phone/email
+Quiet Hours: Don't call between 10pm-7am unless very urgent
+Alert Types: Health concerns, mood changes, social isolation, missed calls
+
+3. Update Care Settings Page:
+
+Preferred daily call times and frequency
+Health conditions to monitor specifically
+Special AI instructions (topics to focus on, avoid)
+Parent's emergency contact details
+Call preferences and scheduling
+
+4. Enhanced Full Care Report:
+
+Last 30 days call summaries with mood trends chart (using recharts)
+Health concerns timeline showing patterns
+Social activity tracking over time
+Automatic alerts sent history with reasons
+Weekly/monthly comparison views
+Download PDF and email report options
+Professional medical-style layout
+
+5. Update Signup Form:
+Add basic alert preferences section:
+
+'How would you like to be contacted about concerns?' (Email, SMS, Phone call checkboxes)
+'Alert frequency' - Conservative monitoring vs Standard vs Minimal alerts only
+Keep signup simple but capture essential alert preferences
+
+Key Requirements:
+
+This is an AUTOMATED monitoring system - alerts are sent automatically based on AI conversation analysis
+Families configure how they want to be contacted, not when
+Use existing Supabase connection and database tables
+Match current beautiful dashboard styling
+Mobile responsive design
+Professional healthcare service appearance worth £39-99/month
+Add proper loading states and error handling
+
+Purpose: Transform this into a premium automated eldercare monitoring service where AI analyzes conversations and automatically alerts families based on their configured preferences.
