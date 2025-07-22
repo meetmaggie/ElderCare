@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { motion } from 'framer-motion'
@@ -11,18 +10,22 @@ export default function Signup() {
     familyName: '',
     familyEmail: '',
     familyPhone: '',
-    
+
     // Elderly parent info
     parentName: '',
     parentPhone: '',
     emergencyContact: '',
     emergencyPhone: '',
     preferredCallTime: '',
-    
+
     // Plan selection
-    selectedPlan: 'basic'
+    selectedPlan: 'basic',
+
+    // Alert preferences
+    alertPreferences: 'phone',
+    alertFrequency: 'standard'
   })
-  
+
   const [errors, setErrors] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
@@ -44,7 +47,7 @@ export default function Signup() {
 
   const validateForm = () => {
     const newErrors = {}
-    
+
     // Family member validation
     if (!formData.familyName.trim()) newErrors.familyName = 'Name is required'
     if (!formData.familyEmail.trim()) {
@@ -53,25 +56,25 @@ export default function Signup() {
       newErrors.familyEmail = 'Email is invalid'
     }
     if (!formData.familyPhone.trim()) newErrors.familyPhone = 'Phone number is required'
-    
+
     // Parent validation
     if (!formData.parentName.trim()) newErrors.parentName = 'Parent name is required'
     if (!formData.parentPhone.trim()) newErrors.parentPhone = 'Parent phone is required'
     if (!formData.emergencyContact.trim()) newErrors.emergencyContact = 'Emergency contact is required'
     if (!formData.emergencyPhone.trim()) newErrors.emergencyPhone = 'Emergency phone is required'
     if (!formData.preferredCallTime) newErrors.preferredCallTime = 'Preferred call time is required'
-    
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
     if (!validateForm()) return
-    
+
     setIsLoading(true)
-    
+
     try {
       // First, insert into family_users table
       const { data: familyUser, error: familyError } = await supabase
@@ -84,15 +87,17 @@ export default function Signup() {
             subscription_status: 'trial',
             plan: formData.selectedPlan,
             plan_price: plans[formData.selectedPlan].price,
-            created_at: new Date().toISOString()
+            created_at: new Date().toISOString(),
+            alert_preferences: formData.alertPreferences,
+            alert_frequency: formData.alertFrequency
           }
         ])
         .select()
-      
+
       if (familyError) throw familyError
-      
+
       const familyUserId = familyUser[0].id
-      
+
       // Then, insert into elderly_users table
       const { error: elderlyError } = await supabase
         .from('elderly_users')
@@ -107,20 +112,20 @@ export default function Signup() {
             created_at: new Date().toISOString()
           }
         ])
-      
+
       if (elderlyError) throw elderlyError
-      
+
       setIsSuccess(true)
     } catch (error) {
       console.error('Error saving signup:', error)
       let errorMessage = 'There was an error processing your signup. Please try again.'
-      
+
       if (error.code === '23505') {
         errorMessage = 'An account with this email already exists. Please use a different email or sign in.'
       } else if (error.message.includes('relation') && error.message.includes('does not exist')) {
         errorMessage = 'Database tables are not set up yet. Please contact support.'
       }
-      
+
       setErrors({ submit: errorMessage })
     } finally {
       setIsLoading(false)
@@ -152,7 +157,7 @@ export default function Signup() {
           <p className="text-trust-600 mb-8 leading-relaxed">
             Thank you for signing up for your free 7-day trial. We'll contact you within 24 hours to set up your service and schedule the first call with <span className="font-semibold text-trust-800">{formData.parentName}</span>.
           </p>
-          
+
           <div className="bg-primary-50 border border-primary-200 rounded-xl p-4 mb-6">
             <h3 className="font-semibold text-primary-800 mb-2">What happens next?</h3>
             <ul className="text-sm text-primary-700 space-y-1 text-left">
@@ -161,7 +166,7 @@ export default function Signup() {
               <li className="flex items-center"><span className="text-primary-500 mr-2">•</span>Family dashboard access provided</li>
             </ul>
           </div>
-          
+
           <Link 
             href="/"
             className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-3 rounded-full font-semibold hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft inline-block"
@@ -249,7 +254,7 @@ export default function Signup() {
                       <p className="text-trust-600 mt-1">Information about the family member signing up</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-trust-700 font-medium mb-3">Full Name *</label>
@@ -264,7 +269,7 @@ export default function Signup() {
                       />
                       {errors.familyName && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.familyName}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-trust-700 font-medium mb-3">Email Address *</label>
                       <input
@@ -278,7 +283,7 @@ export default function Signup() {
                       />
                       {errors.familyEmail && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.familyEmail}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-trust-700 font-medium mb-3">Phone Number *</label>
                       <input
@@ -306,7 +311,7 @@ export default function Signup() {
                       <p className="text-trust-600 mt-1">Information about your parent who will receive calls</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
                       <label className="block text-trust-700 font-medium mb-3">Parent's Full Name *</label>
@@ -321,7 +326,7 @@ export default function Signup() {
                       />
                       {errors.parentName && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.parentName}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-trust-700 font-medium mb-3">Parent's Phone *</label>
                       <input
@@ -335,7 +340,7 @@ export default function Signup() {
                       />
                       {errors.parentPhone && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.parentPhone}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-trust-700 font-medium mb-3">Emergency Contact Name *</label>
                       <input
@@ -349,7 +354,7 @@ export default function Signup() {
                       />
                       {errors.emergencyContact && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.emergencyContact}</p>}
                     </div>
-                    
+
                     <div>
                       <label className="block text-trust-700 font-medium mb-3">Emergency Phone *</label>
                       <input
@@ -363,7 +368,7 @@ export default function Signup() {
                       />
                       {errors.emergencyPhone && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.emergencyPhone}</p>}
                     </div>
-                    
+
                     <div className="md:col-span-2">
                       <label className="block text-trust-700 font-medium mb-3">Preferred Call Time *</label>
                       <select
@@ -394,7 +399,7 @@ export default function Signup() {
                       <p className="text-trust-600 mt-1">Select the plan that best fits your family's needs</p>
                     </div>
                   </div>
-                  
+
                   <div className="grid md:grid-cols-3 gap-6">
                     {Object.entries(plans).map(([key, plan]) => (
                       <div
@@ -429,6 +434,85 @@ export default function Signup() {
                         </ul>
                       </div>
                     ))}
+                  </div>
+                </div>
+
+                {/* Alert Preferences */}
+                <div className="mb-12">
+                  <div className="flex items-center mb-8">
+                    <div className="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-lg font-bold mr-4">
+                      4
+                    </div>
+                    <div>
+                      <h3 className="text-2xl md:text-3xl font-heading font-semibold text-trust-900">Alert Preferences</h3>
+                      <p className="text-trust-600 mt-1">Set your preferences for how you'd like to be notified</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6">
+                    <label className="block text-trust-700 font-medium mb-3">Preferred Contact Method</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[
+                        { value: 'email', label: 'Email Only', desc: 'Receive alerts via email' },
+                        { value: 'phone', label: 'Phone Calls', desc: 'Important alerts by phone' },
+                        { value: 'sms_calls', label: 'SMS + Calls', desc: 'Text and phone alerts' }
+                      ].map(pref => (
+                        <label
+                          key={pref.value}
+                          className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                            formData.alertPreferences === pref.value
+                              ? 'border-primary-500 bg-primary-50 shadow-soft'
+                              : 'border-trust-200 hover:border-primary-300'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="alertPreferences"
+                            value={pref.value}
+                            checked={formData.alertPreferences === pref.value}
+                            onChange={(e) => handleInputChange('alertPreferences', e.target.value)}
+                            className="sr-only"
+                          />
+                          <div className="text-center">
+                            <h4 className="font-semibold text-trust-800 mb-1">{pref.label}</h4>
+                            <p className="text-sm text-trust-600">{pref.desc}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-3">Alert Frequency</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {[
+                        { value: 'conservative', label: 'Conservative', desc: 'Alert for minor concerns' },
+                        { value: 'standard', label: 'Standard', desc: 'Balanced monitoring' },
+                        { value: 'minimal', label: 'Minimal', desc: 'Only serious concerns' }
+                      ].map(freq => (
+                        <label
+                          key={freq.value}
+                          className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${
+                            formData.alertFrequency === freq.value
+                              ? 'border-primary-500 bg-primary-50 shadow-soft'
+                              : 'border-trust-200 hover:border-primary-300'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="alertFrequency"
+                            value={freq.value}
+                            checked={formData.alertFrequency === freq.value}
+                            onChange={(e) => handleInputChange('alertFrequency', e.target.value)}
+                            className="sr-only"
+                          />
+                          <div className="text-center">
+                            <h4 className="font-semibold text-trust-800 mb-1">{freq.label}</h4>
+                            <p className="text-sm text-trust-600">{freq.desc}</p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
