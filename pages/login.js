@@ -179,6 +179,39 @@ export default function Login() {
               </div>
 
               <div className="mt-8 text-center space-y-4">
+                <div className="border-t border-trust-200 pt-6">
+                  <p className="text-trust-600 font-medium mb-4">Quick Demo Login</p>
+                  <div className="space-y-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ email: 'demo@family1.com', password: 'password123' })
+                      }}
+                      className="w-full text-sm bg-primary-50 text-primary-700 py-2 px-4 rounded-lg hover:bg-primary-100 transition-colors"
+                    >
+                      Demo: Sarah Johnson (Premium Plan)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ email: 'demo@family2.com', password: 'password123' })
+                      }}
+                      className="w-full text-sm bg-care-50 text-care-700 py-2 px-4 rounded-lg hover:bg-care-100 transition-colors"
+                    >
+                      Demo: David Chen (Basic Plan)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormData({ email: 'demo@family3.com', password: 'password123' })
+                      }}
+                      className="w-full text-sm bg-warm-50 text-warm-700 py-2 px-4 rounded-lg hover:bg-warm-100 transition-colors"
+                    >
+                      Demo: Emma Thompson (Family Plan)
+                    </button>
+                  </div>
+                </div>
+
                 <p className="text-trust-500">
                   Don't have an account?{' '}
                   <Link href="/signup" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
