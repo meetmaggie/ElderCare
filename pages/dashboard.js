@@ -93,34 +93,39 @@ export default function Dashboard() {
         console.error('Error fetching elderly user:', elderlyError)
         // Check if this is a demo account - demo accounts should have elderly users
         if (session.user.email && session.user.email.includes('.demo@')) {
-          console.log('Demo account missing elderly user data - recreating demo data')
+          console.log('Demo account missing elderly user data - this should not happen')
           
           // Try to recreate the demo data
-          const dataRecreated = await checkAndFixDemoData(supabase, session.user.email, session.user.id)
-          
-          if (dataRecreated) {
-            // Retry loading the data
-            setTimeout(() => {
-              window.location.reload()
-            }, 1000)
-            return
-          } else {
-            // Set basic dashboard data for demo accounts without elderly user
-            setDashboardData({
-              stats: {
-                currentStatus: 'Setup Required',
-                lastCall: 'No calls yet',
-                moodToday: 'Unknown',
-                alertsCount: 0,
-                automatedAlertsThisWeek: 0
-              },
-              recentCalls: [],
-              automatedAlerts: [],
-              moodTrends: []
-            })
-            setLoading(false)
-            return
+          try {
+            const dataRecreated = await checkAndFixDemoData(supabase, session.user.email, session.user.id)
+            
+            if (dataRecreated) {
+              // Retry loading the data
+              setTimeout(() => {
+                checkAuthAndLoadData()
+              }, 1000)
+              return
+            }
+          } catch (fixError) {
+            console.error('Error trying to fix demo data:', fixError)
           }
+          
+          // If fix failed, set basic dashboard data and show fix button
+          setDashboardData({
+            stats: {
+              currentStatus: 'Demo Data Missing',
+              lastCall: 'No calls yet',
+              moodToday: 'Unknown',
+              alertsCount: 0,
+              automatedAlertsThisWeek: 0
+            },
+            recentCalls: [],
+            automatedAlerts: [],
+            moodTrends: [],
+            showDemoFix: true
+          })
+          setLoading(false)
+          return
         }
         // If no elderly user found for regular account, they need to complete signup
         console.log('No elderly user found, redirecting to complete signup process')
@@ -309,6 +314,31 @@ export default function Dashboard() {
       }
     } catch (error) {
       console.error('Logout error:', error)
+    }
+  }
+
+  const fixDemoData = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/fix-demo-data', {
+        method: 'POST'
+      })
+      
+      const result = await response.json()
+      console.log('Demo data fix result:', result)
+      
+      if (response.ok) {
+        alert('Demo data fixed successfully! Refreshing dashboard...')
+        // Reload the page to get fresh data
+        window.location.reload()
+      } else {
+        alert('Failed to fix demo data: ' + result.error)
+      }
+    } catch (error) {
+      console.error('Error fixing demo data:', error)
+      alert('Error fixing demo data. Please try again.')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -832,14 +862,26 @@ export default function Dashboard() {
         <div className="mb-8">
           <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
             <h3 className="font-semibold text-blue-800 mb-2">Development Tools</h3>
-            <button
-              onClick={testWebhook}
-              disabled={testingWebhook}
-              className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
-            >
-              {testingWebhook ? 'Testing...' : 'Test ElevenLabs Webhook'}
-            </button>
+            <div className="flex flex-wrap gap-3">
+              {dashboardData?.showDemoFix && (
+                <button
+                  onClick={fixDemoData}
+                  disabled={loading}
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50"
+                >
+                  {loading ? 'Fixing...' : 'Fix Demo Data'}
+                </button>
+              )}
+              <button
+                onClick={testWebhook}
+                disabled={testingWebhook}
+                className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              >
+                {testingWebhook ? 'Testing...' : 'Test ElevenLabs Webhook'}
+              </button>
+            </div>
             <p className="text-sm text-blue-600 mt-2">
+              {dashboardData?.showDemoFix && 'Fix missing demo data | '}
               Simulates an ElevenLabs call webhook to test data flow
             </p>
           </div>
