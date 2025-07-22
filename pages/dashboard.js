@@ -201,49 +201,7 @@ export default function Dashboard() {
 
   const loadDashboardData = async (elderlyUserId) => {
     try {
-      // Initialize with default data structure
-      const defaultDashboardData = {
-        stats: {
-          currentStatus: 'All Good',
-          lastCall: 'No calls yet',
-          moodToday: 'Unknown',
-          alertsCount: 0,
-          automatedAlertsThisWeek: 0
-        },
-        recentCalls: [],
-        automatedAlerts: [],
-        moodTrends: []
-      }
-
-      // Get recent call records
-      const { data: callRecords, error: callsError } = await supabase
-        .from('call_records')
-        .select('*')
-        .eq('elderly_user_id', elderlyUserId)
-        .order('call_date', { ascending: false })
-        .limit(10)
-
-      if (callsError) {
-        console.error('Error fetching call records:', callsError)
-      }
-
-      // Get alerts
-      const { data: alerts, error: alertsError } = await supabase
-        .from('alerts')
-        .select('*')
-        .eq('elderly_user_id', elderlyUserId)
-        .order('created_at', { ascending: false })
-        .limit(10)
-
-      if (alertsError) {
-        console.error('Error fetching alerts:', alertsError)
-      }
-
-      // Calculate stats
-      const recentCalls = callRecords || []
-      const recentAlerts = alerts || []
-
-      // Always provide demo data for demonstration
+      // Always use demo data for demonstration purposes
       const demoDashboardData = {
           stats: {
             currentStatus: 'All Good',
@@ -377,82 +335,51 @@ export default function Dashboard() {
         
       setDashboardData(demoDashboardData)
       setLoading(false)
-      return
-
       
     } catch (error) {
       console.error('Error loading dashboard:', error)
-      // Set fallback demo data on error
+      // Even on error, show demo data
       setDashboardData({
         stats: {
           currentStatus: 'All Good',
-          lastCall: 'Today at 10:30 AM',
-          moodToday: 'Content',
-          alertsCount: 0,
-          automatedAlertsThisWeek: 2
+          lastCall: 'Today at 2:15 PM',
+          moodToday: 'Happy',
+          alertsCount: 1,
+          automatedAlertsThisWeek: 3
         },
         recentCalls: [
           {
             id: 'demo-1',
             call_date: new Date().toISOString(),
-            call_duration: '8 minutes',
-            mood_assessment: 'content',
-            conversation_summary: 'Had a lovely chat about the garden. Mentioned some back pain but spirits are good.',
-            ai_analysis: 'AI detected content mood with minor health mentions about back discomfort.',
-            health_concerns: ['back pain']
-          },
-          {
-            id: 'demo-2',
-            call_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            call_duration: '12 minutes',
+            call_duration: '14 minutes',
             mood_assessment: 'happy',
-            conversation_summary: 'Talked about family visit last week. Very engaged and cheerful throughout the call.',
-            ai_analysis: 'AI detected happy mood with positive engagement indicators.',
+            conversation_summary: 'Wonderful conversation about the grandchildren visiting this weekend.',
+            ai_analysis: 'AI detected very positive mood with excellent engagement.',
             health_concerns: []
-          },
-          {
-            id: 'demo-3',
-            call_date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            call_duration: '6 minutes',
-            mood_assessment: 'worried',
-            conversation_summary: 'Discussed weekly shopping trip. Mentioned feeling tired and knee bothering them.',
-            ai_analysis: 'AI detected worried mood with health concerns about fatigue and joint pain.',
-            health_concerns: ['tired', 'knee pain']
           }
         ],
         automatedAlerts: [
           {
             id: 'alert-1',
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            severity: 'medium',
-            message: 'Health concerns mentioned: back pain',
-            triggered_by: 'Health mention detected in conversation',
-            action_taken: 'Family notified via email'
-          },
-          {
-            id: 'alert-2',
-            created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+            created_at: new Date().toISOString(),
             severity: 'low',
-            message: 'Mood analysis indicates worried state during call',
-            triggered_by: 'Mood change detection',
-            action_taken: 'Family notified via email'
+            message: 'Demo alert - system working properly',
+            triggered_by: 'System check',
+            action_taken: 'No action needed'
           }
         ],
         moodTrends: [
           { date: '1/16', mood: 4 },
           { date: '1/17', mood: 3 },
-          { date: '1/18', mood: 2 },
+          { date: '1/18', mood: 4 },
           { date: '1/19', mood: 5 },
           { date: '1/20', mood: 4 },
           { date: '1/21', mood: 4 },
-          { date: '1/22', mood: 4 }
+          { date: '1/22', mood: 5 }
         ]
       })
       setLoading(false)
     }
-        finally {
-            setLoading(false)
-        }
   }
 
   const getMoodValue = (mood) => {
