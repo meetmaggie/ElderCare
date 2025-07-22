@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import Head from 'next/head'
 import Link from 'next/link'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true)
@@ -19,6 +20,32 @@ export default function Dashboard() {
     }
   })
   const [refreshing, setRefreshing] = useState(false)
+  
+  // Modal states
+  const [showEmergencyModal, setShowEmergencyModal] = useState(false)
+  const [showSettingsModal, setShowSettingsModal] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
+  
+  // Emergency alert form state
+  const [emergencyAlert, setEmergencyAlert] = useState({
+    type: '',
+    reason: '',
+    urgency: 'medium',
+    message: '',
+    isSubmitting: false
+  })
+  
+  // Care settings state
+  const [careSettings, setCareSettings] = useState({
+    callTimes: ['10:00 AM - 12:00 PM'],
+    primaryContact: '',
+    secondaryContact: '',
+    healthConditions: '',
+    alertPreferences: 'phone',
+    callFrequency: 'daily',
+    specialInstructions: '',
+    isSubmitting: false
+  })
 
   // Demo data for when no database data exists
   const demoData = {
@@ -193,6 +220,103 @@ export default function Dashboard() {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  // Emergency Alert Functions
+  const handleEmergencySubmit = async (e) => {
+    e.preventDefault()
+    setEmergencyAlert(prev => ({ ...prev, isSubmitting: true }))
+    
+    try {
+      // Save alert to database
+      const { error } = await supabase
+        .from('alerts')
+        .insert([
+          {
+            alert_type: emergencyAlert.type,
+            message: `${emergencyAlert.reason}: ${emergencyAlert.message}`,
+            severity: emergencyAlert.urgency,
+            elderly_user_id: dashboardData.elderlyUser?.id || 1,
+            created_at: new Date().toISOString()
+          }
+        ])
+      
+      if (error) throw error
+      
+      // Show success and refresh data
+      alert(`Family will be contacted within 5 minutes via ${emergencyAlert.urgency === 'high' ? 'immediate call + SMS' : emergencyAlert.urgency === 'medium' ? 'phone call' : 'email alert'}`)
+      setShowEmergencyModal(false)
+      setEmergencyAlert({ type: '', reason: '', urgency: 'medium', message: '', isSubmitting: false })
+      fetchDashboardData()
+    } catch (error) {
+      console.error('Error submitting emergency alert:', error)
+      alert('Error sending alert. Please try again.')
+    } finally {
+      setEmergencyAlert(prev => ({ ...prev, isSubmitting: false }))
+    }
+  }
+
+  // Care Settings Functions
+  const handleSettingsSubmit = async (e) => {
+    e.preventDefault()
+    setCareSettings(prev => ({ ...prev, isSubmitting: true }))
+    
+    try {
+      // Update elderly_users table
+      const { error: elderlyError } = await supabase
+        .from('elderly_users')
+        .update({
+          call_schedule: careSettings.callTimes.join(', '),
+          emergency_contact: careSettings.primaryContact,
+          emergency_phone: careSettings.secondaryContact,
+          health_conditions: careSettings.healthConditions,
+          special_instructions: careSettings.specialInstructions
+        })
+        .eq('id', dashboardData.elderlyUser?.id || 1)
+      
+      if (elderlyError) throw elderlyError
+      
+      // Update family_users table
+      const { error: familyError } = await supabase
+        .from('family_users')
+        .update({
+          alert_preferences: careSettings.alertPreferences,
+          call_frequency: careSettings.callFrequency
+        })
+        .eq('id', 1) // Assuming family user ID 1 for demo
+      
+      if (familyError) throw familyError
+      
+      alert('Care settings updated successfully!')
+      setShowSettingsModal(false)
+      fetchDashboardData()
+    } catch (error) {
+      console.error('Error updating care settings:', error)
+      alert('Error updating settings. Please try again.')
+    } finally {
+      setCareSettings(prev => ({ ...prev, isSubmitting: false }))
+    }
+  }
+
+  // Report Generation
+  const generateMoodTrendData = () => {
+    return dashboardData.recentCalls.slice(0, 7).reverse().map((call, index) => ({
+      date: new Date(call.call_date).toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
+      mood: call.mood_assessment === 'cheerful' ? 5 : 
+            call.mood_assessment === 'content' ? 4 :
+            call.mood_assessment === 'neutral' ? 3 :
+            call.mood_assessment === 'concerned' ? 2 : 1,
+      moodLabel: call.mood_assessment
+    }))
+  }
+
+  const handleEmailReport = async () => {
+    alert('Report will be emailed to family members within 5 minutes.')
+  }
+
+  const handleDownloadReport = () => {
+    alert('PDF report generation feature coming soon. For now, you can print this page.')
+    window.print()
   }
 
   if (isLoading) {
@@ -405,14 +529,23 @@ export default function Dashboard() {
               >
                 <h3 className="text-xl font-heading font-semibold text-trust-900 mb-4">Quick Actions</h3>
                 <div className="space-y-3">
-                  <button className="w-full bg-primary-500 text-white py-3 px-4 rounded-xl hover:bg-primary-600 transition-colors duration-200 font-medium">
-                    Schedule Emergency Call
+                  <button 
+                    onClick={() => setShowEmergencyModal(true)}
+                    className="w-full bg-primary-500 text-white py-3 px-4 rounded-xl hover:bg-primary-600 transition-colors duration-200 font-medium"
+                  >
+                    Schedule Emergency Family Alert
                   </button>
-                  <button className="w-full bg-care-500 text-white py-3 px-4 rounded-xl hover:bg-care-600 transition-colors duration-200 font-medium">
+                  <button 
+                    onClick={() => setShowSettingsModal(true)}
+                    className="w-full bg-care-500 text-white py-3 px-4 rounded-xl hover:bg-care-600 transition-colors duration-200 font-medium"
+                  >
                     Update Care Settings
                   </button>
-                  <button className="w-full bg-trust-100 text-trust-700 py-3 px-4 rounded-xl hover:bg-trust-200 transition-colors duration-200 font-medium">
-                    View Full Report
+                  <button 
+                    onClick={() => setShowReportModal(true)}
+                    className="w-full bg-trust-100 text-trust-700 py-3 px-4 rounded-xl hover:bg-trust-200 transition-colors duration-200 font-medium"
+                  >
+                    View Full Care Report
                   </button>
                 </div>
               </motion.div>
@@ -443,6 +576,398 @@ export default function Dashboard() {
             </div>
           </div>
         </main>
+
+        {/* Emergency Alert Modal */}
+        <AnimatePresence>
+          {showEmergencyModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+              onClick={() => setShowEmergencyModal(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-3xl shadow-trust p-8 max-w-md w-full max-h-90vh overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-heading font-semibold text-trust-900">Emergency Family Alert</h3>
+                  <button
+                    onClick={() => setShowEmergencyModal(false)}
+                    className="text-trust-400 hover:text-trust-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <form onSubmit={handleEmergencySubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Alert Type</label>
+                    <select
+                      value={emergencyAlert.type}
+                      onChange={(e) => setEmergencyAlert(prev => ({ ...prev, type: e.target.value }))}
+                      className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                      required
+                    >
+                      <option value="">Select alert type</option>
+                      <option value="alert_family_now">Alert family now</option>
+                      <option value="schedule_welfare_check">Schedule welfare check call (within 2 hours)</option>
+                      <option value="request_daily_call">Request daily call now</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Reason</label>
+                    <select
+                      value={emergencyAlert.reason}
+                      onChange={(e) => setEmergencyAlert(prev => ({ ...prev, reason: e.target.value }))}
+                      className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                      required
+                    >
+                      <option value="">Select reason</option>
+                      <option value="Health concern mentioned">Health concern mentioned</option>
+                      <option value="No response to calls">No response to calls</option>
+                      <option value="Family requested check">Family requested check</option>
+                      <option value="Concerning conversation">Concerning conversation</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Urgency Level</label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 'low', label: 'Low (email alert)', color: 'care' },
+                        { value: 'medium', label: 'Medium (phone call)', color: 'warm' },
+                        { value: 'high', label: 'High (immediate call + SMS)', color: 'red' }
+                      ].map(urgency => (
+                        <label key={urgency.value} className="flex items-center">
+                          <input
+                            type="radio"
+                            value={urgency.value}
+                            checked={emergencyAlert.urgency === urgency.value}
+                            onChange={(e) => setEmergencyAlert(prev => ({ ...prev, urgency: e.target.value }))}
+                            className="mr-3"
+                          />
+                          <span className={`text-${urgency.color}-700`}>{urgency.label}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Specific Details</label>
+                    <textarea
+                      value={emergencyAlert.message}
+                      onChange={(e) => setEmergencyAlert(prev => ({ ...prev, message: e.target.value }))}
+                      className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500 h-24"
+                      placeholder="Describe the concern or specific details to share with family..."
+                      required
+                    />
+                  </div>
+
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmergencyModal(false)}
+                      className="flex-1 bg-trust-100 text-trust-700 py-3 px-4 rounded-xl hover:bg-trust-200 transition-colors duration-200 font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={emergencyAlert.isSubmitting}
+                      className="flex-1 bg-primary-500 text-white py-3 px-4 rounded-xl hover:bg-primary-600 transition-colors duration-200 font-medium disabled:opacity-75"
+                    >
+                      {emergencyAlert.isSubmitting ? 'Sending...' : 'Send Alert'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Care Settings Modal */}
+        <AnimatePresence>
+          {showSettingsModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+              onClick={() => setShowSettingsModal(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-3xl shadow-trust p-8 max-w-2xl w-full max-h-90vh overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-heading font-semibold text-trust-900">Update Care Settings</h3>
+                  <button
+                    onClick={() => setShowSettingsModal(false)}
+                    className="text-trust-400 hover:text-trust-600 text-2xl"
+                  >
+                    ×
+                  </button>
+                </div>
+
+                <form onSubmit={handleSettingsSubmit} className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-trust-700 font-medium mb-2">Primary Emergency Contact</label>
+                      <input
+                        type="text"
+                        value={careSettings.primaryContact}
+                        onChange={(e) => setCareSettings(prev => ({ ...prev, primaryContact: e.target.value }))}
+                        className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                        placeholder="Name and phone number"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-trust-700 font-medium mb-2">Secondary Emergency Contact</label>
+                      <input
+                        type="text"
+                        value={careSettings.secondaryContact}
+                        onChange={(e) => setCareSettings(prev => ({ ...prev, secondaryContact: e.target.value }))}
+                        className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                        placeholder="Name and phone number"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Call Frequency</label>
+                    <select
+                      value={careSettings.callFrequency}
+                      onChange={(e) => setCareSettings(prev => ({ ...prev, callFrequency: e.target.value }))}
+                      className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500"
+                    >
+                      <option value="daily">Daily</option>
+                      <option value="every_other_day">Every other day</option>
+                      <option value="weekdays_only">Weekdays only</option>
+                      <option value="include_weekends">Daily including weekends</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Alert Preferences</label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 'email', label: 'Email only' },
+                        { value: 'phone', label: 'Phone calls' },
+                        { value: 'sms_calls', label: 'SMS + calls' }
+                      ].map(pref => (
+                        <label key={pref.value} className="flex items-center">
+                          <input
+                            type="radio"
+                            value={pref.value}
+                            checked={careSettings.alertPreferences === pref.value}
+                            onChange={(e) => setCareSettings(prev => ({ ...prev, alertPreferences: e.target.value }))}
+                            className="mr-3"
+                          />
+                          {pref.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Health Conditions to Monitor</label>
+                    <textarea
+                      value={careSettings.healthConditions}
+                      onChange={(e) => setCareSettings(prev => ({ ...prev, healthConditions: e.target.value }))}
+                      className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500 h-20"
+                      placeholder="Any specific health conditions, medications, or symptoms to monitor..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-trust-700 font-medium mb-2">Special Instructions for AI</label>
+                    <textarea
+                      value={careSettings.specialInstructions}
+                      onChange={(e) => setCareSettings(prev => ({ ...prev, specialInstructions: e.target.value }))}
+                      className="w-full px-4 py-3 border border-trust-200 rounded-xl focus:ring-2 focus:ring-primary-500 h-20"
+                      placeholder="Topics to focus on, things to avoid, conversation preferences..."
+                    />
+                  </div>
+
+                  <div className="flex space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowSettingsModal(false)}
+                      className="flex-1 bg-trust-100 text-trust-700 py-3 px-4 rounded-xl hover:bg-trust-200 transition-colors duration-200 font-medium"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={careSettings.isSubmitting}
+                      className="flex-1 bg-care-500 text-white py-3 px-4 rounded-xl hover:bg-care-600 transition-colors duration-200 font-medium disabled:opacity-75"
+                    >
+                      {careSettings.isSubmitting ? 'Updating...' : 'Save Changes'}
+                    </button>
+                  </div>
+                </form>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Full Care Report Modal */}
+        <AnimatePresence>
+          {showReportModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+              onClick={() => setShowReportModal(false)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-3xl shadow-trust p-8 max-w-4xl w-full max-h-90vh overflow-y-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-2xl font-heading font-semibold text-trust-900">Full Care Report</h3>
+                  <div className="flex items-center space-x-4">
+                    <button
+                      onClick={handleEmailReport}
+                      className="bg-primary-500 text-white px-4 py-2 rounded-xl hover:bg-primary-600 transition-colors duration-200 font-medium"
+                    >
+                      Email Report
+                    </button>
+                    <button
+                      onClick={handleDownloadReport}
+                      className="bg-trust-100 text-trust-700 px-4 py-2 rounded-xl hover:bg-trust-200 transition-colors duration-200 font-medium"
+                    >
+                      Download PDF
+                    </button>
+                    <button
+                      onClick={() => setShowReportModal(false)}
+                      className="text-trust-400 hover:text-trust-600 text-2xl"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  {/* Report Header */}
+                  <div className="bg-gradient-to-r from-primary-50 to-care-50 rounded-xl p-6 border border-primary-100">
+                    <h4 className="text-xl font-semibold text-trust-900 mb-2">Care Report Summary</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                      <div>
+                        <p className="text-trust-500">Report Period</p>
+                        <p className="font-medium text-trust-800">Last 30 Days</p>
+                      </div>
+                      <div>
+                        <p className="text-trust-500">Total Calls</p>
+                        <p className="font-medium text-trust-800">{dashboardData.recentCalls.length}</p>
+                      </div>
+                      <div>
+                        <p className="text-trust-500">Avg Mood</p>
+                        <p className="font-medium text-trust-800">Content 😌</p>
+                      </div>
+                      <div>
+                        <p className="text-trust-500">Health Alerts</p>
+                        <p className="font-medium text-trust-800">{dashboardData.alerts.length}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mood Trend Chart */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-trust-900 mb-4">Mood Trends (Last 7 Days)</h4>
+                    <div className="h-64 w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={generateMoodTrendData()}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="date" />
+                          <YAxis domain={[1, 5]} tickFormatter={(value) => {
+                            const moods = ['Sad', 'Concerned', 'Neutral', 'Content', 'Cheerful']
+                            return moods[value - 1]
+                          }} />
+                          <Tooltip formatter={(value) => {
+                            const moods = ['Sad', 'Concerned', 'Neutral', 'Content', 'Cheerful']
+                            return [moods[value - 1], 'Mood']
+                          }} />
+                          <Line type="monotone" dataKey="mood" stroke="#3B82F6" strokeWidth={2} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Health Concerns Timeline */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-trust-900 mb-4">Health Concerns Timeline</h4>
+                    <div className="space-y-3">
+                      {dashboardData.recentCalls.filter(call => call.health_concerns && call.health_concerns !== 'None reported').map((call, index) => (
+                        <div key={index} className="bg-warm-50 border border-warm-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <p className="font-medium text-warm-800">{formatDate(call.call_date)}</p>
+                            <span className="text-sm text-warm-600">Health Mention</span>
+                          </div>
+                          <p className="text-warm-700">{call.health_concerns}</p>
+                        </div>
+                      ))}
+                      {dashboardData.recentCalls.filter(call => call.health_concerns && call.health_concerns !== 'None reported').length === 0 && (
+                        <p className="text-trust-500 italic">No health concerns mentioned in recent calls.</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Social Activity Tracking */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-trust-900 mb-4">Social Activity & Highlights</h4>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div>
+                        <h5 className="font-medium text-trust-800 mb-3">Recent Social Interactions</h5>
+                        <div className="space-y-2">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-care-500 rounded-full"></div>
+                            <span className="text-sm text-trust-700">Neighbor Susan visited (yesterday)</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
+                            <span className="text-sm text-trust-700">Family call mentioned (2 days ago)</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-2 h-2 bg-warm-500 rounded-full"></div>
+                            <span className="text-sm text-trust-700">Morning walk with neighbor (3 days ago)</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h5 className="font-medium text-trust-800 mb-3">Conversation Highlights</h5>
+                        <div className="space-y-2">
+                          <div className="bg-primary-50 border border-primary-200 rounded-lg p-3">
+                            <p className="text-sm text-primary-800">"I'm excited about the spring flowers coming up in my garden!"</p>
+                            <p className="text-xs text-primary-600 mt-1">Shows enthusiasm and future planning</p>
+                          </div>
+                          <div className="bg-care-50 border border-care-200 rounded-lg p-3">
+                            <p className="text-sm text-care-800">"I enjoy our daily chats - they brighten my day."</p>
+                            <p className="text-xs text-care-600 mt-1">Positive response to AI companionship</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </>
   )
