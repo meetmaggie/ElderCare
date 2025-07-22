@@ -94,11 +94,11 @@ export default function Dashboard() {
         // Check if this is a demo account - demo accounts should have elderly users
         if (session.user.email && session.user.email.includes('.demo@')) {
           console.log('Demo account missing elderly user data - this should not happen')
-          
+
           // Try to recreate the demo data
           try {
             const dataRecreated = await checkAndFixDemoData(supabase, session.user.email, session.user.id)
-            
+
             if (dataRecreated) {
               // Retry loading the data
               setTimeout(() => {
@@ -109,7 +109,7 @@ export default function Dashboard() {
           } catch (fixError) {
             console.error('Error trying to fix demo data:', fixError)
           }
-          
+
           // If fix failed, set basic dashboard data and show fix button
           setDashboardData({
             stats: {
@@ -129,6 +129,7 @@ export default function Dashboard() {
         }
         // If no elderly user found for regular account, they need to complete signup
         console.log('No elderly user found, redirecting to complete signup process')
+        setLoading(false)
         router.push(`/signup?email=${encodeURIComponent(session.user.email)}`)
         return
       }
@@ -138,6 +139,9 @@ export default function Dashboard() {
     } catch (error) {
       console.error('Error checking auth:', error)
       router.push('/login')
+    }
+    finally {
+        setLoading(false)
     }
   }
 
@@ -256,6 +260,9 @@ export default function Dashboard() {
       })
       setLoading(false)
     }
+        finally {
+            setLoading(false)
+        }
   }
 
   const getMoodValue = (mood) => {
@@ -323,10 +330,10 @@ export default function Dashboard() {
       const response = await fetch('/api/fix-demo-data', {
         method: 'POST'
       })
-      
+
       const result = await response.json()
       console.log('Demo data fix result:', result)
-      
+
       if (response.ok) {
         alert('Demo data fixed successfully! Refreshing dashboard...')
         // Reload the page to get fresh data
