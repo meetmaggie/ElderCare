@@ -10,6 +10,8 @@ export default function Signup() {
     familyName: '',
     familyEmail: '',
     familyPhone: '',
+    password: '',
+    confirmPassword: '',
 
     // Elderly parent info
     parentName: '',
@@ -56,6 +58,14 @@ export default function Signup() {
       newErrors.familyEmail = 'Email is invalid'
     }
     if (!formData.familyPhone.trim()) newErrors.familyPhone = 'Phone number is required'
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required'
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters'
+    }
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match'
+    }
 
     // Parent validation
     if (!formData.parentName.trim()) newErrors.parentName = 'Parent name is required'
@@ -76,11 +86,26 @@ export default function Signup() {
     setIsLoading(true)
 
     try {
-      // First, insert into family_users table
+      // First, create Supabase Auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.familyEmail,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.familyName,
+            phone: formData.familyPhone
+          }
+        }
+      })
+
+      if (authError) throw authError
+
+      // Then, insert into family_users table with auth user ID
       const { data: familyUser, error: familyError } = await supabase
         .from('family_users')
         .insert([
           {
+            id: authData.user.id, // Use auth user ID as primary key
             email: formData.familyEmail,
             name: formData.familyName,
             phone: formData.familyPhone,
@@ -96,9 +121,9 @@ export default function Signup() {
 
       if (familyError) throw familyError
 
-      const familyUserId = familyUser[0].id
+      const familyUserId = authData.user.id
 
-      // Then, insert into elderly_users table
+      // Finally, insert into elderly_users table
       const { error: elderlyError } = await supabase
         .from('elderly_users')
         .insert([
@@ -296,6 +321,34 @@ export default function Signup() {
                         placeholder="+44 7XXX XXXXXX"
                       />
                       {errors.familyPhone && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.familyPhone}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-trust-700 font-medium mb-3">Password *</label>
+                      <input
+                        type="password"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
+                        className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg ${
+                          errors.password ? 'border-red-300 bg-red-50' : 'border-trust-200 hover:border-trust-300'
+                        }`}
+                        placeholder="Enter password (min. 6 characters)"
+                      />
+                      {errors.password && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.password}</p>}
+                    </div>
+
+                    <div>
+                      <label className="block text-trust-700 font-medium mb-3">Confirm Password *</label>
+                      <input
+                        type="password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                        className={`w-full px-5 py-4 border-2 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all text-lg ${
+                          errors.confirmPassword ? 'border-red-300 bg-red-50' : 'border-trust-200 hover:border-trust-300'
+                        }`}
+                        placeholder="Confirm your password"
+                      />
+                      {errors.confirmPassword && <p className="text-red-500 text-sm mt-2 flex items-center"><span className="mr-1">•</span>{errors.confirmPassword}</p>}
                     </div>
                   </div>
                 </div>

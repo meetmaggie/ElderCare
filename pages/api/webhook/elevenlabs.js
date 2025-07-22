@@ -1,4 +1,3 @@
-
 import { supabase } from '../../../lib/supabase'
 
 export default async function handler(req, res) {
@@ -27,20 +26,41 @@ export default async function handler(req, res) {
 
     // Process extracted data with fallbacks
     const processedData = processCallData(extracted_data, transcript)
-    
+
     // Determine elderly user (in production, this would come from metadata)
     // For now, we'll use the first elderly user in the database
-    const { data: elderlyUsers, error: elderlyError } = await supabase
-      .from('elderly_users')
-      .select('id, family_user_id, name')
-      .limit(1)
+    // Find elderly user by phone number (try different formats)
+    const phoneFormats = [
+      phone,
+      phone.replace(/\D/g, ''), // Remove all non-digits
+      '+1234567890' // Demo phone for testing
+    ]
 
-    if (elderlyError || !elderlyUsers || elderlyUsers.length === 0) {
-      console.error('Error finding elderly user:', elderlyError)
-      return res.status(500).json({ error: 'Could not find elderly user' })
+    let elderlyUser = null
+    let userError = null
+
+    for (const phoneFormat of phoneFormats) {
+      const { data, error } = await supabase
+        .from('elderly_users')
+        .select('*')
+        .eq('phone', phoneFormat)
+        .single()
+
+      if (!error && data) {
+        elderlyUser = data
+        break
+      }
+      userError = error
     }
 
-    const elderlyUser = elderlyUsers[0]
+    if (!elderlyUser) {
+      console.log('Elderly user not found for phone:', phone, 'Tried formats:', phoneFormats)
+      return res.status(404).json({ 
+        error: 'Elderly user not found',
+        phone: phone,
+        triedFormats: phoneFormats
+      })
+    }
 
     // Save call record to database
     const { data: callRecord, error: callError } = await supabase
@@ -68,7 +88,7 @@ export default async function handler(req, res) {
 
     // Generate alerts based on extracted data
     const alerts = await generateAlerts(processedData, elderlyUser, transcript)
-    
+
     // Save alerts to database
     if (alerts.length > 0) {
       const { error: alertError } = await supabase
@@ -143,18 +163,18 @@ function processCallData(extractedData, transcript) {
 
 function detectMoodFromTranscript(transcript) {
   const lowerTranscript = transcript.toLowerCase()
-  
+
   // Positive mood indicators
   const positiveWords = ['happy', 'good', 'great', 'wonderful', 'excited', 'cheerful', 'pleased']
   const negativeWords = ['sad', 'worried', 'anxious', 'depressed', 'upset', 'lonely', 'tired', 'stressed']
-  
+
   const positiveCount = positiveWords.filter(word => lowerTranscript.includes(word)).length
   const negativeCount = negativeWords.filter(word => lowerTranscript.includes(word)).length
-  
+
   if (positiveCount > negativeCount && positiveCount > 0) return 'happy'
   if (negativeCount > positiveCount && negativeCount > 0) return 'worried'
   if (lowerTranscript.includes('okay') || lowerTranscript.includes('fine')) return 'content'
-  
+
   return 'neutral'
 }
 
@@ -164,16 +184,16 @@ function extractHealthConcerns(transcript) {
     'chest pain', 'shortness of breath', 'headache', 'nausea', 'confused',
     'medication', 'doctor', 'hospital', 'appointment'
   ]
-  
+
   const concerns = []
   const lowerTranscript = transcript.toLowerCase()
-  
+
   healthKeywords.forEach(keyword => {
     if (lowerTranscript.includes(keyword)) {
       concerns.push(keyword)
     }
   })
-  
+
   return concerns
 }
 
@@ -182,22 +202,22 @@ function detectEmergencyKeywords(transcript) {
     'chest pain', 'can\'t breathe', 'difficulty breathing', 'fell down', 
     'fallen', 'ambulance', 'hospital', 'emergency', 'help me', 'call 911'
   ]
-  
+
   const flags = []
   const lowerTranscript = transcript.toLowerCase()
-  
+
   emergencyKeywords.forEach(keyword => {
     if (lowerTranscript.includes(keyword)) {
       flags.push(keyword)
     }
   })
-  
+
   return flags
 }
 
 function generateAIAnalysis(mood, healthConcerns, emergencyFlags, socialActivity) {
   let analysis = []
-  
+
   // Mood analysis
   switch (mood) {
     case 'happy':
@@ -212,7 +232,7 @@ function generateAIAnalysis(mood, healthConcerns, emergencyFlags, socialActivity
     default:
       analysis.push('Neutral mood assessment.')
   }
-  
+
   // Health analysis
   if (emergencyFlags.length > 0) {
     analysis.push(`URGENT: Emergency keywords detected (${emergencyFlags.join(', ')}).`)
@@ -221,18 +241,18 @@ function generateAIAnalysis(mood, healthConcerns, emergencyFlags, socialActivity
   } else {
     analysis.push('No significant health concerns mentioned.')
   }
-  
+
   // Social analysis
   if (socialActivity === 'isolated') {
     analysis.push('Social isolation patterns detected.')
   }
-  
+
   return analysis.join(' ')
 }
 
 async function generateAlerts(processedData, elderlyUser, transcript) {
   const alerts = []
-  
+
   // Emergency alerts (HIGH priority)
   if (processedData.emergencyFlags.length > 0) {
     alerts.push({
@@ -244,7 +264,7 @@ async function generateAlerts(processedData, elderlyUser, transcript) {
       keywords_detected: processedData.emergencyFlags
     })
   }
-  
+
   // Health concern alerts (MEDIUM priority)
   if (processedData.healthConcerns.length > 0 && processedData.emergencyFlags.length === 0) {
     alerts.push({
@@ -256,7 +276,7 @@ async function generateAlerts(processedData, elderlyUser, transcript) {
       keywords_detected: processedData.healthConcerns
     })
   }
-  
+
   // Mood alerts (LOW to MEDIUM priority)
   if (processedData.mood === 'worried' || processedData.mood === 'sad') {
     // Check for pattern of concerning mood (would need historical data in production)
@@ -269,7 +289,7 @@ async function generateAlerts(processedData, elderlyUser, transcript) {
       keywords_detected: [`mood: ${processedData.mood}`]
     })
   }
-  
+
   // Social isolation alerts
   if (processedData.socialActivity === 'isolated') {
     alerts.push({
@@ -281,26 +301,26 @@ async function generateAlerts(processedData, elderlyUser, transcript) {
       keywords_detected: ['social isolation']
     })
   }
-  
+
   return alerts
 }
 
 function generateSummary(transcript, processedData) {
   const summaryParts = []
-  
+
   // Add mood context
   summaryParts.push(`Conversation mood: ${processedData.mood}.`)
-  
+
   // Add health context
   if (processedData.healthConcerns.length > 0) {
     summaryParts.push(`Health topics discussed: ${processedData.healthConcerns.join(', ')}.`)
   }
-  
+
   // Add emergency context
   if (processedData.emergencyFlags.length > 0) {
     summaryParts.push(`URGENT CONCERNS: ${processedData.emergencyFlags.join(', ')}.`)
   }
-  
+
   // Add a brief excerpt
   const words = transcript.split(' ')
   if (words.length > 50) {
@@ -308,16 +328,16 @@ function generateSummary(transcript, processedData) {
   } else {
     summaryParts.push(`Full conversation: "${transcript}"`)
   }
-  
+
   return summaryParts.join(' ')
 }
 
 function formatDuration(seconds) {
   if (!seconds) return 'Unknown duration'
-  
+
   const minutes = Math.floor(seconds / 60)
   const remainingSeconds = seconds % 60
-  
+
   if (minutes > 0) {
     return `${minutes} minute${minutes > 1 ? 's' : ''}`
   } else {

@@ -196,7 +196,7 @@ export default function LandingPage() {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Link href="/dashboard" className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200">
+              <Link href="/login" className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200">
                 Sign In
               </Link>
               <Link href="/signup" className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">

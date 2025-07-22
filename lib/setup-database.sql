@@ -11,8 +11,9 @@ ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS health_conditions TEXT;
 ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS special_instructions TEXT;
 
 -- Create tables if they don't exist (run these in Supabase SQL editor)
+-- Note: Use UUID as primary key to match Supabase Auth user IDs
 CREATE TABLE IF NOT EXISTS family_users (
-  id SERIAL PRIMARY KEY,
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
   name TEXT NOT NULL,
   phone TEXT,
@@ -29,7 +30,7 @@ CREATE TABLE IF NOT EXISTS elderly_users (
   id SERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   phone TEXT,
-  family_user_id INTEGER REFERENCES family_users(id),
+  family_user_id UUID REFERENCES family_users(id),
   emergency_contact TEXT,
   emergency_phone TEXT,
   call_schedule TEXT,
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS call_records (
 CREATE TABLE IF NOT EXISTS alerts (
   id SERIAL PRIMARY KEY,
   elderly_user_id INTEGER REFERENCES elderly_users(id),
-  family_user_id INTEGER REFERENCES family_users(id),
+  family_user_id UUID REFERENCES family_users(id),
   alert_type TEXT NOT NULL,
   severity TEXT DEFAULT 'medium',
   triggered_by TEXT,
@@ -63,6 +64,7 @@ CREATE TABLE IF NOT EXISTS alerts (
   action_taken TEXT,
   keywords_detected TEXT[],
   is_resolved BOOLEAN DEFAULT FALSE,
+  resolved_at TIMESTAMP WITH TIME ZONE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

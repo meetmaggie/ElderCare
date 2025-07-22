@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeftIcon, BellIcon, Cog6ToothIcon, DocumentTextIcon, PhoneIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ArrowLeftIcon, BellIcon, Cog6ToothIcon, DocumentTextIcon, PhoneIcon, ExclamationTriangleIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { supabase } from '../lib/supabase'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState(null)
+  const [elderlyUser, setElderlyUser] = useState(null)
   const [showAlertSettings, setShowAlertSettings] = useState(false)
   const [showCareSettings, setShowCareSettings] = useState(false)
   const [showFullReport, setShowFullReport] = useState(false)
   const [dashboardData, setDashboardData] = useState(null)
+  const router = useRouter()
   const [alertSettings, setAlertSettings] = useState({
     keywords: ['chest pain', 'fell', 'dizzy', 'can\'t breathe', 'confused', 'very tired'],
     sensitivity: 'balanced',
@@ -43,79 +47,172 @@ export default function Dashboard() {
   const [testingWebhook, setTestingWebhook] = useState(false)
 
   useEffect(() => {
-    loadDashboardData()
+    checkAuthAndLoadData()
   }, [])
 
-  const loadDashboardData = async () => {
+  const checkAuthAndLoadData = async () => {
     try {
-      // Mock data for demonstration - replace with actual Supabase queries
-      const mockData = {
-        stats: {
-          currentStatus: 'All Good',
-          lastCall: 'Today at 9:15 AM',
-          moodToday: 'Content',
-          alertsCount: 0,
-          automatedAlertsThisWeek: 2
-        },
-        recentCalls: [
-          {
-            id: 1,
-            call_date: new Date().toISOString(),
-            mood_assessment: 'content',
-            call_duration: '12 minutes',
-            health_concerns: [],
-            conversation_summary: 'Pleasant conversation about the weather and upcoming family visit. No concerns mentioned.',
-            ai_analysis: 'Positive mood indicators detected. Health stable.'
-          },
-          {
-            id: 2,
-            call_date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            mood_assessment: 'worried',
-            call_duration: '8 minutes',
-            health_concerns: ['mentioned feeling tired'],
-            conversation_summary: 'Discussed feeling more tired than usual. Mentioned difficulty sleeping.',
-            ai_analysis: 'Fatigue mentioned - monitoring for patterns. Sleep concerns noted.'
-          }
-        ],
-        automatedAlerts: [
-          {
-            id: 1,
-            alert_type: 'mood_change',
-            severity: 'medium',
-            triggered_by: 'AI detected sadness in voice tone',
-            message: 'Voice analysis detected indicators of sadness during today\'s call',
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            action_taken: 'Email sent to family',
-            keywords_detected: ['feeling down', 'lonely']
-          },
-          {
-            id: 2,
-            alert_type: 'health_mention',
-            severity: 'low',
-            triggered_by: 'Health keyword detected',
-            message: 'Mentioned back pain during conversation',
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-            action_taken: 'Email notification sent',
-            keywords_detected: ['back pain']
-          }
-        ],
-        moodTrends: [
-          { date: '1/15', mood: 4 },
-          { date: '1/16', mood: 3 },
-          { date: '1/17', mood: 4 },
-          { date: '1/18', mood: 5 },
-          { date: '1/19', mood: 3 },
-          { date: '1/20', mood: 4 },
-          { date: '1/21', mood: 4 }
-        ]
+      // Check if user is authenticated
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError)
+        router.push('/login')
+        return
       }
 
-      setDashboardData(mockData)
+      if (!session) {
+        router.push('/login')
+        return
+      }
+
+      setUser(session.user)
+
+      // Get family user data
+      const { data: familyUser, error: familyError } = await supabase
+        .from('family_users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single()
+
+      if (familyError) {
+        console.error('Error fetching family user:', familyError)
+        router.push('/login')
+        return
+      }
+
+      // Get elderly user data
+      const { data: elderlyUserData, error: elderlyError } = await supabase
+        .from('elderly_users')
+        .select('*')
+        .eq('family_user_id', session.user.id)
+        .single()
+
+      if (elderlyError) {
+        console.error('Error fetching elderly user:', elderlyError)
+        // If no elderly user found, redirect to setup
+        router.push('/signup')
+        return
+      }
+
+      setElderlyUser(elderlyUserData)
+      await loadDashboardData(elderlyUserData.id)
+    } catch (error) {
+      console.error('Error checking auth:', error)
+      router.push('/login')
+    }
+  }
+
+  const loadDashboardData = async (elderlyUserId) => {
+    try {
+      // Get recent call records
+      const { data: callRecords, error: callsError } = await supabase
+        .from('call_records')
+        .select('*')
+        .eq('elderly_user_id', elderlyUserId)
+        .order('call_date', { ascending: false })
+        .limit(10)
+
+      if (callsError) {
+        console.error('Error fetching call records:', callsError)
+      }
+
+      // Get alerts
+      const { data: alerts, error: alertsError } = await supabase
+        .from('alerts')
+        .select('*')
+        .eq('elderly_user_id', elderlyUserId)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      if (alertsError) {
+        console.error('Error fetching alerts:', alertsError)
+      }
+
+      // Calculate stats
+      const recentCalls = callRecords || []
+      const recentAlerts = alerts || []
+      
+      const lastCall = recentCalls.length > 0 ? recentCalls[0] : null
+      const lastCallFormatted = lastCall ? formatDate(lastCall.call_date) : 'No calls yet'
+      
+      const moodToday = lastCall ? (lastCall.mood_assessment || 'Unknown').charAt(0).toUpperCase() + (lastCall.mood_assessment || 'unknown').slice(1) : 'Unknown'
+      
+      // Count alerts from this week
+      const weekAgo = new Date()
+      weekAgo.setDate(weekAgo.getDate() - 7)
+      const alertsThisWeek = recentAlerts.filter(alert => 
+        new Date(alert.created_at) > weekAgo
+      ).length
+
+      // Generate mood trends from recent calls (last 7 days)
+      const moodTrends = []
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date()
+        date.setDate(date.getDate() - i)
+        const dateStr = `${date.getMonth() + 1}/${date.getDate()}`
+        
+        // Find call for this date
+        const callForDate = recentCalls.find(call => {
+          const callDate = new Date(call.call_date)
+          return callDate.toDateString() === date.toDateString()
+        })
+        
+        const moodValue = callForDate ? getMoodValue(callForDate.mood_assessment) : 3
+        moodTrends.push({ date: dateStr, mood: moodValue })
+      }
+
+      const dashboardData = {
+        stats: {
+          currentStatus: determineOverallStatus(recentCalls, recentAlerts),
+          lastCall: lastCallFormatted,
+          moodToday: moodToday,
+          alertsCount: recentAlerts.filter(a => !a.resolved_at).length,
+          automatedAlertsThisWeek: alertsThisWeek
+        },
+        recentCalls: recentCalls.slice(0, 5).map(call => ({
+          ...call,
+          health_concerns: call.health_concerns || [],
+          conversation_summary: call.conversation_summary || 'Call completed successfully.',
+          ai_analysis: call.ai_analysis || 'Analysis completed.'
+        })),
+        automatedAlerts: recentAlerts.slice(0, 5).map(alert => ({
+          ...alert,
+          triggered_by: alert.message,
+          action_taken: 'Family notified via email',
+          keywords_detected: []
+        })),
+        moodTrends: moodTrends
+      }
+
+      setDashboardData(dashboardData)
       setLoading(false)
     } catch (error) {
       console.error('Error loading dashboard:', error)
       setLoading(false)
     }
+  }
+
+  const getMoodValue = (mood) => {
+    const moodMap = {
+      'happy': 5,
+      'content': 4,
+      'neutral': 3,
+      'worried': 2,
+      'sad': 1
+    }
+    return moodMap[mood?.toLowerCase()] || 3
+  }
+
+  const determineOverallStatus = (calls, alerts) => {
+    const recentAlerts = alerts.filter(alert => !alert.resolved_at)
+    if (recentAlerts.some(alert => alert.severity === 'high')) {
+      return 'Needs Attention'
+    }
+    if (recentAlerts.length > 0) {
+      return 'Minor Concerns'
+    }
+    return 'All Good'
   }
 
   const handleSaveAlertSettings = async () => {
@@ -142,23 +239,41 @@ export default function Dashboard() {
     }
   }
 
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Logout error:', error)
+      } else {
+        router.push('/login')
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
+
   const testWebhook = async () => {
+    if (!elderlyUser) return
+    
     setTestingWebhook(true)
     try {
       const response = await fetch('/api/test-webhook', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({
+          elderlyUserId: elderlyUser.id
+        })
       })
       
       const result = await response.json()
       console.log('Webhook test result:', result)
       
       if (response.ok) {
-        alert('Webhook test successful! Check console for details. Refresh page to see new data.')
+        alert('Webhook test successful! Check console for details. Refreshing data...')
         // Refresh dashboard data
-        await loadDashboardData()
+        await loadDashboardData(elderlyUser.id)
       } else {
         alert('Webhook test failed: ' + result.error)
       }
@@ -575,7 +690,9 @@ export default function Dashboard() {
               <ArrowLeftIcon className="h-6 w-6 text-trust-600" />
             </Link>
             <div>
-              <h1 className="text-3xl lg:text-4xl font-heading font-bold text-trust-900">Family Dashboard</h1>
+              <h1 className="text-3xl lg:text-4xl font-heading font-bold text-trust-900">
+                {elderlyUser ? `${elderlyUser.name}'s Care Dashboard` : 'Family Dashboard'}
+              </h1>
               <p className="text-trust-600 mt-1">Automated AI monitoring and care insights</p>
             </div>
           </div>
@@ -586,6 +703,18 @@ export default function Dashboard() {
                 AI Monitoring Active
               </span>
             </div>
+            <div className="bg-white rounded-full px-4 py-2 shadow-soft border border-trust-100">
+              <span className="text-sm text-trust-600">
+                Welcome, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
+              </span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="bg-white rounded-full p-2 shadow-soft border border-trust-100 hover:bg-trust-50 transition-colors"
+              title="Logout"
+            >
+              <ArrowRightOnRectangleIcon className="h-5 w-5 text-trust-600" />
+            </button>
           </div>
         </div>
 
