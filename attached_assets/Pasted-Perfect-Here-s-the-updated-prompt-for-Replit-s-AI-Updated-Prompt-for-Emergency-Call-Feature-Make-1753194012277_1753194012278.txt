@@ -1,0 +1,60 @@
+Perfect! Here's the updated prompt for Replit's AI:
+Updated Prompt for Emergency Call Feature:
+"Make these dashboard buttons functional with these specific features:
+1. Schedule Emergency Family Alert:
+
+Create a modal/popup with emergency alert options:
+
+'Alert family now' (immediate call to family members)
+'Schedule welfare check call' (within 2 hours)
+'Request daily call now' (trigger today's call early)
+
+
+Include reason dropdown: Health concern mentioned, No response to calls, Family requested check, Concerning conversation
+Include urgency level: Low (email alert), Medium (phone call), High (immediate call + SMS)
+Add message box for specific details to share with family
+Save alert to database alerts table with timestamp and details
+Show confirmation: 'Family will be contacted within 5 minutes'
+
+Purpose: This contacts the adult children (bill payers) immediately when there's concern about their elderly parent, NOT emergency services.
+2. Update Care Settings:
+
+Create a settings page or modal with forms for:
+
+Preferred daily call times (multiple time slots)
+Emergency family contact details (primary, secondary contacts)
+Health conditions to monitor specifically
+Alert preferences: Email only, Phone calls, SMS + calls
+Call frequency options (daily, every other day, weekends too)
+Special instructions for AI (topics to focus on, things to avoid)
+
+
+Save changes to Supabase elderly_users and family_users tables
+Show success confirmation with changes summary
+
+3. View Full Care Report:
+
+Create a comprehensive report page showing:
+
+Last 30 days of call summaries with dates/times
+Mood trends chart using recharts (happy, content, sad, worried over time)
+Health concerns timeline (when mentioned, what was said)
+Social activity tracking (family contact, neighbor visits, outings)
+Conversation highlights and concerning patterns
+Weekly summary comparisons
+'Download PDF Report' button (for doctor visits or family meetings)
+'Email Report to Family' option
+
+
+Professional medical-style layout with clear sections
+Print-friendly formatting
+
+Technical Details:
+
+Use existing Supabase connection and database tables
+Match current dashboard's beautiful styling
+Add proper loading states and error handling
+Mobile responsive design for families checking on phones
+Use modals for quick actions, separate pages for detailed reports
+
+Key Point: This is a family communication and monitoring service, not a medical emergency service. All 'emergency' features contact family members, not emergency services
