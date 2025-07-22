@@ -1,4 +1,3 @@
-
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -6,7 +5,7 @@ function AIVoiceDemo() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
   const [audioRef, setAudioRef] = useState(null)
-  
+
   // Demo conversation segments
   const conversationSegments = [
     { time: 0, speaker: 'AI', text: "Good morning, Mary! How are you feeling today?" },
@@ -56,7 +55,7 @@ function AIVoiceDemo() {
             </svg>
           )}
         </button>
-        
+
         <div className="flex-1 max-w-md">
           <div className="flex items-center justify-between text-sm text-trust-600 mb-2">
             <span>Sample Conversation</span>
@@ -69,7 +68,7 @@ function AIVoiceDemo() {
             ></div>
           </div>
         </div>
-        
+
         <div className="text-center">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-soft border border-trust-100">
             <span className="text-2xl animate-pulse">🎵</span>
@@ -197,12 +196,12 @@ export default function LandingPage() {
               </h1>
             </div>
             <div className="flex items-center space-x-4">
-              <button className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200">
+              <Link href="/dashboard" className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200">
                 Sign In
-              </button>
-              <button className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
+              </Link>
+              <Link href="/signup" className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
                 Get Started
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -214,14 +213,14 @@ export default function LandingPage() {
           <div className="inline-flex items-center bg-care-50 border border-care-200 rounded-full px-4 py-2 mb-8">
             <span className="text-care-600 text-sm font-medium">🛡️ Trusted by 10,000+ families nationwide</span>
           </div>
-          
+
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold text-trust-900 mb-6 leading-tight">
             <span className="bg-gradient-to-r from-primary-700 via-care-600 to-primary-700 bg-clip-text text-transparent">
               Peace of Mind
             </span>
             <span className="block text-trust-800">for Every Family</span>
           </h1>
-          
+
           <p className="text-xl sm:text-2xl text-trust-600 mb-12 max-w-4xl mx-auto leading-relaxed">
             Professional AI companion calls provide daily check-ins for elderly family members. 
             Real-time health monitoring, mood analysis, and instant alerts ensure comprehensive care and family connection.
@@ -324,7 +323,7 @@ export default function LandingPage() {
               <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-2">Family Dashboard</h3>
               <p className="text-trust-600">Real-time insights into your parent's wellbeing</p>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
               {/* Status Card */}
               <div className="bg-gradient-to-br from-care-50 to-care-100 p-6 rounded-2xl border border-care-200 hover:shadow-care transition-all duration-300">
@@ -384,7 +383,7 @@ export default function LandingPage() {
                 <h4 className="font-semibold text-trust-800 text-lg">Today's Conversation</h4>
                 <span className="text-xs bg-primary-100 text-primary-700 px-3 py-1 rounded-full">AI Summary</span>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex items-start space-x-4">
                   <div className="w-3 h-3 bg-primary-400 rounded-full mt-2 flex-shrink-0"></div>
@@ -397,7 +396,7 @@ export default function LandingPage() {
                     <p className="text-trust-800 leading-relaxed">"I had a wonderful sleep and woke up feeling refreshed. I've already had my breakfast and took my morning medications. Susan from next door popped by to chat about her garden - she's growing the most beautiful roses this year!"</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-4">
                   <div className="w-3 h-3 bg-care-400 rounded-full mt-2 flex-shrink-0"></div>
                   <div className="flex-1">
@@ -405,7 +404,7 @@ export default function LandingPage() {
                     <p className="text-trust-800">✓ Medications taken on time ✓ Good mobility ✓ Positive social interaction</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-start space-x-4">
                   <div className="w-3 h-3 bg-warm-400 rounded-full mt-2 flex-shrink-0"></div>
                   <div className="flex-1">
@@ -444,7 +443,7 @@ export default function LandingPage() {
             <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">How ElderCare AI Works</h2>
             <p className="text-xl text-trust-600 max-w-3xl mx-auto">Advanced AI technology that feels warm and personal</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
               <div className="bg-gradient-to-br from-primary-100 to-primary-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
@@ -456,7 +455,7 @@ export default function LandingPage() {
                 health, and wellbeing. Each call is personalized and natural.
               </p>
             </div>
-            
+
             <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
               <div className="bg-gradient-to-br from-care-100 to-care-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
                 <span className="text-3xl">🛡️</span>
@@ -467,7 +466,7 @@ export default function LandingPage() {
                 Instant alerts for emergencies or concerning patterns.
               </p>
             </div>
-            
+
             <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
               <div className="bg-gradient-to-br from-warm-100 to-warm-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
                 <span className="text-3xl">💝</span>
@@ -489,7 +488,7 @@ export default function LandingPage() {
             <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Choose Your Care Plan</h2>
             <p className="text-xl text-trust-600">Transparent pricing for peace of mind</p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Basic Plan */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300">
@@ -501,7 +500,7 @@ export default function LandingPage() {
                   <span className="text-trust-500">/month</span>
                 </div>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 {['Daily AI companion calls', 'Basic health monitoring', 'Weekly family reports', 'Email notifications'].map((feature) => (
                   <li key={feature} className="flex items-center">
@@ -512,10 +511,10 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              
-              <button className="w-full bg-primary-600 text-white py-4 rounded-2xl hover:bg-primary-700 transition-colors duration-200 font-semibold">
+
+              <Link href="/signup" className="w-full bg-primary-600 text-white py-4 rounded-2xl hover:bg-primary-700 transition-colors duration-200 font-semibold text-center block">
                 Start Free Trial
-              </button>
+              </Link>
             </div>
 
             {/* Premium Plan */}
@@ -525,7 +524,7 @@ export default function LandingPage() {
                   Most Popular
                 </span>
               </div>
-              
+
               <div className="text-center mt-4">
                 <h3 className="text-2xl font-heading font-bold mb-2 text-trust-900">Complete Care</h3>
                 <p className="text-trust-600 mb-6">Comprehensive family peace of mind</p>
@@ -534,7 +533,7 @@ export default function LandingPage() {
                   <span className="text-trust-500">/month</span>
                 </div>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 {['Everything in Essential Care', 'Real-time emergency alerts', 'SMS & phone notifications', '24/7 emergency support', 'Advanced mood analysis'].map((feature) => (
                   <li key={feature} className="flex items-center">
@@ -545,10 +544,10 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              
-              <button className="w-full bg-gradient-to-r from-primary-500 to-care-500 text-white py-4 rounded-2xl hover:from-primary-600 hover:to-care-600 transition-all duration-200 font-semibold">
+
+              <Link href="/signup" className="w-full bg-gradient-to-r from-primary-500 to-care-500 text-white py-4 rounded-2xl hover:from-primary-600 hover:to-care-600 transition-all duration-200 font-semibold text-center block">
                 Start Free Trial
-              </button>
+              </Link>
             </div>
 
             {/* Family Plan */}
@@ -561,7 +560,7 @@ export default function LandingPage() {
                   <span className="text-trust-500">/month</span>
                 </div>
               </div>
-              
+
               <ul className="space-y-4 mb-8">
                 {['Everything in Complete Care', 'Up to 3 elderly parents', 'Family member sharing', 'Priority 24/7 support', 'Dedicated care coordinator'].map((feature) => (
                   <li key={feature} className="flex items-center">
@@ -572,13 +571,13 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              
-              <button className="w-full bg-primary-600 text-white py-4 rounded-2xl hover:bg-primary-700 transition-colors duration-200 font-semibold">
+
+              <Link href="/signup" className="w-full bg-primary-600 text-white py-4 rounded-2xl hover:bg-primary-700 transition-colors duration-200 font-semibold text-center block">
                 Start Free Trial
-              </button>
+              </Link>
             </div>
           </div>
-          
+
           <div className="text-center mt-12">
             <p className="text-trust-600">All plans include 7-day free trial • No setup fees • Cancel anytime</p>
           </div>
@@ -608,7 +607,7 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            
+
             <div>
               <h4 className="font-heading font-semibold mb-6 text-lg">Product</h4>
               <ul className="space-y-3 text-trust-300">
@@ -619,7 +618,7 @@ export default function LandingPage() {
                 ))}
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-heading font-semibold mb-6 text-lg">Support</h4>
               <ul className="space-y-3 text-trust-300">
@@ -630,7 +629,7 @@ export default function LandingPage() {
                 ))}
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-heading font-semibold mb-6 text-lg">Company</h4>
               <ul className="space-y-3 text-trust-300">
@@ -642,7 +641,7 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
-          
+
           <div className="border-t border-trust-800 pt-8">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <p className="text-trust-400 mb-4 md:mb-0">
