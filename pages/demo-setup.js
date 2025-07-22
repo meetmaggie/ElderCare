@@ -68,7 +68,7 @@ export default function DemoSetup() {
               <div className="space-y-6 mb-8">
                 <div className="border border-trust-200 rounded-xl p-6">
                   <h3 className="font-semibold text-trust-800 mb-2">👩‍💼 Sarah Johnson - Premium Plan</h3>
-                  <p className="text-trust-600 text-sm mb-1">Email: demo@family1.com | Password: password123</p>
+                  <p className="text-trust-600 text-sm mb-1">Email: sarah.johnson.demo@example.com | Password: password123</p>
                   <p className="text-trust-500 text-sm">Caring for Margaret Johnson (grandmother) • Premium features</p>
                 </div>
 
