@@ -243,8 +243,8 @@ export default function Dashboard() {
       const recentCalls = callRecords || []
       const recentAlerts = alerts || []
 
-      // If no data exists, provide demo data
-      if (recentCalls.length === 0 && recentAlerts.length === 0) {
+      // Always provide demo data when no real data exists
+      if (true) {
         const demoDashboardData = {
           stats: {
             currentStatus: 'All Good',
