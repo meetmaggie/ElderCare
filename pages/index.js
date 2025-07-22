@@ -201,7 +201,7 @@ export default function LandingPage() {
               </Link>
               <div className="flex items-center space-x-3">
                 <Link href="/demo-preview" className="bg-gradient-to-r from-care-500 to-care-600 text-white px-6 py-2.5 rounded-full hover:from-care-600 hover:to-care-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
-                  Quick Demo
+                  Dashboard Demo
                 </Link>
                 <Link href="/signup" className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
                   Get Started
@@ -256,10 +256,7 @@ export default function LandingPage() {
           {/* Quick Actions */}
           <div className="max-w-lg mx-auto mb-8">
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
-              <Link href="/demo-preview" className="flex-1 bg-gradient-to-r from-care-500 to-care-600 text-white px-8 py-4 rounded-full font-semibold hover:from-care-600 hover:to-care-700 transform hover:scale-105 transition-all duration-200 shadow-soft text-center">
-                🚀 See Live Demo
-              </Link>
-              <Link href="/signup" className="flex-1 bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-full font-semibold hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft text-center">
+              <Link href="/signup" className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-8 py-4 rounded-full font-semibold hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft text-center">
                 Start Free Trial
               </Link>
             </div>
