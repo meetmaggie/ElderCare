@@ -657,7 +657,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"></div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <motion.button
             onClick={() => setShowAlertSettings(true)}
             initial={{ opacity: 0, y: 20 }}
