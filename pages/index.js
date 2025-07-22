@@ -279,8 +279,8 @@ export default function LandingPage() {
               >
                 Get Updates
               </button>
-            </div>
-          </form>
+            </form>
+          </div>
           <p className="text-trust-500">Free 7-day trial • No credit card required • Cancel anytime</p>
         </div>
 
