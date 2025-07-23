@@ -5,7 +5,7 @@ import { useState } from 'react'
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
-  const [isPlaying, setIsPlaying] = useState(true)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   const handleSignup = (e) => {
     e.preventDefault()
