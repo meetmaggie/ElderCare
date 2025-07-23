@@ -68,7 +68,7 @@ export default function LandingPage() {
             <div className="bg-white rounded-3xl shadow-trust p-8 max-w-2xl mx-auto border border-trust-100">
               <div className="text-center">
                 <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h3>
-                <p className="text-trust-600 mb-8">Click to hear Sarah introduce herself and learn how she provides caring daily conversations</p>
+                <p className="text-trust-600 mb-8">Click to hear how Sarah provides daily care conversations</p>
                 
                 {/* Voice Demo Player */}
                 <div className="flex flex-col items-center space-y-6">
@@ -109,10 +109,6 @@ export default function LandingPage() {
                       
                       {/* Control Buttons */}
                       <div className="flex items-center justify-center space-x-4">
-                        <button className="w-8 h-8 bg-trust-100 rounded-full flex items-center justify-center hover:bg-trust-200 transition-colors duration-200">
-                          <span className="text-trust-600 text-sm">⏮️</span>
-                        </button>
-                        
                         <button 
                           onClick={() => setIsPlaying(!isPlaying)}
                           className="w-12 h-12 bg-care-500 rounded-full flex items-center justify-center hover:bg-care-600 transition-colors duration-200 shadow-care"
@@ -120,10 +116,6 @@ export default function LandingPage() {
                           <span className="text-white text-lg">
                             {isPlaying ? '⏸️' : '▶️'}
                           </span>
-                        </button>
-                        
-                        <button className="w-8 h-8 bg-trust-100 rounded-full flex items-center justify-center hover:bg-trust-200 transition-colors duration-200">
-                          <span className="text-trust-600 text-sm">⏭️</span>
                         </button>
                       </div>
                     </div>
@@ -139,10 +131,6 @@ export default function LandingPage() {
                     )}
                   </div>
                 </div>
-                
-                <p className="text-trust-500 text-sm mt-6">
-                  Experience how Sarah's warm, professional voice creates meaningful connections with your loved ones
-                </p>
               </div>
             </div>
           </div>
