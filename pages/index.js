@@ -5,6 +5,7 @@ import { useState } from 'react'
 
 export default function LandingPage() {
   const [email, setEmail] = useState('')
+  const [isPlaying, setIsPlaying] = useState(true)
 
   const handleSignup = (e) => {
     e.preventDefault()
@@ -62,6 +63,19 @@ export default function LandingPage() {
             Real-time health monitoring, mood analysis, and instant alerts ensure comprehensive care and family connection.
           </p>
 
+          {/* Status Indicator */}
+          <div className="flex justify-center mb-8">
+            <div className="inline-flex items-center bg-care-100 border border-care-200 rounded-full px-6 py-3">
+              <div className="relative mr-3">
+                <div className={`w-4 h-4 bg-care-500 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}></div>
+                {isPlaying && (
+                  <div className="absolute inset-0 w-4 h-4 bg-care-400 rounded-full animate-ping opacity-75"></div>
+                )}
+              </div>
+              <span className="text-care-700 font-medium text-lg">AI Monitoring Active</span>
+            </div>
+          </div>
+
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-sm text-trust-500">
             <div className="flex items-center">
@@ -112,7 +126,7 @@ export default function LandingPage() {
           <p className="text-trust-500">Free 7-day trial • No credit card required • Cancel anytime</p>
         </div>
 
-        
+
 
         {/* Enhanced Dashboard Preview */}
         <div className="mt-20 animate-slide-up">
