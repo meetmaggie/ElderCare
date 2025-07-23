@@ -296,8 +296,8 @@ export default function LandingPage() {
 
         {/* Meet Sarah - AI Voice Introduction Section */}
         <div className="mt-16 mb-20">
-          <div className="bg-gradient-to-br from-primary-50 via-white to-care-50 rounded-3xl shadow-trust p-8 lg:p-12 max-w-5xl mx-auto border border-primary-100">
-            <div className="text-center mb-8">
+          <div className="bg-gradient-to-br from-primary-50 via-white to-care-50 rounded-3xl shadow-trust p-8 lg:p-12 max-w-6xl mx-auto border border-primary-100">
+            <div className="text-center mb-12">
               <div className="inline-flex items-center bg-care-100 border border-care-200 rounded-full px-4 py-2 mb-6">
                 <div className="relative mr-2">
                   <div className="w-3 h-3 bg-care-500 rounded-full animate-pulse"></div>
@@ -308,9 +308,24 @@ export default function LandingPage() {
               <h3 className="text-3xl lg:text-4xl font-heading font-bold text-trust-900 mb-4">
                 Meet Sarah, Your AI Companion
               </h3>
-              <p className="text-xl text-trust-600 max-w-3xl mx-auto leading-relaxed">
+              <p className="text-xl text-trust-600 max-w-3xl mx-auto leading-relaxed mb-12">
                 Click to hear Sarah introduce herself and learn how she provides caring daily conversations for your family.
               </p>
+
+              {/* Large Central Call AI Agent Button */}
+              <div className="flex justify-center mb-12">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                  <button className="relative bg-gradient-to-r from-blue-500 to-teal-500 text-white px-12 py-6 rounded-full text-xl font-semibold shadow-2xl hover:from-blue-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-300 flex items-center space-x-4 min-w-[300px] justify-center">
+                    <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                      </svg>
+                    </div>
+                    <span>Call AI agent</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div className="bg-white rounded-2xl shadow-soft p-6 lg:p-8 border border-trust-100">
