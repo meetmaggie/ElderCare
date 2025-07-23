@@ -6,15 +6,15 @@ function AIVoiceDemo() {
   const [currentTime, setCurrentTime] = useState(0)
   const [audioRef, setAudioRef] = useState(null)
 
-  // Demo conversation segments
+  // Demo conversation segments - Sarah's introduction
   const conversationSegments = [
-    { time: 0, speaker: 'AI', text: "Good morning, Mary! How are you feeling today?" },
-    { time: 3, speaker: 'Mary', text: "Oh hello dear! I'm doing well, thank you for asking." },
-    { time: 6, speaker: 'AI', text: "That's wonderful to hear! Did you remember to take your morning medications?" },
-    { time: 10, speaker: 'Mary', text: "Yes, I took them with my breakfast. I had some lovely porridge with berries." },
-    { time: 15, speaker: 'AI', text: "Berries are excellent for you! How has your mood been since our last chat?" },
-    { time: 19, speaker: 'Mary', text: "I've been feeling quite content. My neighbor Susan visited yesterday." },
-    { time: 23, speaker: 'AI', text: "Social visits are so important. I'll make sure to note that you're feeling well today." }
+    { time: 0, speaker: 'AI', text: "Hello! I'm Sarah, your AI companion from ElderCare. I'm here to chat with you daily." },
+    { time: 4, speaker: 'Family', text: "This sounds wonderful! How does it work exactly?" },
+    { time: 7, speaker: 'AI', text: "I call your loved one each day for friendly conversations about their wellbeing, mood, and activities." },
+    { time: 12, speaker: 'Family', text: "That's exactly what we need for peace of mind." },
+    { time: 15, speaker: 'AI', text: "I analyze each conversation and instantly alert you if there are any concerns or changes." },
+    { time: 20, speaker: 'Family', text: "So we'll know right away if something's wrong?" },
+    { time: 23, speaker: 'AI', text: "Absolutely! Your family stays connected and informed, every single day." }
   ]
 
   const handlePlayPause = () => {
@@ -40,50 +40,63 @@ function AIVoiceDemo() {
   return (
     <div className="space-y-6">
       {/* Audio Player Controls */}
-      <div className="flex items-center justify-center space-x-4 p-6 bg-gradient-to-r from-primary-50 to-care-50 rounded-xl border border-primary-100">
+      <div className="flex items-center justify-center space-x-6 p-8 bg-gradient-to-r from-care-50 via-white to-primary-50 rounded-2xl border-2 border-care-200 shadow-trust">
+        {/* Sarah Avatar with Speaking Animation */}
+        <div className="relative">
+          <div className="w-20 h-20 bg-gradient-to-r from-care-400 to-care-500 rounded-full flex items-center justify-center shadow-soft border-4 border-white">
+            <span className="text-3xl">👩‍💼</span>
+          </div>
+          {isPlaying && (
+            <>
+              <div className="absolute inset-0 w-20 h-20 bg-green-400 rounded-full animate-ping opacity-30"></div>
+              <div className="absolute inset-0 w-20 h-20 bg-green-300 rounded-full animate-pulse opacity-50"></div>
+            </>
+          )}
+          <div className="text-center mt-2">
+            <p className="text-sm font-semibold text-trust-800">Sarah</p>
+            <p className="text-xs text-trust-500">Your AI Companion</p>
+          </div>
+        </div>
+
         <button
           onClick={handlePlayPause}
-          className="w-16 h-16 bg-gradient-to-r from-primary-500 to-primary-600 text-white rounded-full flex items-center justify-center hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft"
+          className="w-20 h-20 bg-gradient-to-r from-care-500 to-care-600 text-white rounded-full flex items-center justify-center hover:from-care-600 hover:to-care-700 transform hover:scale-105 transition-all duration-200 shadow-trust border-4 border-white"
         >
           {isPlaying ? (
-            <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
             </svg>
           ) : (
-            <svg className="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 20 20">
+            <svg className="w-8 h-8 ml-1" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
             </svg>
           )}
         </button>
 
         <div className="flex-1 max-w-md">
-          <div className="flex items-center justify-between text-sm text-trust-600 mb-2">
-            <span>Sample Conversation</span>
+          <div className="flex items-center justify-between text-sm text-trust-700 mb-3 font-medium">
+            <span>Sarah's Introduction</span>
             <span>{Math.floor(currentTime)}s / 30s</span>
           </div>
-          <div className="bg-trust-200 rounded-full h-2">
+          <div className="bg-care-200 rounded-full h-3 shadow-inner">
             <div 
-              className="bg-gradient-to-r from-primary-500 to-care-500 h-2 rounded-full transition-all duration-300"
+              className="bg-gradient-to-r from-care-500 to-care-600 h-3 rounded-full transition-all duration-300 shadow-soft"
               style={{ width: `${(currentTime / 30) * 100}%` }}
             ></div>
           </div>
-        </div>
-
-        <div className="text-center">
-          <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-soft border border-trust-100">
-            <span className="text-2xl animate-pulse">🎵</span>
-          </div>
-          <p className="text-xs text-trust-500 mt-1">ElevenLabs AI</p>
+          <p className="text-xs text-trust-600 mt-2 text-center">
+            {isPlaying ? "Sarah is speaking..." : "Click play to meet Sarah"}
+          </p>
         </div>
       </div>
 
       {/* Conversation Display */}
-      <div className="bg-gradient-to-br from-trust-50 to-warm-50 rounded-xl p-6 min-h-[200px] border border-trust-100">
+      <div className="bg-gradient-to-br from-care-50 to-warm-50 rounded-xl p-6 min-h-[200px] border-2 border-care-100">
         <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-trust-800">Live Conversation</h4>
+          <h4 className="font-semibold text-trust-800 text-lg">Sarah's Conversation Style</h4>
           <div className="flex items-center space-x-2">
-            <div className="w-2 h-2 bg-care-500 rounded-full animate-pulse"></div>
-            <span className="text-xs text-trust-500">Real-time Analysis</span>
+            <div className={`w-3 h-3 bg-green-500 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}></div>
+            <span className="text-xs text-trust-600 font-medium">Live Demo</span>
           </div>
         </div>
 
@@ -97,37 +110,37 @@ function AIVoiceDemo() {
               }`}>
                 <div className="flex items-center space-x-2 mb-1">
                   <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                    currentSegment.speaker === 'AI' ? 'bg-primary-200 text-primary-700' : 'bg-care-200 text-care-700'
+                    currentSegment.speaker === 'AI' ? 'bg-care-200 text-care-700' : 'bg-primary-200 text-primary-700'
                   }`}>
-                    {currentSegment.speaker === 'AI' ? '🤖' : '👵'}
+                    {currentSegment.speaker === 'AI' ? '👩‍💼' : '👨‍👩‍👧‍👦'}
                   </div>
                   <span className="text-xs font-medium">
-                    {currentSegment.speaker === 'AI' ? 'ElderCare AI' : 'Mary'}
+                    {currentSegment.speaker === 'AI' ? 'Sarah (AI Companion)' : 'Family Member'}
                   </span>
                 </div>
                 <p className="text-sm leading-relaxed">{currentSegment.text}</p>
               </div>
             </div>
 
-            {/* AI Insights */}
-            {currentSegment.speaker === 'Mary' && (
-              <div className="bg-white rounded-lg p-4 border border-trust-200 shadow-soft">
+            {/* Sarah's Capabilities */}
+            {currentSegment.speaker === 'Family' && (
+              <div className="bg-white rounded-lg p-4 border border-care-200 shadow-soft">
                 <div className="flex items-center space-x-2 mb-2">
-                  <div className="w-4 h-4 bg-warm-400 rounded-full"></div>
-                  <span className="text-xs font-medium text-trust-600">AI Analysis</span>
+                  <div className="w-4 h-4 bg-care-400 rounded-full"></div>
+                  <span className="text-xs font-medium text-trust-600">Sarah's Features</span>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-xs">
                   <div>
-                    <span className="text-trust-500">Mood:</span>
-                    <span className="ml-1 text-care-600 font-medium">Content 😊</span>
+                    <span className="text-trust-500">Voice:</span>
+                    <span className="ml-1 text-care-600 font-medium">Natural 🗣️</span>
                   </div>
                   <div>
-                    <span className="text-trust-500">Health:</span>
-                    <span className="ml-1 text-primary-600 font-medium">Good ✓</span>
+                    <span className="text-trust-500">Analysis:</span>
+                    <span className="ml-1 text-primary-600 font-medium">Smart 🧠</span>
                   </div>
                   <div>
-                    <span className="text-trust-500">Social:</span>
-                    <span className="ml-1 text-warm-600 font-medium">Active 👥</span>
+                    <span className="text-trust-500">Alerts:</span>
+                    <span className="ml-1 text-warm-600 font-medium">Instant ⚡</span>
                   </div>
                 </div>
               </div>
@@ -163,9 +176,9 @@ function AIVoiceDemo() {
       {/* Demo Note */}
       <div className="text-center">
         <p className="text-sm text-trust-500 italic">
-          This is a demonstration of our AI conversation flow. 
+          This is a demonstration of Sarah's introduction and capabilities.
           <br />
-          <span className="text-primary-600 font-medium">Replace with your actual ElevenLabs audio file.</span>
+          <span className="text-care-600 font-medium">Experience how natural and caring Sarah's conversations are.</span>
         </p>
       </div>
     </div>
@@ -281,19 +294,24 @@ export default function LandingPage() {
           <p className="text-trust-500">Free 7-day trial • No credit card required • Cancel anytime</p>
         </div>
 
-        {/* AI Voice Explainer Section */}
-        <div className="mt-20 mb-20">
+        {/* Meet Sarah - AI Voice Introduction Section */}
+        <div className="mt-16 mb-20">
           <div className="bg-gradient-to-br from-primary-50 via-white to-care-50 rounded-3xl shadow-trust p-8 lg:p-12 max-w-5xl mx-auto border border-primary-100">
             <div className="text-center mb-8">
-              <div className="inline-flex items-center bg-primary-100 border border-primary-200 rounded-full px-4 py-2 mb-6">
-                <span className="text-primary-700 text-sm font-medium">🎤 Powered by ElevenLabs AI</span>
+              <div className="inline-flex items-center bg-care-100 border border-care-200 rounded-full px-4 py-2 mb-6">
+                <div className="relative mr-2">
+                  <div className={`w-3 h-3 bg-care-500 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}></div>
+                  {isPlaying && (
+                    <div className="absolute inset-0 w-3 h-3 bg-care-400 rounded-full animate-ping opacity-75"></div>
+                  )}
+                </div>
+                <span className="text-care-700 text-sm font-medium">🎤 Powered by ElevenLabs AI</span>
               </div>
               <h3 className="text-3xl lg:text-4xl font-heading font-bold text-trust-900 mb-4">
-                Hear How Our AI Companion Works
+                Meet Sarah, Your AI Companion
               </h3>
               <p className="text-xl text-trust-600 max-w-3xl mx-auto leading-relaxed">
-                Experience a real conversation between our AI and an elderly parent. 
-                Natural, caring, and intelligent - just like talking to family.
+                Click to hear Sarah introduce herself and learn how she provides caring daily conversations for your family.
               </p>
             </div>
 
@@ -303,25 +321,25 @@ export default function LandingPage() {
 
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🗣️</span>
+                <div className="w-12 h-12 bg-care-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">👩‍💼</span>
                 </div>
-                <h4 className="font-semibold text-trust-800 mb-2">Natural Speech</h4>
-                <p className="text-sm text-trust-600">ElevenLabs AI creates warm, human-like conversations</p>
+                <h4 className="font-semibold text-trust-800 mb-2">Meet Sarah</h4>
+                <p className="text-sm text-trust-600">Your dedicated AI companion with a warm, caring personality</p>
               </div>
               <div className="text-center p-4">
-                <div className="w-12 h-12 bg-care-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">🧠</span>
+                <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <span className="text-2xl">💬</span>
                 </div>
-                <h4 className="font-semibold text-trust-800 mb-2">Intelligent Responses</h4>
-                <p className="text-sm text-trust-600">Understands context and responds appropriately</p>
+                <h4 className="font-semibold text-trust-800 mb-2">Daily Conversations</h4>
+                <p className="text-sm text-trust-600">Natural, engaging chats that feel like talking to family</p>
               </div>
               <div className="text-center p-4">
                 <div className="w-12 h-12 bg-warm-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                  <span className="text-2xl">❤️</span>
+                  <span className="text-2xl">📱</span>
                 </div>
-                <h4 className="font-semibold text-trust-800 mb-2">Emotional Intelligence</h4>
-                <p className="text-sm text-trust-600">Detects mood and provides compassionate support</p>
+                <h4 className="font-semibold text-trust-800 mb-2">Instant Updates</h4>
+                <p className="text-sm text-trust-600">Real-time alerts and insights delivered to your family</p>
               </div>
             </div>
           </div>
