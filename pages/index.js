@@ -63,16 +63,87 @@ export default function LandingPage() {
             Real-time health monitoring, mood analysis, and instant alerts ensure comprehensive care and family connection.
           </p>
 
-          {/* Status Indicator */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center bg-care-100 border border-care-200 rounded-full px-6 py-3">
-              <div className="relative mr-3">
-                <div className={`w-4 h-4 bg-care-500 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}></div>
-                {isPlaying && (
-                  <div className="absolute inset-0 w-4 h-4 bg-care-400 rounded-full animate-ping opacity-75"></div>
-                )}
+          {/* Sarah Voice Introduction */}
+          <div className="flex justify-center mb-12">
+            <div className="bg-white rounded-3xl shadow-trust p-8 max-w-2xl mx-auto border border-trust-100">
+              <div className="text-center">
+                <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h3>
+                <p className="text-trust-600 mb-8">Click to hear Sarah introduce herself and learn how she provides caring daily conversations</p>
+                
+                {/* Voice Demo Player */}
+                <div className="flex flex-col items-center space-y-6">
+                  {/* Green Speaking Bubble */}
+                  <div 
+                    className="relative cursor-pointer group"
+                    onClick={() => setIsPlaying(!isPlaying)}
+                  >
+                    <div className={`w-24 h-24 bg-gradient-to-br from-care-400 to-care-500 rounded-full flex items-center justify-center shadow-care transform transition-all duration-200 group-hover:scale-105 ${isPlaying ? 'animate-pulse' : ''}`}>
+                      <span className="text-white text-3xl">
+                        {isPlaying ? '🔊' : '▶️'}
+                      </span>
+                    </div>
+                    
+                    {/* Pulsing Rings When Playing */}
+                    {isPlaying && (
+                      <>
+                        <div className="absolute inset-0 w-24 h-24 bg-care-400 rounded-full animate-ping opacity-40"></div>
+                        <div className="absolute inset-0 w-24 h-24 bg-care-300 rounded-full animate-ping opacity-20" style={{animationDelay: '0.5s'}}></div>
+                      </>
+                    )}
+                  </div>
+                  
+                  {/* Audio Controls */}
+                  <div className="w-full max-w-md">
+                    <div className="bg-trust-50 rounded-2xl p-4 border border-trust-200">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-trust-700">Sarah's Introduction</span>
+                        <span className="text-xs text-trust-500">{isPlaying ? '0:15' : '0:00'} / 1:23</span>
+                      </div>
+                      
+                      {/* Progress Bar */}
+                      <div className="w-full bg-trust-200 rounded-full h-2 mb-4">
+                        <div 
+                          className={`bg-care-500 h-2 rounded-full transition-all duration-300 ${isPlaying ? 'w-1/5' : 'w-0'}`}
+                        ></div>
+                      </div>
+                      
+                      {/* Control Buttons */}
+                      <div className="flex items-center justify-center space-x-4">
+                        <button className="w-8 h-8 bg-trust-100 rounded-full flex items-center justify-center hover:bg-trust-200 transition-colors duration-200">
+                          <span className="text-trust-600 text-sm">⏮️</span>
+                        </button>
+                        
+                        <button 
+                          onClick={() => setIsPlaying(!isPlaying)}
+                          className="w-12 h-12 bg-care-500 rounded-full flex items-center justify-center hover:bg-care-600 transition-colors duration-200 shadow-care"
+                        >
+                          <span className="text-white text-lg">
+                            {isPlaying ? '⏸️' : '▶️'}
+                          </span>
+                        </button>
+                        
+                        <button className="w-8 h-8 bg-trust-100 rounded-full flex items-center justify-center hover:bg-trust-200 transition-colors duration-200">
+                          <span className="text-trust-600 text-sm">⏭️</span>
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Demo Status */}
+                    {isPlaying && (
+                      <div className="mt-4 text-center">
+                        <div className="inline-flex items-center bg-care-50 border border-care-200 rounded-full px-4 py-2">
+                          <div className="w-2 h-2 bg-care-500 rounded-full mr-2 animate-pulse"></div>
+                          <span className="text-care-700 text-sm font-medium">Sarah is speaking...</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <p className="text-trust-500 text-sm mt-6">
+                  Experience how Sarah's warm, professional voice creates meaningful connections with your loved ones
+                </p>
               </div>
-              <span className="text-care-700 font-medium text-lg">AI Monitoring Active</span>
             </div>
           </div>
 
