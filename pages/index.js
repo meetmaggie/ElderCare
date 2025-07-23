@@ -300,10 +300,8 @@ export default function LandingPage() {
             <div className="text-center mb-8">
               <div className="inline-flex items-center bg-care-100 border border-care-200 rounded-full px-4 py-2 mb-6">
                 <div className="relative mr-2">
-                  <div className={`w-3 h-3 bg-care-500 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}></div>
-                  {isPlaying && (
-                    <div className="absolute inset-0 w-3 h-3 bg-care-400 rounded-full animate-ping opacity-75"></div>
-                  )}
+                  <div className="w-3 h-3 bg-care-500 rounded-full animate-pulse"></div>
+                  <div className="absolute inset-0 w-3 h-3 bg-care-400 rounded-full animate-ping opacity-75"></div>
                 </div>
                 <span className="text-care-700 text-sm font-medium">🎤 Powered by ElevenLabs AI</span>
               </div>
