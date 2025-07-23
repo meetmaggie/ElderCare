@@ -60,7 +60,7 @@ export default function LandingPage() {
 
           <p className="text-xl sm:text-2xl text-trust-600 mb-12 max-w-4xl mx-auto leading-relaxed">
             Professional AI companion calls provide daily check-ins for elderly family members. 
-            Real-time health monitoring, mood analysis, and instant alerts ensure comprehensive care and family connection.
+            Caring conversations, family updates, and gentle wellness insights ensure ongoing companionship and family connection.
           </p>
 
           {/* Sarah Voice Introduction */}
