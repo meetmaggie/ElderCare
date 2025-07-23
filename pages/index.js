@@ -70,66 +70,85 @@ export default function LandingPage() {
                 <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h3>
                 <p className="text-trust-600 mb-8">Click to hear how Sarah provides daily care conversations</p>
                 
-                {/* Voice Demo Player */}
+                {/* ElevenLabs-Style Voice Demo */}
                 <div className="flex flex-col items-center space-y-6">
-                  {/* Green Speaking Bubble */}
-                  <div 
-                    className="relative cursor-pointer group"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                  >
-                    <div className={`w-24 h-24 bg-gradient-to-br from-care-400 to-care-500 rounded-full flex items-center justify-center shadow-care transform transition-all duration-200 group-hover:scale-105 ${isPlaying ? 'animate-pulse' : ''}`}>
-                      <span className="text-white text-3xl">
-                        {isPlaying ? '🔊' : '▶️'}
-                      </span>
+                  {/* Large Gradient Circle with Radial Burst */}
+                  <div className="relative w-80 h-80 cursor-pointer group" onClick={() => setIsPlaying(!isPlaying)}>
+                    {/* Main gradient circle with radial burst pattern */}
+                    <div className="w-full h-full rounded-full relative overflow-hidden">
+                      {/* Radial gradient background */}
+                      <div className="absolute inset-0 bg-gradient-radial from-emerald-200 via-green-300 to-green-600 opacity-90"></div>
+                      
+                      {/* Radial burst lines */}
+                      <div className="absolute inset-0 opacity-60">
+                        {[...Array(12)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="absolute w-0.5 bg-gradient-to-r from-transparent via-white to-transparent"
+                            style={{
+                              height: '50%',
+                              left: '50%',
+                              top: '0%',
+                              transformOrigin: 'bottom',
+                              transform: `translateX(-50%) rotate(${i * 30}deg)`
+                            }}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Darker radial sections */}
+                      <div className="absolute inset-0">
+                        {[...Array(8)].map((_, i) => (
+                          <div
+                            key={i}
+                            className="absolute w-full h-full bg-gradient-conic from-green-700/30 via-transparent to-transparent"
+                            style={{
+                              transform: `rotate(${i * 45}deg)`
+                            }}
+                          />
+                        ))}
+                      </div>
+                      
+                      {/* Shimmer effect when playing */}
+                      {isPlaying && (
+                        <div className="absolute inset-0 bg-gradient-radial from-white/20 to-transparent animate-pulse"></div>
+                      )}
                     </div>
                     
-                    {/* Pulsing Rings When Playing */}
+                    {/* Central white pill button */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div className="bg-white rounded-full px-6 py-3 shadow-lg flex items-center space-x-3 hover:shadow-xl transition-all duration-200 group-hover:scale-105">
+                        <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
+                          <svg 
+                            viewBox="0 0 24 24" 
+                            className="w-4 h-4 text-white"
+                            fill="currentColor"
+                          >
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+                          </svg>
+                        </div>
+                        <span className="text-black font-medium text-lg">Meet Sarah</span>
+                      </div>
+                    </div>
+                    
+                    {/* Outer glow effect when playing */}
                     {isPlaying && (
                       <>
-                        <div className="absolute inset-0 w-24 h-24 bg-care-400 rounded-full animate-ping opacity-40"></div>
-                        <div className="absolute inset-0 w-24 h-24 bg-care-300 rounded-full animate-ping opacity-20" style={{animationDelay: '0.5s'}}></div>
+                        <div className="absolute inset-0 w-full h-full bg-green-400 rounded-full animate-ping opacity-20 scale-110"></div>
+                        <div className="absolute inset-0 w-full h-full bg-green-300 rounded-full animate-ping opacity-10 scale-125" style={{animationDelay: '0.5s'}}></div>
                       </>
                     )}
                   </div>
                   
-                  {/* Audio Controls */}
-                  <div className="w-full max-w-md">
-                    <div className="bg-trust-50 rounded-2xl p-4 border border-trust-200">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-sm font-medium text-trust-700">Sarah's Introduction</span>
-                        <span className="text-xs text-trust-500">{isPlaying ? '0:15' : '0:00'} / 1:23</span>
-                      </div>
-                      
-                      {/* Progress Bar */}
-                      <div className="w-full bg-trust-200 rounded-full h-2 mb-4">
-                        <div 
-                          className={`bg-care-500 h-2 rounded-full transition-all duration-300 ${isPlaying ? 'w-1/5' : 'w-0'}`}
-                        ></div>
-                      </div>
-                      
-                      {/* Control Buttons */}
-                      <div className="flex items-center justify-center space-x-4">
-                        <button 
-                          onClick={() => setIsPlaying(!isPlaying)}
-                          className="w-12 h-12 bg-care-500 rounded-full flex items-center justify-center hover:bg-care-600 transition-colors duration-200 shadow-care"
-                        >
-                          <span className="text-white text-lg">
-                            {isPlaying ? '⏸️' : '▶️'}
-                          </span>
-                        </button>
+                  {/* Playing status indicator */}
+                  {isPlaying && (
+                    <div className="text-center">
+                      <div className="inline-flex items-center bg-green-50 border border-green-200 rounded-full px-6 py-3">
+                        <div className="w-3 h-3 bg-green-500 rounded-full mr-3 animate-pulse"></div>
+                        <span className="text-green-700 font-medium">Sarah is introducing herself...</span>
                       </div>
                     </div>
-                    
-                    {/* Demo Status */}
-                    {isPlaying && (
-                      <div className="mt-4 text-center">
-                        <div className="inline-flex items-center bg-care-50 border border-care-200 rounded-full px-4 py-2">
-                          <div className="w-2 h-2 bg-care-500 rounded-full mr-2 animate-pulse"></div>
-                          <span className="text-care-700 text-sm font-medium">Sarah is speaking...</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  )}
                 </div>
               </div>
             </div>
