@@ -312,17 +312,17 @@ export default function LandingPage() {
                 Click to hear Sarah introduce herself and learn how she provides caring daily conversations for your family.
               </p>
 
-              {/* Large Central Call AI Agent Button */}
+              {/* Large Central Meet Sarah Button */}
               <div className="flex justify-center mb-12">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full blur-xl opacity-50 animate-pulse"></div>
-                  <button className="relative bg-gradient-to-r from-blue-500 to-teal-500 text-white px-12 py-6 rounded-full text-xl font-semibold shadow-2xl hover:from-blue-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-300 flex items-center space-x-4 min-w-[300px] justify-center">
-                    <div className="w-8 h-8 bg-black rounded-full flex items-center justify-center">
-                      <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full blur-2xl opacity-60 animate-pulse scale-110"></div>
+                  <button className="relative bg-gradient-to-r from-blue-500 to-teal-500 text-white w-80 h-20 rounded-full text-2xl font-semibold shadow-2xl hover:from-blue-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-4">
+                    <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                       </svg>
                     </div>
-                    <span>Call AI agent</span>
+                    <span>Meet Sarah</span>
                   </button>
                 </div>
               </div>
