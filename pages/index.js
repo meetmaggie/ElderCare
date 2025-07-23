@@ -312,13 +312,13 @@ export default function LandingPage() {
                 Click to hear Sarah introduce herself and learn how she provides caring daily conversations for your family.
               </p>
 
-              {/* Large Central Meet Sarah Button - Bigger Circle */}
+              {/* Large Central Meet Sarah Button - Perfect Circle */}
               <div className="flex justify-center mb-12">
                 <div className="relative">
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-teal-400 rounded-full blur-3xl opacity-50 animate-pulse scale-125"></div>
-                  <button className="relative bg-gradient-to-r from-blue-500 to-teal-500 text-white w-96 h-32 rounded-full text-3xl font-bold shadow-2xl hover:from-blue-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-300 flex items-center justify-center space-x-6">
-                    <div className="w-16 h-16 bg-black bg-opacity-30 rounded-full flex items-center justify-center">
-                      <svg className="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <button className="relative bg-gradient-to-r from-blue-500 to-teal-500 text-white w-80 h-80 rounded-full text-2xl font-bold shadow-2xl hover:from-blue-600 hover:to-teal-600 transform hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center space-y-4">
+                    <div className="w-20 h-20 bg-black bg-opacity-30 rounded-full flex items-center justify-center">
+                      <svg className="w-12 h-12 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                       </svg>
                     </div>
