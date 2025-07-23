@@ -402,7 +402,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Intelligent Monitoring</h3>
               <p className="text-trust-600 leading-relaxed">
-                AI analyzes conversations for mood changes, wellness concerns, and social activities. 
+                AI analyses conversations for mood changes, wellness concerns, and social activities. 
                 Instant alerts for emergencies or concerning patterns.
               </p>
             </div>
@@ -414,7 +414,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Family Connection</h3>
               <p className="text-trust-600 leading-relaxed">
                 Daily insights, mood trends, and real-time notifications keep you connected 
-                and confident your parent is safe and cared for.
+                and confident your elderly family member is safe and cared for.
               </p>
             </div>
           </div>
