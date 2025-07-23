@@ -63,18 +63,7 @@ export default function LandingPage() {
             Real-time health monitoring, mood analysis, and instant alerts ensure comprehensive care and family connection.
           </p>
 
-          {/* Status Indicator */}
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center bg-care-100 border border-care-200 rounded-full px-6 py-3">
-              <div className="relative mr-3">
-                <div className={`w-4 h-4 bg-care-500 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}></div>
-                {isPlaying && (
-                  <div className="absolute inset-0 w-4 h-4 bg-care-400 rounded-full animate-ping opacity-75"></div>
-                )}
-              </div>
-              <span className="text-care-700 font-medium text-lg">AI Monitoring Active</span>
-            </div>
-          </div>
+          
 
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-sm text-trust-500">
@@ -127,6 +116,110 @@ export default function LandingPage() {
         </div>
 
 
+
+        {/* Live Demo Section */}
+        <div className="mt-16 bg-white rounded-3xl shadow-trust p-8 max-w-4xl mx-auto border border-trust-100 animate-slide-up">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-heading font-semibold text-trust-900 mb-2">Live Demo: Sarah's Daily Check-In</h3>
+            <p className="text-trust-600">Experience how our AI companion connects with your loved ones</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            {/* Voice Interaction Visual */}
+            <div className="text-center">
+              <div className="relative inline-block">
+                <div className="w-32 h-32 bg-gradient-to-br from-care-100 to-care-200 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <span className="text-4xl">👵</span>
+                </div>
+                
+                {/* Animated voice indicator */}
+                <div className="absolute -top-2 -right-2">
+                  <div className="relative">
+                    <div className={`w-8 h-8 bg-care-500 rounded-full ${isPlaying ? 'animate-pulse' : ''}`}></div>
+                    {isPlaying && (
+                      <>
+                        <div className="absolute inset-0 w-8 h-8 bg-care-400 rounded-full animate-ping opacity-75"></div>
+                        <div className="absolute inset-0 w-8 h-8 bg-care-300 rounded-full animate-ping opacity-50" style={{animationDelay: '0.5s'}}></div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <h4 className="text-xl font-semibold text-trust-800 mb-2">Sarah, 78</h4>
+              <p className="text-trust-600 mb-4">Currently on call with AI companion</p>
+              
+              <button 
+                onClick={() => setIsPlaying(!isPlaying)}
+                className={`px-6 py-3 rounded-full font-semibold transition-all duration-200 ${
+                  isPlaying 
+                    ? 'bg-care-500 text-white hover:bg-care-600' 
+                    : 'bg-care-100 text-care-700 hover:bg-care-200'
+                }`}
+              >
+                {isPlaying ? '🔊 Live Call' : '▶️ Start Demo'}
+              </button>
+            </div>
+
+            {/* Conversation Display */}
+            <div className="bg-gradient-to-br from-trust-50 to-warm-50 rounded-2xl p-6 border border-trust-200">
+              <div className="space-y-4">
+                <div className="bg-primary-100 rounded-2xl p-4">
+                  <div className="flex items-center mb-2">
+                    <div className="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">🤖</span>
+                    </div>
+                    <span className="text-sm font-medium text-primary-700">AI Companion</span>
+                  </div>
+                  <p className="text-trust-800">"Good morning Sarah! How are you feeling today?"</p>
+                </div>
+
+                <div className="bg-care-100 rounded-2xl p-4">
+                  <div className="flex items-center mb-2">
+                    <div className="w-6 h-6 bg-care-500 rounded-full flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">👵</span>
+                    </div>
+                    <span className="text-sm font-medium text-care-700">Sarah</span>
+                  </div>
+                  <p className="text-trust-800">"I'm doing well, dear! I had a lovely walk in the garden this morning and my neighbor brought me some fresh tomatoes."</p>
+                </div>
+
+                <div className="bg-primary-100 rounded-2xl p-4">
+                  <div className="flex items-center mb-2">
+                    <div className="w-6 h-6 bg-primary-500 rounded-full flex items-center justify-center mr-2">
+                      <span className="text-white text-xs">🤖</span>
+                    </div>
+                    <span className="text-sm font-medium text-primary-700">AI Companion</span>
+                  </div>
+                  <p className="text-trust-800">"That sounds wonderful! How are you feeling physically? Any aches or concerns today?"</p>
+                </div>
+
+                {isPlaying && (
+                  <div className="bg-care-100 rounded-2xl p-4 animate-fade-in">
+                    <div className="flex items-center mb-2">
+                      <div className="w-6 h-6 bg-care-500 rounded-full flex items-center justify-center mr-2">
+                        <span className="text-white text-xs">👵</span>
+                      </div>
+                      <span className="text-sm font-medium text-care-700">Sarah</span>
+                      <span className="ml-auto text-xs bg-care-200 px-2 py-1 rounded-full text-care-700">Live</span>
+                    </div>
+                    <p className="text-trust-800">"My knees are a bit stiff this morning, but nothing too bothersome. I took my medication right after breakfast like always..."</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Real-time analysis */}
+              {isPlaying && (
+                <div className="mt-4 pt-4 border-t border-trust-200">
+                  <div className="flex items-center text-sm text-trust-600">
+                    <div className="w-2 h-2 bg-care-500 rounded-full mr-2 animate-pulse"></div>
+                    <span>AI analyzing mood, health indicators, and social connection...</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         {/* Enhanced Dashboard Preview */}
         <div className="mt-20 animate-slide-up">
