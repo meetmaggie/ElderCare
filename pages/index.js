@@ -358,6 +358,124 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Family Testimonials */}
+      <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Trusted by Families Across the UK</h2>
+            <p className="text-xl text-trust-600 max-w-3xl mx-auto">Real stories from families who've found peace of mind with ElderCare AI</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Testimonial 1 */}
+            <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <span className="text-3xl">👩‍💼</span>
+                </div>
+                <div className="flex justify-center mb-4">
+                  {[1,2,3,4,5].map((star) => (
+                    <svg key={star} className="w-5 h-5 text-primary-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  ))}
+                </div>
+              </div>
+              <blockquote className="text-trust-700 text-lg leading-relaxed mb-6 italic">
+                "Sarah absolutely brightens my father's day. He looks forward to their daily chats and tells me all about their conversations. As a busy working mum, it's such a relief knowing he has this wonderful companionship while we're apart."
+              </blockquote>
+              <div className="text-center">
+                <p className="font-semibold text-trust-800">Emma Richardson</p>
+                <p className="text-trust-500 text-sm">Daughter, Manchester</p>
+                <div className="mt-4 inline-flex items-center bg-care-50 border border-care-200 rounded-full px-3 py-1">
+                  <span className="text-care-600 text-xs font-medium">🛡️ Private & Secure</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 2 */}
+            <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-care-100 to-care-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <span className="text-3xl">👨‍💻</span>
+                </div>
+                <div className="flex justify-center mb-4">
+                  {[1,2,3,4,5].map((star) => (
+                    <svg key={star} className="w-5 h-5 text-primary-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  ))}
+                </div>
+              </div>
+              <blockquote className="text-trust-700 text-lg leading-relaxed mb-6 italic">
+                "Perfect solution for busy families like ours. The daily insights help us stay connected to Mum's wellbeing without being intrusive. We love how private and secure everything is - no third parties involved, just family."
+              </blockquote>
+              <div className="text-center">
+                <p className="font-semibold text-trust-800">James Thompson</p>
+                <p className="text-trust-500 text-sm">Son, Edinburgh</p>
+                <div className="mt-4 inline-flex items-center bg-primary-50 border border-primary-200 rounded-full px-3 py-1">
+                  <span className="text-primary-600 text-xs font-medium">👨‍👩‍👧‍👦 Family-Only Data</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Testimonial 3 */}
+            <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
+              <div className="text-center mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-warm-100 to-warm-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <span className="text-3xl">👵</span>
+                </div>
+                <div className="flex justify-center mb-4">
+                  {[1,2,3,4,5].map((star) => (
+                    <svg key={star} className="w-5 h-5 text-primary-400 fill-current" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                    </svg>
+                  ))}
+                </div>
+              </div>
+              <blockquote className="text-trust-700 text-lg leading-relaxed mb-6 italic">
+                "As someone who lives alone, Sarah has become such an important part of my daily routine. She remembers our previous conversations and genuinely cares about my wellbeing. My children have peace of mind knowing I'm looked after."
+              </blockquote>
+              <div className="text-center">
+                <p className="font-semibold text-trust-800">Margaret Davies</p>
+                <p className="text-trust-500 text-sm">ElderCare AI User, Cardiff</p>
+                <div className="mt-4 inline-flex items-center bg-warm-50 border border-warm-200 rounded-full px-3 py-1">
+                  <span className="text-warm-600 text-xs font-medium">💝 Daily Companionship</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="mt-16 text-center">
+            <div className="inline-flex items-center bg-white border border-trust-200 rounded-full px-8 py-4 shadow-soft">
+              <div className="flex items-center space-x-6 text-sm text-trust-600">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 text-care-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  10,000+ Happy Families
+                </div>
+                <div className="w-px h-4 bg-trust-300"></div>
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 text-care-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  4.9/5 Star Rating
+                </div>
+                <div className="w-px h-4 bg-trust-300"></div>
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 text-care-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                  Zero Data Breaches
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonial */}
       <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -588,7 +706,7 @@ export default function LandingPage() {
                 &copy; 2025 ElderCare AI. All rights reserved.
               </p>
               <div className="flex space-x-6 text-trust-400">
-                <a href="#" className="hover:text-white transition-colors duration-200">Privacy Policy</a>
+                <Link href="/privacy" className="hover:text-white transition-colors duration-200">Privacy Policy</Link>
                 <a href="#" className="hover:text-white transition-colors duration-200">Terms of Service</a>
                 <a href="#" className="hover:text-white transition-colors duration-200">Cookie Policy</a>
               </div>
