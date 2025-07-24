@@ -63,16 +63,7 @@ export default function LandingPage() {
             Caring conversations, family updates, and gentle wellness insights ensure ongoing companionship and family connection.
           </p>
 
-          {/* Value Proposition */}
-          <div className="flex justify-center mb-12">
-            <div className="bg-white rounded-3xl shadow-trust p-8 max-w-4xl mx-auto border border-trust-100">
-              <div className="text-center">
-                <p className="text-2xl sm:text-3xl text-trust-800 leading-relaxed font-medium">
-                  Professional daily companionship that gives older family members someone to talk to and gives families the peace of mind they've been looking for.
-                </p>
-              </div>
-            </div>
-          </div>
+          
 
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-sm text-trust-500">
