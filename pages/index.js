@@ -304,7 +304,7 @@ export default function LandingPage() {
           <div className="bg-white rounded-3xl shadow-trust p-8 max-w-6xl mx-auto border border-trust-100">
             <div className="text-center mb-8">
               <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-2">Family Dashboard</h3>
-              <p className="text-trust-600">Real-time insights into your parent's wellbeing</p>
+              <p className="text-trust-600">Real-time insights into your elderly family member's wellbeing</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
