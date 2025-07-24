@@ -256,6 +256,49 @@ export default function LandingPage() {
 
 
 
+        {/* How It Works */}
+        <div className="mt-20">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">How ElderCare AI Works</h2>
+            <p className="text-xl text-trust-600 max-w-3xl mx-auto">Advanced AI technology that feels warm and personal</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+              <div className="bg-gradient-to-br from-primary-100 to-primary-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
+                <span className="text-3xl">📞</span>
+              </div>
+              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Daily AI Companion</h3>
+              <p className="text-trust-600 leading-relaxed">
+                Warm, intelligent AI calls your parent daily for meaningful conversations about their day, 
+                health, and wellbeing. Each call is personalized and natural.
+              </p>
+            </div>
+
+            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+              <div className="bg-gradient-to-br from-care-100 to-care-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
+                <span className="text-3xl">🛡️</span>
+              </div>
+              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Intelligent Monitoring</h3>
+              <p className="text-trust-600 leading-relaxed">
+                AI analyses conversations for mood changes, wellness concerns, and social activities. 
+                Instant alerts for emergencies or concerning patterns.
+              </p>
+            </div>
+
+            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
+              <div className="bg-gradient-to-br from-warm-100 to-warm-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
+                <span className="text-3xl">💝</span>
+              </div>
+              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Family Connection</h3>
+              <p className="text-trust-600 leading-relaxed">
+                Daily insights, mood trends, and real-time notifications keep you connected 
+                and confident your elderly family member is safe and cared for.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Enhanced Dashboard Preview */}
         <div className="mt-20 animate-slide-up">
           <div className="bg-white rounded-3xl shadow-trust p-8 max-w-6xl mx-auto border border-trust-100">
@@ -495,50 +538,7 @@ export default function LandingPage() {
       </section>
 
       
-      {/* How It Works */}
-      <section className="bg-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">How ElderCare AI Works</h2>
-            <p className="text-xl text-trust-600 max-w-3xl mx-auto">Advanced AI technology that feels warm and personal</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
-              <div className="bg-gradient-to-br from-primary-100 to-primary-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
-                <span className="text-3xl">📞</span>
-              </div>
-              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Daily AI Companion</h3>
-              <p className="text-trust-600 leading-relaxed">
-                Warm, intelligent AI calls your parent daily for meaningful conversations about their day, 
-                health, and wellbeing. Each call is personalized and natural.
-              </p>
-            </div>
-
-            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
-              <div className="bg-gradient-to-br from-care-100 to-care-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
-                <span className="text-3xl">🛡️</span>
-              </div>
-              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Intelligent Monitoring</h3>
-              <p className="text-trust-600 leading-relaxed">
-                AI analyses conversations for mood changes, wellness concerns, and social activities. 
-                Instant alerts for emergencies or concerning patterns.
-              </p>
-            </div>
-
-            <div className="text-center group hover:transform hover:scale-105 transition-all duration-300">
-              <div className="bg-gradient-to-br from-warm-100 to-warm-200 w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:shadow-care">
-                <span className="text-3xl">💝</span>
-              </div>
-              <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Family Connection</h3>
-              <p className="text-trust-600 leading-relaxed">
-                Daily insights, mood trends, and real-time notifications keep you connected 
-                and confident your elderly family member is safe and cared for.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
+      
 
       {/* Pricing */}
       <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-20">
