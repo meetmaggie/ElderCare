@@ -270,8 +270,8 @@ export default function LandingPage() {
               </div>
               <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Daily AI Companion</h3>
               <p className="text-trust-600 leading-relaxed">
-                Warm, intelligent AI calls your parent daily for meaningful conversations about their day, 
-                health, and wellbeing. Each call is personalized and natural.
+                Warm, intelligent AI calls your family member regularly for meaningful conversations about their day, 
+                interests, and how they're feeling. Each call is personalized and natural.
               </p>
             </div>
 
