@@ -401,6 +401,124 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Meet Sarah - AI Companion Demo */}
+      <section className="bg-gradient-to-br from-care-50 to-primary-50 py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h2>
+            <p className="text-xl text-trust-600 max-w-3xl mx-auto">Experience a sample conversation with our AI companion designed specifically for elderly care</p>
+          </div>
+
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-3xl shadow-trust p-8 border border-trust-100">
+              {/* Demo Conversation */}
+              <div className="space-y-6">
+                {/* Sarah's first message */}
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-care-400 to-care-500 rounded-full flex items-center justify-center shadow-soft">
+                      <span className="text-white font-semibold text-lg">S</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-care-50 border border-care-200 rounded-2xl rounded-tl-sm p-4 shadow-soft">
+                      <p className="text-trust-800 leading-relaxed">
+                        "Good morning! It's Sarah here for our daily chat. How are you feeling today? 
+                        I noticed it's a lovely sunny morning - perfect weather for your garden!"
+                      </p>
+                    </div>
+                    <p className="text-xs text-trust-500 mt-2 ml-4">AI Companion • 9:15 AM</p>
+                  </div>
+                </div>
+
+                {/* User response */}
+                <div className="flex items-start space-x-4 flex-row-reverse">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-warm-300 to-warm-400 rounded-full flex items-center justify-center shadow-soft">
+                      <span className="text-white font-semibold text-lg">M</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-warm-50 border border-warm-200 rounded-2xl rounded-tr-sm p-4 shadow-soft">
+                      <p className="text-trust-800 leading-relaxed">
+                        "Oh Sarah, I'm doing well today! Yes, I was just thinking about going out to check on my roses. 
+                        They're blooming beautifully this year."
+                      </p>
+                    </div>
+                    <p className="text-xs text-trust-500 mt-2 mr-4 text-right">Margaret • 9:16 AM</p>
+                  </div>
+                </div>
+
+                {/* Sarah's response with health check */}
+                <div className="flex items-start space-x-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-br from-care-400 to-care-500 rounded-full flex items-center justify-center shadow-soft">
+                      <span className="text-white font-semibold text-lg">S</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <div className="bg-care-50 border border-care-200 rounded-2xl rounded-tl-sm p-4 shadow-soft">
+                      <p className="text-trust-800 leading-relaxed mb-3">
+                        "That's wonderful! Roses are such a joy. Have you taken your morning medications yet? 
+                        And remember to wear your sun hat when you go outside - the UV is quite strong today."
+                      </p>
+                      <div className="bg-care-100 rounded-lg p-3 border border-care-200">
+                        <p className="text-care-700 text-sm">
+                          <span className="font-medium">💊 Health Reminder:</span> Morning medications & sun protection
+                        </p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-trust-500 mt-2 ml-4">AI Companion • 9:17 AM</p>
+                  </div>
+                </div>
+
+                {/* AI Analysis Box */}
+                <div className="bg-gradient-to-r from-primary-50 to-care-50 border border-primary-200 rounded-2xl p-6 mt-8">
+                  <div className="flex items-center mb-4">
+                    <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center mr-3">
+                      <span className="text-primary-600">🤖</span>
+                    </div>
+                    <h4 className="font-semibold text-trust-800">Real-time AI Analysis</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="font-medium text-trust-700 mb-1">Mood Assessment</p>
+                      <p className="text-primary-600">✓ Positive and engaged</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-trust-700 mb-1">Health Indicators</p>
+                      <p className="text-care-600">✓ Active, mobile, alert</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-trust-700 mb-1">Safety Notes</p>
+                      <p className="text-warm-600">✓ Medication reminder given</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Demo Controls */}
+              <div className="mt-8 pt-6 border-t border-trust-200">
+                <div className="flex flex-col sm:flex-row items-center justify-between">
+                  <div className="flex items-center mb-4 sm:mb-0">
+                    <div className="w-3 h-3 bg-care-400 rounded-full mr-2 animate-pulse"></div>
+                    <span className="text-sm text-trust-600 font-medium">Live Demo - Real AI Conversation</span>
+                  </div>
+                  <div className="flex space-x-3">
+                    <Link href="/demo-preview" className="bg-care-500 text-white px-4 py-2 rounded-full hover:bg-care-600 transition-colors text-sm font-medium">
+                      View Full Dashboard
+                    </Link>
+                    <Link href="/signup" className="bg-primary-500 text-white px-4 py-2 rounded-full hover:bg-primary-600 transition-colors text-sm font-medium">
+                      Start Free Trial
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Testimonial */}
       <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -423,8 +541,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      
-      
+
+
 
       {/* Pricing */}
       <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-20">
