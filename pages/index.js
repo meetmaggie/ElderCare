@@ -413,8 +413,12 @@ export default function LandingPage() {
             {/* Testimonial 1 */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
-                  <span className="text-3xl">👩‍💼</span>
+                <div className="w-16 h-16 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <img 
+                    src="https://images.unsplash.com/photo-1494790108755-2616b9da6c37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                    alt="Emma Richardson" 
+                    className="w-16 h-16 rounded-full object-cover border-2 border-primary-200 shadow-soft"
+                  />
                 </div>
                 <div className="flex justify-center mb-4">
                   {[1,2,3,4,5].map((star) => (
@@ -439,8 +443,12 @@ export default function LandingPage() {
             {/* Testimonial 2 */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-care-100 to-care-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
-                  <span className="text-3xl">👨‍💻</span>
+                <div className="w-16 h-16 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <img 
+                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                    alt="James Thompson" 
+                    className="w-16 h-16 rounded-full object-cover border-2 border-care-200 shadow-soft"
+                  />
                 </div>
                 <div className="flex justify-center mb-4">
                   {[1,2,3,4,5].map((star) => (
@@ -465,8 +473,12 @@ export default function LandingPage() {
             {/* Testimonial 3 */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 bg-gradient-to-br from-warm-100 to-warm-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
-                  <span className="text-3xl">👵</span>
+                <div className="w-16 h-16 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                  <img 
+                    src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                    alt="Margaret Davies" 
+                    className="w-16 h-16 rounded-full object-cover border-2 border-warm-200 shadow-soft"
+                  />
                 </div>
                 <div className="flex justify-center mb-4">
                   {[1,2,3,4,5].map((star) => (
@@ -526,8 +538,12 @@ export default function LandingPage() {
             "ElderCare AI provides exceptional peace of mind for our entire family. The comprehensive monitoring and professional care coordination keeps our loved ones safe and connected, no matter the distance."
           </blockquote>
           <div className="flex items-center justify-center space-x-4">
-            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-              <span className="text-white text-lg">👩‍💼</span>
+            <div className="w-12 h-12 rounded-full">
+              <img 
+                src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                alt="Sarah Mitchell" 
+                className="w-12 h-12 rounded-full object-cover border-2 border-white/30 shadow-soft"
+              />
             </div>
             <div className="text-left">
               <p className="text-white font-semibold">Sarah Mitchell</p>
