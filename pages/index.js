@@ -475,7 +475,7 @@ export default function LandingPage() {
               <div className="text-center mb-6">
                 <div className="w-24 h-24 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
                   <img 
-                    src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                    src="https://images.unsplash.com/photo-1594824244347-67b2d622d96a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
                     alt="Margaret Davies" 
                     className="w-24 h-24 rounded-full object-cover border-3 border-warm-200 shadow-lg"
                   />
