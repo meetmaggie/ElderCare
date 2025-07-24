@@ -69,7 +69,7 @@ export default function LandingPage() {
               <div className="text-center">
                 <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h3>
                 <p className="text-trust-600 mb-8">Click to hear how Sarah provides daily care conversations</p>
-                
+
                 {/* ElevenLabs-Style Voice Demo */}
                 <div className="flex flex-col items-center space-y-6">
                   {/* Large Gradient Circle with Radial Burst */}
@@ -78,7 +78,7 @@ export default function LandingPage() {
                     <div className={`w-full h-full rounded-full relative overflow-hidden transition-all duration-700 ease-out ${isPlaying ? 'animate-pulse-gentle' : ''} group-hover:shadow-2xl group-hover:shadow-green-500/30`}>
                       {/* Radial gradient background */}
                       <div className={`absolute inset-0 bg-gradient-radial from-emerald-200 via-green-300 to-green-600 transition-opacity duration-500 ${isPlaying ? 'opacity-100' : 'opacity-90'} group-hover:opacity-100`}></div>
-                      
+
                       {/* Animated radial burst lines */}
                       <div className={`absolute inset-0 transition-all duration-700 ${isPlaying ? 'opacity-80 animate-spin-slow' : 'opacity-60'} group-hover:opacity-75`}>
                         {[...Array(12)].map((_, i) => (
@@ -96,7 +96,7 @@ export default function LandingPage() {
                           />
                         ))}
                       </div>
-                      
+
                       {/* Darker radial sections with rotation */}
                       <div className={`absolute inset-0 transition-all duration-1000 ${isPlaying ? 'animate-reverse-spin-slow' : ''}`}>
                         {[...Array(8)].map((_, i) => (
@@ -110,7 +110,7 @@ export default function LandingPage() {
                           />
                         ))}
                       </div>
-                      
+
                       {/* Enhanced shimmer effect when playing */}
                       {isPlaying && (
                         <>
@@ -118,7 +118,7 @@ export default function LandingPage() {
                           <div className="absolute inset-0 bg-gradient-radial from-emerald-300/20 to-transparent animate-pulse-slow"></div>
                         </>
                       )}
-                      
+
                       {/* Floating particles effect */}
                       {isPlaying && (
                         <div className="absolute inset-0">
@@ -137,7 +137,7 @@ export default function LandingPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Central white pill button with enhanced interactions */}
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300">
                       <div className={`bg-white rounded-full px-6 py-3 sm:px-8 sm:py-4 shadow-lg flex items-center space-x-3 transition-all duration-300 group-hover:shadow-2xl group-hover:shadow-green-500/20 ${isPlaying ? 'scale-105 shadow-xl' : 'hover:scale-110'} active:scale-95`}>
@@ -159,7 +159,7 @@ export default function LandingPage() {
                         </span>
                       </div>
                     </div>
-                    
+
                     {/* Enhanced outer glow effect when playing */}
                     {isPlaying && (
                       <>
@@ -168,11 +168,11 @@ export default function LandingPage() {
                         <div className="absolute inset-0 w-full h-full bg-emerald-400 rounded-full animate-ping opacity-10 scale-140" style={{animationDelay: '1s'}}></div>
                       </>
                     )}
-                    
+
                     {/* Ambient glow on hover */}
                     <div className="absolute inset-0 w-full h-full bg-green-400 rounded-full opacity-0 group-hover:opacity-10 transition-opacity duration-500 scale-110"></div>
                   </div>
-                  
+
                   {/* Enhanced playing status indicator */}
                   {isPlaying && (
                     <div className="text-center animate-fade-in-up">
@@ -190,7 +190,7 @@ export default function LandingPage() {
                       </div>
                     </div>
                   )}
-                  
+
                   {/* Call to action when not playing */}
                   {!isPlaying && (
                     <div className="text-center animate-fade-in-up">
@@ -428,7 +428,7 @@ export default function LandingPage() {
                 <div className="flex justify-center mb-4">
                   {[1,2,3,4,5].map((star) => (
                     <svg key={star} className="w-5 h-5 text-primary-400 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a0 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
                     </svg>
                   ))}
                 </div>
@@ -494,6 +494,7 @@ export default function LandingPage() {
         </div>
       </section>
 
+      
       {/* How It Works */}
       <section className="bg-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
