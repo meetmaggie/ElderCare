@@ -271,7 +271,7 @@ export default function LandingPage() {
               <h3 className="text-2xl font-heading font-semibold mb-4 text-trust-900">Daily AI Companion</h3>
               <p className="text-trust-600 leading-relaxed">
                 Warm, intelligent AI calls your family member regularly for meaningful conversations about their day, 
-                interests, and how they're feeling. Each call is personalized and natural.
+                interests, and how they're feeling. Each call is personalised and natural.
               </p>
             </div>
 
@@ -535,19 +535,19 @@ export default function LandingPage() {
       <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <blockquote className="text-2xl sm:text-3xl font-medium text-white mb-8 leading-relaxed">
-            "ElderCare AI provides exceptional peace of mind for our entire family. The comprehensive monitoring and professional care coordination keeps our loved ones safe and connected, no matter the distance."
+            "Loneliness in older people can be as harmful as smoking 15 cigarettes a day."
           </blockquote>
           <div className="flex items-center justify-center space-x-4">
             <div className="w-16 h-16 rounded-full">
               <img 
-                src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
-                alt="Sarah Mitchell" 
+                src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                alt="Prof. Keith Willett" 
                 className="w-16 h-16 rounded-full object-cover border-3 border-white/30 shadow-lg"
               />
             </div>
             <div className="text-left">
-              <p className="text-white font-semibold">Sarah Mitchell</p>
-              <p className="text-primary-100">Family Care Coordinator, London</p>
+              <p className="text-white font-semibold">Prof. Keith Willett</p>
+              <p className="text-primary-100">NHS England</p>
             </div>
           </div>
         </div>
