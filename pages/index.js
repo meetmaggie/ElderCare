@@ -413,11 +413,11 @@ export default function LandingPage() {
             {/* Testimonial 1 */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                <div className="w-24 h-24 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
                   <img 
-                    src="https://images.unsplash.com/photo-1494790108755-2616b9da6c37?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                    src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
                     alt="Emma Richardson" 
-                    className="w-16 h-16 rounded-full object-cover border-2 border-primary-200 shadow-soft"
+                    className="w-24 h-24 rounded-full object-cover border-3 border-primary-200 shadow-lg"
                   />
                 </div>
                 <div className="flex justify-center mb-4">
@@ -443,11 +443,11 @@ export default function LandingPage() {
             {/* Testimonial 2 */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                <div className="w-24 h-24 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
                   <img 
                     src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
                     alt="James Thompson" 
-                    className="w-16 h-16 rounded-full object-cover border-2 border-care-200 shadow-soft"
+                    className="w-24 h-24 rounded-full object-cover border-3 border-care-200 shadow-lg"
                   />
                 </div>
                 <div className="flex justify-center mb-4">
@@ -473,11 +473,11 @@ export default function LandingPage() {
             {/* Testimonial 3 */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300 group">
               <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
+                <div className="w-24 h-24 mx-auto mb-4 group-hover:scale-105 transition-transform duration-300">
                   <img 
-                    src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
+                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
                     alt="Margaret Davies" 
-                    className="w-16 h-16 rounded-full object-cover border-2 border-warm-200 shadow-soft"
+                    className="w-24 h-24 rounded-full object-cover border-3 border-warm-200 shadow-lg"
                   />
                 </div>
                 <div className="flex justify-center mb-4">
@@ -538,11 +538,11 @@ export default function LandingPage() {
             "ElderCare AI provides exceptional peace of mind for our entire family. The comprehensive monitoring and professional care coordination keeps our loved ones safe and connected, no matter the distance."
           </blockquote>
           <div className="flex items-center justify-center space-x-4">
-            <div className="w-12 h-12 rounded-full">
+            <div className="w-16 h-16 rounded-full">
               <img 
                 src="https://images.unsplash.com/photo-1580489944761-15a19d654956?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
                 alt="Sarah Mitchell" 
-                className="w-12 h-12 rounded-full object-cover border-2 border-white/30 shadow-soft"
+                className="w-16 h-16 rounded-full object-cover border-3 border-white/30 shadow-lg"
               />
             </div>
             <div className="text-left">
