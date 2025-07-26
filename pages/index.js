@@ -66,7 +66,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-xl sm:text-2xl text-trust-600 mb-12 max-w-4xl mx-auto leading-relaxed">
-            Professional AI companion calls provide daily check-ins for elderly family members. 
+            Professional AI companion calls provide daily check-ins for older family members. 
             Caring conversations, family updates, and gentle wellness insights ensure ongoing companionship and family connection.
           </p>
 
