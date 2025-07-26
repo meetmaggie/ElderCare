@@ -125,7 +125,7 @@ export default function LandingPage() {
         {/* Audio element for Sarah's voice */}
         <audio
           ref={audioRef}
-          src="/audio/samples/ElevenLabs_2025-07-26T09_15_33_Clarice - Natural & Calm British Voice _pvc_sp100_s33_sb40_v3.mp3"
+          src="/audio/samples/sarah-introduction.mp3"
           onLoadStart={() => setIsLoading(true)}
           onCanPlay={() => setIsLoading(false)}
           onLoadedMetadata={() => {
