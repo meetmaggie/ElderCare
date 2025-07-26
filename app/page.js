@@ -35,15 +35,15 @@ export default function LandingPage() {
                 ElderCare AI
               </h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/login" className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link href="/login" className="text-trust-600 hover:text-primary-600 font-medium transition-colors duration-200 text-sm sm:text-base">
                 Sign In
               </Link>
-              <div className="flex items-center space-x-3">
-                <Link href="/demo-preview" className="bg-gradient-to-r from-care-500 to-care-600 text-white px-6 py-2.5 rounded-full hover:from-care-600 hover:to-care-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
-                  Dashboard Demo
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Link href="/demo-preview" className="bg-gradient-to-r from-care-500 to-care-600 text-white px-3 py-2 sm:px-6 sm:py-2.5 rounded-full hover:from-care-600 hover:to-care-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium text-xs sm:text-sm">
+                  Demo
                 </Link>
-                <Link href="/signup" className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium">
+                <Link href="/signup" className="bg-gradient-to-r from-primary-500 to-primary-600 text-white px-3 py-2 sm:px-6 sm:py-2.5 rounded-full hover:from-primary-600 hover:to-primary-700 transform hover:scale-105 transition-all duration-200 shadow-soft font-medium text-xs sm:text-sm">
                   Get Started
                 </Link>
               </div>
@@ -59,14 +59,14 @@ export default function LandingPage() {
             <span className="text-care-600 text-sm font-medium">🛡️ Trusted by 10,000+ families nationwide</span>
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-heading font-bold text-trust-900 mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl xl:text-7xl font-heading font-bold text-trust-900 mb-6 leading-tight px-4">
             <span className="bg-gradient-to-r from-primary-700 via-care-600 to-primary-700 bg-clip-text text-transparent">
               Peace of Mind
             </span>
             <span className="block text-trust-800">for Every Family</span>
           </h1>
 
-          <p className="text-xl sm:text-2xl text-trust-600 mb-12 max-w-4xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl lg:text-2xl text-trust-600 mb-12 max-w-4xl mx-auto leading-relaxed px-4">
             Professional AI companion calls provide daily check-ins for older family members. 
             Caring conversations, family updates, and gentle wellness insights ensure ongoing companionship and family connection.
           </p>
@@ -78,9 +78,9 @@ export default function LandingPage() {
               <p className="text-lg text-trust-600 max-w-2xl mx-auto mb-12">Click to hear how Sarah provides daily care conversations</p>
               
               {/* Sarah's Voice Bubble - Premium ElevenLabs Style */}
-              <div className="relative max-w-xl mx-auto">
+              <div className="relative max-w-xl mx-auto px-4">
                 {/* Main animated bubble container */}
-                <div className="relative w-64 h-64 mx-auto">
+                <div className="relative w-48 h-48 sm:w-64 sm:h-64 mx-auto">
                   
                   {/* Expanding rings effect (only when playing) */}
                   {isPlaying && (
@@ -178,7 +178,7 @@ export default function LandingPage() {
                       }}
                       disabled={isLoading || audioError}
                       className={`
-                        bg-white rounded-full px-6 py-3 shadow-lg hover:shadow-xl flex items-center space-x-3 
+                        bg-white rounded-full px-3 py-2 sm:px-6 sm:py-3 shadow-lg hover:shadow-xl flex items-center space-x-2 sm:space-x-3 
                         border border-trust-100 disabled:opacity-50 disabled:cursor-not-allowed
                         transition-all duration-300 transform hover:scale-105 active:scale-95
                         ${isPlaying ? 'shadow-care-500/20 shadow-2xl' : ''}
@@ -209,7 +209,7 @@ export default function LandingPage() {
                       
                       {/* Enhanced button text */}
                       <span className={`
-                        font-semibold transition-all duration-300
+                        font-semibold transition-all duration-300 text-sm sm:text-base
                         ${isPlaying ? 'text-care-600' : 'text-trust-900'}
                       `}>
                         {isLoading ? 'Loading...' : audioError ? 'Audio Error' : isPlaying ? 'Pause Sarah' : 'Meet Sarah'}
@@ -230,7 +230,7 @@ export default function LandingPage() {
           </div>
 
           {/* Trust Indicators */}
-          <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-sm text-trust-500">
+          <div className="flex flex-wrap justify-center items-center gap-4 sm:gap-8 mb-12 text-xs sm:text-sm text-trust-500 px-4">
             <div className="flex items-center">
               <svg className="w-5 h-5 text-care-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
@@ -312,10 +312,10 @@ export default function LandingPage() {
         
 
         {/* How It Works */}
-        <div className="mt-20">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">How ElderCare AI Works</h2>
-            <p className="text-xl text-trust-600 max-w-3xl mx-auto">Advanced AI technology that feels warm and personal</p>
+        <div className="mt-16 sm:mt-20 px-4">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-bold text-trust-900 mb-4">How ElderCare AI Works</h2>
+            <p className="text-lg sm:text-xl text-trust-600 max-w-3xl mx-auto">Advanced AI technology that feels warm and personal</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
@@ -355,8 +355,8 @@ export default function LandingPage() {
         </div>
 
         {/* Enhanced Dashboard Preview */}
-        <div className="mt-20 animate-slide-up">
-          <div className="bg-white rounded-3xl shadow-trust p-8 max-w-6xl mx-auto border border-trust-100">
+        <div className="mt-16 sm:mt-20 animate-slide-up px-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-trust p-4 sm:p-8 max-w-6xl mx-auto border border-trust-100">
             <div className="text-center mb-8">
               <h3 className="text-3xl font-heading font-semibold text-trust-900 mb-2">Family Dashboard</h3>
               <p className="text-trust-600">Real-time insights into your elderly family member's wellbeing</p>
@@ -457,11 +457,11 @@ export default function LandingPage() {
       </section>
 
       {/* Family Testimonials */}
-      <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-20">
+      <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Trusted by Families Across the UK</h2>
-            <p className="text-xl text-trust-600 max-w-3xl mx-auto">Real stories from families who've found peace of mind with ElderCare AI</p>
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-bold text-trust-900 mb-4">Trusted by Families Across the UK</h2>
+            <p className="text-lg sm:text-xl text-trust-600 max-w-3xl mx-auto">Real stories from families who've found peace of mind with ElderCare AI</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -604,14 +604,14 @@ export default function LandingPage() {
 
 
       {/* Pricing */}
-      <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-20">
+      <section className="bg-gradient-to-br from-trust-50 to-warm-50 py-16 sm:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Choose Your Care Plan</h2>
-            <p className="text-xl text-trust-600">Transparent pricing for peace of mind</p>
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-heading font-bold text-trust-900 mb-4">Choose Your Care Plan</h2>
+            <p className="text-lg sm:text-xl text-trust-600">Transparent pricing for peace of mind</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             {/* Basic Plan */}
             <div className="bg-white rounded-3xl shadow-soft p-8 border border-trust-100 hover:shadow-care transition-all duration-300">
               <div className="text-center">
@@ -707,9 +707,9 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-trust-900 text-white py-16">
+      <footer className="bg-trust-900 text-white py-12 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 mb-8 sm:mb-12">
             <div>
               <div className="flex items-center mb-6">
                 <div className="w-8 h-8 bg-gradient-to-r from-primary-400 to-care-400 rounded-full flex items-center justify-center mr-3">
