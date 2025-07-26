@@ -10,6 +10,7 @@
   "dependencies": {
     "@headlessui/react": "^2.2.4",
     "@heroicons/react": "^2.2.0",
+    "@next/font": "^14.2.15",
     "@supabase/supabase-js": "^2.52.0",
     "@types/node": "^22.13.11",
     "autoprefixer": "^10.4.21",
