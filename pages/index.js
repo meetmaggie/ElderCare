@@ -591,20 +591,10 @@ export default function LandingPage() {
       <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <blockquote className="text-2xl sm:text-3xl font-medium text-white mb-8 leading-relaxed">
-            "Loneliness in older people can be as harmful as smoking 15 cigarettes a day."
+            "Daily conversations can transform an elderly person's wellbeing and quality of life."
           </blockquote>
-          <div className="flex items-center justify-center space-x-4">
-            <div className="w-16 h-16 rounded-full">
-              <img 
-                src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" 
-                alt="Prof. Keith Willett" 
-                className="w-16 h-16 rounded-full object-cover border-3 border-white/30 shadow-lg"
-              />
-            </div>
-            <div className="text-left">
-              <p className="text-white font-semibold">Prof. Keith Willett</p>
-              <p className="text-primary-100">NHS England</p>
-            </div>
+          <div className="text-center">
+            <p className="text-white font-semibold">Regular check-ins bring joy to seniors and peace of mind to families</p>
           </div>
         </div>
       </section>
