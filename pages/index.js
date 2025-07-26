@@ -594,7 +594,7 @@ export default function LandingPage() {
             "Daily conversations can transform an elderly person's wellbeing and quality of life."
           </blockquote>
           <div className="text-center">
-            <p className="text-white font-semibold">Regular check-ins bring joy to seniors and peace of mind to families</p>
+            <p className="text-white font-semibold">Regular check-ins bring joy to older loved ones and peace of mind to families</p>
           </div>
         </div>
       </section>
