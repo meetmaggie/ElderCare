@@ -591,7 +591,7 @@ export default function LandingPage() {
       <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <blockquote className="text-2xl sm:text-3xl font-medium text-white mb-8 leading-relaxed">
-            "Daily conversations can transform an elderly person's wellbeing and quality of life."
+            Daily conversations can transform an older loved one's wellbeing and quality of life.
           </blockquote>
           <div className="text-center">
             <p className="text-white font-semibold">Regular check-ins bring joy to older loved ones and peace of mind to families</p>
