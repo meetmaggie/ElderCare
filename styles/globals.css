@@ -43,6 +43,52 @@
     animation: speaking-pulse 1.8s ease-in-out infinite;
   }
 
+  .animate-voice-idle {
+    animation: voice-idle 4s ease-in-out infinite;
+  }
+
+  .animate-voice-active {
+    animation: voice-active 1.2s ease-in-out infinite;
+  }
+
+  .animate-expanding-rings {
+    animation: expanding-rings 2s ease-out infinite;
+  }
+
+  .animate-waveform-1 {
+    animation: waveform-dance-1 0.8s ease-in-out infinite;
+  }
+
+  .animate-waveform-2 {
+    animation: waveform-dance-2 1s ease-in-out infinite;
+  }
+
+  .animate-waveform-3 {
+    animation: waveform-dance-3 0.6s ease-in-out infinite;
+  }
+
+  .animate-waveform-4 {
+    animation: waveform-dance-4 0.9s ease-in-out infinite;
+  }
+
+  .animate-waveform-5 {
+    animation: waveform-dance-5 0.7s ease-in-out infinite;
+  }
+
+  .animate-ripple {
+    animation: ripple-effect 0.6s ease-out;
+  }
+
+  .voice-bubble-glow {
+    box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .voice-bubble-glow:hover {
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.5);
+    transform: scale(1.02);
+  }
+
   /* Custom slider styling */
   .slider::-webkit-slider-thumb {
     appearance: none;
@@ -178,6 +224,106 @@
   75% {
     transform: scale(1.06);
     box-shadow: 0 0 0 15px rgba(16, 185, 129, 0.15);
+  }
+}
+
+@keyframes voice-idle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.015);
+    opacity: 1;
+  }
+}
+
+@keyframes voice-active {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes expanding-rings {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(2.5);
+    opacity: 0;
+  }
+}
+
+@keyframes waveform-dance-1 {
+  0%, 100% {
+    height: 8px;
+    opacity: 0.6;
+  }
+  50% {
+    height: 24px;
+    opacity: 1;
+  }
+}
+
+@keyframes waveform-dance-2 {
+  0%, 100% {
+    height: 12px;
+    opacity: 0.7;
+  }
+  50% {
+    height: 28px;
+    opacity: 1;
+  }
+}
+
+@keyframes waveform-dance-3 {
+  0%, 100% {
+    height: 6px;
+    opacity: 0.5;
+  }
+  50% {
+    height: 20px;
+    opacity: 1;
+  }
+}
+
+@keyframes waveform-dance-4 {
+  0%, 100% {
+    height: 10px;
+    opacity: 0.6;
+  }
+  50% {
+    height: 26px;
+    opacity: 1;
+  }
+}
+
+@keyframes waveform-dance-5 {
+  0%, 100% {
+    height: 14px;
+    opacity: 0.7;
+  }
+  50% {
+    height: 22px;
+    opacity: 1;
+  }
+}
+
+@keyframes ripple-effect {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
   }
 }
 

@@ -158,30 +158,70 @@ export default function LandingPage() {
             <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h2>
             <p className="text-xl text-trust-600 max-w-3xl mx-auto mb-16">Click to hear how Sarah provides daily care conversations</p>
             
-            {/* Sarah's Voice Bubble - ElevenLabs Style */}
+            {/* Sarah's Voice Bubble - Premium ElevenLabs Style */}
             <div className="relative max-w-2xl mx-auto">
-              {/* Main green circle with radial rays */}
+              {/* Main animated bubble container */}
               <div className="relative w-80 h-80 mx-auto">
-                {/* Radial burst background */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-care-400 to-care-600 overflow-hidden">
-                  {/* Radial rays */}
+                
+                {/* Expanding rings effect (only when playing) */}
+                {isPlaying && (
+                  <>
+                    <div className="absolute inset-0 rounded-full border-2 border-care-400/30 animate-expanding-rings"></div>
+                    <div className="absolute inset-0 rounded-full border-2 border-care-400/20 animate-expanding-rings" style={{animationDelay: '0.5s'}}></div>
+                    <div className="absolute inset-0 rounded-full border-2 border-care-400/10 animate-expanding-rings" style={{animationDelay: '1s'}}></div>
+                  </>
+                )}
+                
+                {/* Ripple effect container for clicks */}
+                <div className="absolute inset-0 rounded-full overflow-hidden">
+                  <div className="absolute inset-0 rounded-full bg-care-400/20 opacity-0" id="ripple-effect"></div>
+                </div>
+
+                {/* Main voice bubble with dynamic animations */}
+                <div className={`
+                  absolute inset-0 rounded-full bg-gradient-to-br from-care-400 to-care-600 overflow-hidden voice-bubble-glow
+                  ${isLoading ? 'animate-pulse-gentle' : isPlaying ? 'animate-voice-active' : 'animate-voice-idle'}
+                `}>
+                  
+                  {/* Animated radial rays */}
                   <div className="absolute inset-0">
                     {Array.from({ length: 16 }).map((_, i) => (
                       <div
                         key={i}
-                        className="absolute top-0 left-1/2 w-0.5 h-full bg-gradient-to-b from-white/20 to-transparent origin-bottom"
+                        className={`
+                          absolute top-0 left-1/2 w-0.5 h-full origin-bottom transition-all duration-300
+                          ${isPlaying ? 'bg-gradient-to-b from-white/40 to-transparent' : 'bg-gradient-to-b from-white/20 to-transparent'}
+                        `}
                         style={{
                           transform: `translateX(-50%) rotate(${i * 22.5}deg)`,
+                          animationDelay: `${i * 0.1}s`
                         }}
                       />
                     ))}
                   </div>
                   
-                  {/* Pulsing overlay for when audio plays */}
-                  <div className={`absolute inset-0 rounded-full bg-care-300/30 ${isPlaying ? 'animate-pulse-gentle' : ''}`}></div>
+                  {/* Animated waveform bars (visible when playing) */}
+                  {isPlaying && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="flex items-center space-x-1">
+                        <div className="w-1 bg-white/60 rounded-full animate-waveform-1"></div>
+                        <div className="w-1 bg-white/70 rounded-full animate-waveform-2"></div>
+                        <div className="w-1 bg-white/50 rounded-full animate-waveform-3"></div>
+                        <div className="w-1 bg-white/80 rounded-full animate-waveform-4"></div>
+                        <div className="w-1 bg-white/65 rounded-full animate-waveform-5"></div>
+                        <div className="w-1 bg-white/75 rounded-full animate-waveform-1" style={{animationDelay: '0.2s'}}></div>
+                        <div className="w-1 bg-white/55 rounded-full animate-waveform-3" style={{animationDelay: '0.3s'}}></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Breathing overlay for idle state */}
+                  {!isPlaying && !isLoading && (
+                    <div className="absolute inset-0 rounded-full bg-care-300/20 animate-voice-idle"></div>
+                  )}
                 </div>
 
-                {/* White pill button in center */}
+                {/* Enhanced center button */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                   <button
                     onClick={async () => {
@@ -191,6 +231,16 @@ export default function LandingPage() {
                       }
 
                       if (!audioRef.current) return
+
+                      // Add ripple effect
+                      const ripple = document.getElementById('ripple-effect')
+                      if (ripple) {
+                        ripple.classList.remove('animate-ripple')
+                        ripple.classList.add('opacity-100', 'animate-ripple')
+                        setTimeout(() => {
+                          ripple.classList.remove('opacity-100', 'animate-ripple')
+                        }, 600)
+                      }
 
                       try {
                         if (isPlaying) {
@@ -208,10 +258,18 @@ export default function LandingPage() {
                       }
                     }}
                     disabled={isLoading || audioError}
-                    className="bg-white rounded-full px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-3 border border-trust-100 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`
+                      bg-white rounded-full px-8 py-4 shadow-lg hover:shadow-xl flex items-center space-x-3 
+                      border border-trust-100 disabled:opacity-50 disabled:cursor-not-allowed
+                      transition-all duration-300 transform hover:scale-105 active:scale-95
+                      ${isPlaying ? 'shadow-care-500/20 shadow-2xl' : ''}
+                    `}
                   >
-                    {/* Play/Pause/Loading icon */}
-                    <div className={`w-8 h-8 rounded-full bg-trust-900 flex items-center justify-center transition-all duration-300 ${isPlaying ? 'animate-pulse-fast' : ''}`}>
+                    {/* Enhanced Play/Pause/Loading icon */}
+                    <div className={`
+                      w-8 h-8 rounded-full bg-trust-900 flex items-center justify-center transition-all duration-300
+                      ${isPlaying ? 'animate-pulse-fast bg-care-600' : isLoading ? 'bg-primary-600' : ''}
+                    `}>
                       {isLoading ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                       ) : audioError ? (
@@ -220,8 +278,8 @@ export default function LandingPage() {
                         </svg>
                       ) : isPlaying ? (
                         <div className="flex space-x-0.5">
-                          <div className="w-1 h-4 bg-white rounded"></div>
-                          <div className="w-1 h-4 bg-white rounded"></div>
+                          <div className="w-1 h-4 bg-white rounded animate-pulse"></div>
+                          <div className="w-1 h-4 bg-white rounded animate-pulse" style={{animationDelay: '0.2s'}}></div>
                         </div>
                       ) : (
                         <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -230,18 +288,24 @@ export default function LandingPage() {
                       )}
                     </div>
                     
-                    {/* Button text */}
-                    <span className="font-semibold text-trust-900 text-lg">
+                    {/* Enhanced button text */}
+                    <span className={`
+                      font-semibold text-lg transition-all duration-300
+                      ${isPlaying ? 'text-care-600' : 'text-trust-900'}
+                    `}>
                       {isLoading ? 'Loading...' : audioError ? 'Audio Error' : isPlaying ? 'Pause Sarah' : 'Meet Sarah'}
                     </span>
                   </button>
                 </div>
               </div>
               
-              {/* Subtitle */}
-              <p className="text-trust-500 mt-6 italic">✨ Experience Sarah's warm, caring voice</p>
-              
-              
+              {/* Enhanced subtitle with animation */}
+              <div className="text-center mt-6 animate-fade-in-up">
+                <p className="text-trust-500 italic">✨ Experience Sarah's warm, caring voice</p>
+                {isPlaying && (
+                  <p className="text-care-600 text-sm mt-2 animate-pulse-gentle">🎵 Sarah is speaking...</p>
+                )}
+              </div>
             </div>
           </div>
         </div>
