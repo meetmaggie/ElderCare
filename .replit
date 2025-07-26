@@ -22,10 +22,19 @@ localPort = 3001
 externalPort = 3001
 
 [workflows]
-runButton = "Next.js Dev Server"
+runButton = "Next.js Dev Server (App Router)"
 
 [[workflows.workflow]]
 name = "Next.js Dev Server"
+author = 38954244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow]]
+name = "Next.js Dev Server (App Router)"
 author = 38954244
 mode = "sequential"
 
