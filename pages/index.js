@@ -142,7 +142,6 @@ export default function LandingPage() {
           onPause={() => setIsPlaying(false)}
           onEnded={() => {
             setIsPlaying(false)
-            setShowControls(false)
             setCurrentTime(0)
           }}
           onError={() => {
@@ -196,11 +195,9 @@ export default function LandingPage() {
                       try {
                         if (isPlaying) {
                           audioRef.current.pause()
-                          setShowControls(false)
                         } else {
                           setIsLoading(true)
                           await audioRef.current.play()
-                          setShowControls(true)
                           setIsLoading(false)
                         }
                       } catch (error) {
@@ -244,132 +241,7 @@ export default function LandingPage() {
               {/* Subtitle */}
               <p className="text-trust-500 mt-6 italic">✨ Experience Sarah's warm, caring voice</p>
               
-              {/* Audio Controls */}
-              {showControls && !audioError && (
-                <div className="mt-8 max-w-md mx-auto bg-white rounded-2xl shadow-soft border border-trust-100 p-6 animate-fade-in-up">
-                  {/* Progress Bar */}
-                  <div className="mb-4">
-                    <div className="flex justify-between text-sm text-trust-600 mb-2">
-                      <span>{Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}</span>
-                      <span>{Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}</span>
-                    </div>
-                    <div className="relative">
-                      <div className="w-full h-2 bg-trust-100 rounded-full">
-                        <div 
-                          className="h-2 bg-gradient-to-r from-care-400 to-care-500 rounded-full transition-all duration-200"
-                          style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                        ></div>
-                      </div>
-                      <input
-                        type="range"
-                        min="0"
-                        max={duration || 0}
-                        value={currentTime}
-                        onChange={(e) => {
-                          if (audioRef.current) {
-                            audioRef.current.currentTime = parseFloat(e.target.value)
-                            setCurrentTime(parseFloat(e.target.value))
-                          }
-                        }}
-                        className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Control Buttons */}
-                  <div className="flex items-center justify-center space-x-4 mb-4">
-                    <button
-                      onClick={() => {
-                        if (audioRef.current) {
-                          audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10)
-                        }
-                      }}
-                      className="p-2 rounded-full hover:bg-trust-50 transition-colors"
-                      title="Rewind 10s"
-                    >
-                      <svg className="w-5 h-5 text-trust-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (audioRef.current) {
-                          if (isPlaying) {
-                            audioRef.current.pause()
-                          } else {
-                            audioRef.current.play()
-                          }
-                        }
-                      }}
-                      className="p-3 rounded-full bg-gradient-to-r from-care-400 to-care-500 text-white hover:from-care-500 hover:to-care-600 transition-all transform hover:scale-105"
-                    >
-                      {isPlaying ? (
-                        <div className="flex space-x-0.5">
-                          <div className="w-1.5 h-6 bg-white rounded"></div>
-                          <div className="w-1.5 h-6 bg-white rounded"></div>
-                        </div>
-                      ) : (
-                        <svg className="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
-                        </svg>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        if (audioRef.current) {
-                          audioRef.current.currentTime = Math.min(duration, audioRef.current.currentTime + 10)
-                        }
-                      }}
-                      className="p-2 rounded-full hover:bg-trust-50 transition-colors"
-                      title="Forward 10s"
-                    >
-                      <svg className="w-5 h-5 text-trust-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  {/* Volume Control */}
-                  <div className="flex items-center space-x-3">
-                    <svg className="w-4 h-4 text-trust-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.76L4.17 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.17l4.213-3.76a1 1 0 011.617.76zM8 5.628L5.04 8H3v4h2.04L8 14.372V5.628z" clipRule="evenodd" />
-                      <path d="M11.15 3.05a.5.5 0 01.7.14c.34.46.55.98.55 1.56 0 .58-.21 1.1-.55 1.56a.5.5 0 11-.85-.56c.23-.31.35-.65.35-1s-.12-.69-.35-1a.5.5 0 01.14-.7z" />
-                    </svg>
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={volume}
-                      onChange={(e) => {
-                        const newVolume = parseFloat(e.target.value)
-                        setVolume(newVolume)
-                        if (audioRef.current) {
-                          audioRef.current.volume = newVolume
-                        }
-                      }}
-                      className="flex-1 h-2 bg-trust-100 rounded-full appearance-none slider"
-                    />
-                  </div>
-
-                  {/* Close Controls */}
-                  <button
-                    onClick={() => {
-                      if (audioRef.current) {
-                        audioRef.current.pause()
-                        audioRef.current.currentTime = 0
-                      }
-                      setShowControls(false)
-                      setCurrentTime(0)
-                    }}
-                    className="w-full mt-4 text-sm text-trust-500 hover:text-trust-700 transition-colors"
-                  >
-                    Close Controls
-                  </button>
-                </div>
-              )}
+              
             </div>
           </div>
         </div>
