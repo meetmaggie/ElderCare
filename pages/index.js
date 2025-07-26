@@ -6,109 +6,19 @@ import { useState, useRef, useEffect } from 'react'
 export default function LandingPage() {
   const [email, setEmail] = useState('')
   const [isPlaying, setIsPlaying] = useState(false)
-  const [isLoading, setIsLoading] = useState(false);
-  const [audioError, setAudioError] = useState(null);
-  const [showControls, setShowControls] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [volume, setVolume] = useState(0.5); // Initial volume
-  const audioRef = useRef(null);
-
-
-  useEffect(() => {
-    const audioElement = audioRef.current;
-
-    const handleLoadedMetadata = () => {
-      setDuration(audioElement.duration);
-    };
-
-    const handleTimeUpdate = () => {
-      setCurrentTime(audioElement.currentTime);
-    };
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-    };
-
-    if (audioElement) {
-      audioElement.addEventListener('loadedmetadata', handleLoadedMetadata);
-      audioElement.addEventListener('timeupdate', handleTimeUpdate);
-      audioElement.addEventListener('ended', handleEnded);
-    }
-
-    return () => {
-      if (audioElement) {
-        audioElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
-        audioElement.removeEventListener('timeupdate', handleTimeUpdate);
-        audioElement.removeEventListener('ended', handleEnded);
-      }
-    };
-  }, []);
+  const [isLoading, setIsLoading] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(0)
+  const [volume, setVolume] = useState(1)
+  const [showControls, setShowControls] = useState(false)
+  const [audioError, setAudioError] = useState(false)
+  const audioRef = useRef(null)
 
   const handleSignup = (e) => {
     e.preventDefault()
     alert(`Thanks for your interest! We'll contact you at ${email}`)
     setEmail('')
   }
-
-  const handleAudioToggle = async () => {
-    const audioElement = audioRef.current;
-
-    if (!audioElement) {
-      return;
-    }
-
-    setIsLoading(true);
-    setAudioError(null);
-
-    try {
-      if (isPlaying) {
-        audioElement.pause();
-      } else {
-        await audioElement.play();
-        setShowControls(true);
-      }
-      setIsPlaying(!isPlaying);
-    } catch (error) {
-      console.error("Audio playback error:", error);
-      setAudioError("Failed to play audio.");
-      setIsPlaying(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSeek = (e) => {
-    const audioElement = audioRef.current;
-    if (!audioElement) return;
-
-    const progressBar = e.target;
-    const clickPosition = e.clientX - progressBar.offsetLeft;
-    const newCurrentTime = (clickPosition / progressBar.offsetWidth) * duration;
-
-    audioElement.currentTime = newCurrentTime;
-    setCurrentTime(newCurrentTime);
-  };
-
-
-  const handleVolumeChange = (e) => {
-    const newVolume = parseFloat(e.target.value);
-    setVolume(newVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = newVolume;
-    }
-  };
-
-  const formatTime = (time) => {
-    if (isNaN(time)) {
-      return "00:00";
-    }
-
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-warm-50 via-white to-primary-50">
@@ -160,7 +70,7 @@ export default function LandingPage() {
             Caring conversations, family updates, and gentle wellness insights ensure ongoing companionship and family connection.
           </p>
 
-
+          
 
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-sm text-trust-500">
@@ -212,28 +122,47 @@ export default function LandingPage() {
           <p className="text-trust-500">Free 7-day trial • No credit card required • Cancel anytime</p>
         </div>
 
-
+        {/* Audio element for Sarah's voice */}
+        <audio
+          ref={audioRef}
+          src="/audio/samples/ElevenLabs_2025-07-26T09_15_33_Clarice - Natural & Calm British Voice _pvc_sp100_s33_sb40_v3.mp3"
+          onLoadStart={() => setIsLoading(true)}
+          onCanPlay={() => setIsLoading(false)}
+          onLoadedMetadata={() => {
+            if (audioRef.current) {
+              setDuration(audioRef.current.duration)
+            }
+          }}
+          onTimeUpdate={() => {
+            if (audioRef.current) {
+              setCurrentTime(audioRef.current.currentTime)
+            }
+          }}
+          onPlay={() => setIsPlaying(true)}
+          onPause={() => setIsPlaying(false)}
+          onEnded={() => {
+            setIsPlaying(false)
+            setShowControls(false)
+            setCurrentTime(0)
+          }}
+          onError={() => {
+            setAudioError(true)
+            setIsLoading(false)
+            console.error('Audio failed to load')
+          }}
+          volume={volume}
+        />
 
         {/* Meet Sarah - AI Voice Demo */}
         <div className="mt-20 mb-20">
           <div className="text-center">
             <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h2>
             <p className="text-xl text-trust-600 max-w-3xl mx-auto mb-16">Click to hear how Sarah provides daily care conversations</p>
-
+            
             {/* Sarah's Voice Bubble - ElevenLabs Style */}
             <div className="relative max-w-2xl mx-auto">
-              {/* Hidden audio element */}
-              <audio
-                ref={audioRef}
-                src="/audio/samples/ElevenLabs_2025-07-26T09_15_33_Clarice - Natural & Calm British Voice _pvc_sp100_s33_sb40_v3.mp3"
-                preload="metadata"
-                volume={volume}
-              />
-
               {/* Main green circle with radial rays */}
-              <div className={`relative w-80 h-80 mx-auto transition-all duration-300 ${
-                isPlaying ? 'animate-speaking-pulse shadow-care scale-105' : 'shadow-soft'
-              }`}>
+              <div className="relative w-80 h-80 mx-auto">
                 {/* Radial burst background */}
                 <div className="absolute inset-0 rounded-full bg-gradient-to-br from-care-400 to-care-600 overflow-hidden">
                   {/* Radial rays */}
@@ -248,40 +177,54 @@ export default function LandingPage() {
                       />
                     ))}
                   </div>
-
-                  {/* Enhanced pulsing overlay for when audio plays */}
-                  <div className={`absolute inset-0 rounded-full transition-all duration-300 ${
-                    isPlaying 
-                      ? 'bg-care-300/40 animate-pulse-gentle shadow-care' 
-                      : 'bg-care-300/10'
-                  }`}></div>
-
-                  {/* Audio glow effect */}
-                  {isPlaying && (
-                    <div className="absolute inset-0 rounded-full bg-care-400/20 animate-speaking-pulse"></div>
-                  )}
+                  
+                  {/* Pulsing overlay for when audio plays */}
+                  <div className={`absolute inset-0 rounded-full bg-care-300/30 ${isPlaying ? 'animate-pulse-gentle' : ''}`}></div>
                 </div>
 
                 {/* White pill button in center */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
                   <button
-                    onClick={handleAudioToggle}
-                    disabled={isLoading}
-                    className={`bg-white rounded-full px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-3 border border-trust-100 disabled:opacity-50 ${
-                      isLoading ? 'cursor-wait' : 'hover:scale-105 cursor-pointer'
-                    }`}
+                    onClick={async () => {
+                      if (audioError) {
+                        alert('Audio file could not be loaded. Please check the file path.')
+                        return
+                      }
+
+                      if (!audioRef.current) return
+
+                      try {
+                        if (isPlaying) {
+                          audioRef.current.pause()
+                          setShowControls(false)
+                        } else {
+                          setIsLoading(true)
+                          await audioRef.current.play()
+                          setShowControls(true)
+                          setIsLoading(false)
+                        }
+                      } catch (error) {
+                        console.error('Audio playback failed:', error)
+                        setAudioError(true)
+                        setIsLoading(false)
+                        alert('Could not play audio. Please try again.')
+                      }
+                    }}
+                    disabled={isLoading || audioError}
+                    className="bg-white rounded-full px-8 py-4 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center space-x-3 border border-trust-100 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {/* Play/Loading icon */}
-                    <div className={`w-8 h-8 rounded-full bg-trust-900 flex items-center justify-center transition-all duration-300 ${
-                      isPlaying ? 'animate-pulse-fast' : ''
-                    }`}>
+                    {/* Play/Pause/Loading icon */}
+                    <div className={`w-8 h-8 rounded-full bg-trust-900 flex items-center justify-center transition-all duration-300 ${isPlaying ? 'animate-pulse-fast' : ''}`}>
                       {isLoading ? (
                         <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      ) : audioError ? (
+                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                        </svg>
                       ) : isPlaying ? (
-                        <div className="flex space-x-1">
-                          <div className="w-1 h-4 bg-white rounded animate-pulse"></div>
-                          <div className="w-1 h-4 bg-white rounded animate-pulse" style={{ animationDelay: '0.1s' }}></div>
-                          <div className="w-1 h-4 bg-white rounded animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+                        <div className="flex space-x-0.5">
+                          <div className="w-1 h-4 bg-white rounded"></div>
+                          <div className="w-1 h-4 bg-white rounded"></div>
                         </div>
                       ) : (
                         <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
@@ -289,86 +232,144 @@ export default function LandingPage() {
                         </svg>
                       )}
                     </div>
-
+                    
                     {/* Button text */}
                     <span className="font-semibold text-trust-900 text-lg">
-                      {isLoading ? 'Loading...' : isPlaying ? 'Playing' : 'Meet Sarah'}
+                      {isLoading ? 'Loading...' : audioError ? 'Audio Error' : isPlaying ? 'Pause Sarah' : 'Meet Sarah'}
                     </span>
                   </button>
                 </div>
               </div>
-
-              {/* Audio Error Message */}
-              {audioError && (
-                <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-red-700 text-sm text-center">
-                    Sorry, we couldn't load Sarah's voice sample. Please try again later.
-                  </p>
-                </div>
-              )}
-
-              {/* Professional Audio Controls */}
+              
+              {/* Subtitle */}
+              <p className="text-trust-500 mt-6 italic">✨ Experience Sarah's warm, caring voice</p>
+              
+              {/* Audio Controls */}
               {showControls && !audioError && (
-                <div className="mt-8 bg-white rounded-2xl shadow-soft border border-trust-100 p-6 max-w-md mx-auto">
-                  <div className="flex items-center justify-between mb-4">
-                    <h4 className="font-semibold text-trust-800">Sarah's Introduction</h4>
-                    <div className="text-sm text-trust-500">
-                      {formatTime(currentTime)} / {formatTime(duration)}
+                <div className="mt-8 max-w-md mx-auto bg-white rounded-2xl shadow-soft border border-trust-100 p-6 animate-fade-in-up">
+                  {/* Progress Bar */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-sm text-trust-600 mb-2">
+                      <span>{Math.floor(currentTime / 60)}:{String(Math.floor(currentTime % 60)).padStart(2, '0')}</span>
+                      <span>{Math.floor(duration / 60)}:{String(Math.floor(duration % 60)).padStart(2, '0')}</span>
+                    </div>
+                    <div className="relative">
+                      <div className="w-full h-2 bg-trust-100 rounded-full">
+                        <div 
+                          className="h-2 bg-gradient-to-r from-care-400 to-care-500 rounded-full transition-all duration-200"
+                          style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+                        ></div>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max={duration || 0}
+                        value={currentTime}
+                        onChange={(e) => {
+                          if (audioRef.current) {
+                            audioRef.current.currentTime = parseFloat(e.target.value)
+                            setCurrentTime(parseFloat(e.target.value))
+                          }
+                        }}
+                        className="absolute inset-0 w-full h-2 opacity-0 cursor-pointer"
+                      />
                     </div>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div 
-                    className="w-full bg-trust-200 rounded-full h-2 cursor-pointer mb-4"
-                    onClick={handleSeek}
-                  >
-                    <div 
-                      className="bg-care-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                    ></div>
-                  </div>
-
-                  {/* Control Buttons and Volume */}
-                  <div className="flex items-center justify-between">
+                  {/* Control Buttons */}
+                  <div className="flex items-center justify-center space-x-4 mb-4">
                     <button
-                      onClick={handleAudioToggle}
-                      className="flex items-center justify-center w-10 h-10 bg-care-500 text-white rounded-full hover:bg-care-600 transition-colors"
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - 10)
+                        }
+                      }}
+                      className="p-2 rounded-full hover:bg-trust-50 transition-colors"
+                      title="Rewind 10s"
+                    >
+                      <svg className="w-5 h-5 text-trust-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                      </svg>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        if (audioRef.current) {
+                          if (isPlaying) {
+                            audioRef.current.pause()
+                          } else {
+                            audioRef.current.play()
+                          }
+                        }
+                      }}
+                      className="p-3 rounded-full bg-gradient-to-r from-care-400 to-care-500 text-white hover:from-care-500 hover:to-care-600 transition-all transform hover:scale-105"
                     >
                       {isPlaying ? (
-                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
+                        <div className="flex space-x-0.5">
+                          <div className="w-1.5 h-6 bg-white rounded"></div>
+                          <div className="w-1.5 h-6 bg-white rounded"></div>
+                        </div>
                       ) : (
-                        <svg className="w-4 h-4 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                        <svg className="w-6 h-6 ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
                         </svg>
                       )}
                     </button>
 
-                    {/* Volume Control */}
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-4 h-4 text-trust-600" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.824L4.236 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.236l4.147-3.824z" clipRule="evenodd" />
-                        <path d="M11.293 7.293a1 1 0 011.414 0L15 9.586l2.293-2.293a1 1 0 111.414 1.414L16.414 11l2.293 2.293a1 1 0 01-1.414 1.414L15 12.414l-2.293 2.293a1 1 0 01-1.414-1.414L13.586 11l-2.293-2.293a1 1 0 010-1.414z" />
+                    <button
+                      onClick={() => {
+                        if (audioRef.current) {
+                          audioRef.current.currentTime = Math.min(duration, audioRef.current.currentTime + 10)
+                        }
+                      }}
+                      className="p-2 rounded-full hover:bg-trust-50 transition-colors"
+                      title="Forward 10s"
+                    >
+                      <svg className="w-5 h-5 text-trust-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                       </svg>
-                      <input
-                        type="range"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={volume}
-                        onChange={handleVolumeChange}
-                        className="w-20 h-2 bg-trust-200 rounded-lg appearance-none cursor-pointer slider"
-                      />
-                    </div>
+                    </button>
                   </div>
+
+                  {/* Volume Control */}
+                  <div className="flex items-center space-x-3">
+                    <svg className="w-4 h-4 text-trust-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.76L4.17 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.17l4.213-3.76a1 1 0 011.617.76zM8 5.628L5.04 8H3v4h2.04L8 14.372V5.628z" clipRule="evenodd" />
+                      <path d="M11.15 3.05a.5.5 0 01.7.14c.34.46.55.98.55 1.56 0 .58-.21 1.1-.55 1.56a.5.5 0 11-.85-.56c.23-.31.35-.65.35-1s-.12-.69-.35-1a.5.5 0 01.14-.7z" />
+                    </svg>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={volume}
+                      onChange={(e) => {
+                        const newVolume = parseFloat(e.target.value)
+                        setVolume(newVolume)
+                        if (audioRef.current) {
+                          audioRef.current.volume = newVolume
+                        }
+                      }}
+                      className="flex-1 h-2 bg-trust-100 rounded-full appearance-none slider"
+                    />
+                  </div>
+
+                  {/* Close Controls */}
+                  <button
+                    onClick={() => {
+                      if (audioRef.current) {
+                        audioRef.current.pause()
+                        audioRef.current.currentTime = 0
+                      }
+                      setShowControls(false)
+                      setCurrentTime(0)
+                    }}
+                    className="w-full mt-4 text-sm text-trust-500 hover:text-trust-700 transition-colors"
+                  >
+                    Close Controls
+                  </button>
                 </div>
               )}
-
-              {/* Subtitle */}
-              <p className="text-trust-500 mt-6 italic text-center">
-                {isPlaying ? '🎵 Listening to Sarah...' : '✨ Experience Sarah\'s warm, caring voice'}
-              </p>
             </div>
           </div>
         </div>
@@ -648,7 +649,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-
+      
 
       {/* Testimonial */}
       <section className="bg-gradient-to-r from-primary-600 to-care-600 py-20">
