@@ -70,7 +70,163 @@ export default function LandingPage() {
             Caring conversations, family updates, and gentle wellness insights ensure ongoing companionship and family connection.
           </p>
 
-          
+          {/* Meet Sarah - AI Voice Demo - Moved to Hero Section */}
+          <div className="mb-16">
+            <div className="text-center">
+              <h2 className="text-3xl font-heading font-bold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h2>
+              <p className="text-lg text-trust-600 max-w-2xl mx-auto mb-12">Click to hear how Sarah provides daily care conversations</p>
+              
+              {/* Sarah's Voice Bubble - Premium ElevenLabs Style */}
+              <div className="relative max-w-xl mx-auto">
+                {/* Main animated bubble container */}
+                <div className="relative w-64 h-64 mx-auto">
+                  
+                  {/* Expanding rings effect (only when playing) */}
+                  {isPlaying && (
+                    <>
+                      <div className="absolute inset-0 rounded-full border-2 border-care-400/30 animate-expanding-rings"></div>
+                      <div className="absolute inset-0 rounded-full border-2 border-care-400/20 animate-expanding-rings" style={{animationDelay: '0.5s'}}></div>
+                      <div className="absolute inset-0 rounded-full border-2 border-care-400/10 animate-expanding-rings" style={{animationDelay: '1s'}}></div>
+                    </>
+                  )}
+                  
+                  {/* Ripple effect container for clicks */}
+                  <div className="absolute inset-0 rounded-full overflow-hidden">
+                    <div className="absolute inset-0 rounded-full bg-care-400/20 opacity-0" id="ripple-effect"></div>
+                  </div>
+
+                  {/* Main voice bubble with dynamic animations */}
+                  <div className={`
+                    absolute inset-0 rounded-full bg-gradient-to-br from-care-400 to-care-600 overflow-hidden voice-bubble-glow
+                    ${isLoading ? 'animate-pulse-gentle' : isPlaying ? 'animate-voice-active' : 'animate-voice-idle'}
+                  `}>
+                    
+                    {/* Animated radial rays */}
+                    <div className="absolute inset-0">
+                      {Array.from({ length: 16 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`
+                            absolute top-0 left-1/2 w-0.5 h-full origin-bottom transition-all duration-300
+                            ${isPlaying ? 'bg-gradient-to-b from-white/40 to-transparent' : 'bg-gradient-to-b from-white/20 to-transparent'}
+                          `}
+                          style={{
+                            transform: `translateX(-50%) rotate(${i * 22.5}deg)`,
+                            animationDelay: `${i * 0.1}s`
+                          }}
+                        />
+                      ))}
+                    </div>
+                    
+                    {/* Animated waveform bars (visible when playing) */}
+                    {isPlaying && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-1 bg-white/60 rounded-full animate-waveform-1"></div>
+                          <div className="w-1 bg-white/70 rounded-full animate-waveform-2"></div>
+                          <div className="w-1 bg-white/50 rounded-full animate-waveform-3"></div>
+                          <div className="w-1 bg-white/80 rounded-full animate-waveform-4"></div>
+                          <div className="w-1 bg-white/65 rounded-full animate-waveform-5"></div>
+                          <div className="w-1 bg-white/75 rounded-full animate-waveform-1" style={{animationDelay: '0.2s'}}></div>
+                          <div className="w-1 bg-white/55 rounded-full animate-waveform-3" style={{animationDelay: '0.3s'}}></div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Breathing overlay for idle state */}
+                    {!isPlaying && !isLoading && (
+                      <div className="absolute inset-0 rounded-full bg-care-300/20 animate-voice-idle"></div>
+                    )}
+                  </div>
+
+                  {/* Enhanced center button */}
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                    <button
+                      onClick={async () => {
+                        if (audioError) {
+                          alert('Audio file could not be loaded. Please check the file path.')
+                          return
+                        }
+
+                        if (!audioRef.current) return
+
+                        // Add ripple effect
+                        const ripple = document.getElementById('ripple-effect')
+                        if (ripple) {
+                          ripple.classList.remove('animate-ripple')
+                          ripple.classList.add('opacity-100', 'animate-ripple')
+                          setTimeout(() => {
+                            ripple.classList.remove('opacity-100', 'animate-ripple')
+                          }, 600)
+                        }
+
+                        try {
+                          if (isPlaying) {
+                            audioRef.current.pause()
+                          } else {
+                            setIsLoading(true)
+                            await audioRef.current.play()
+                            setIsLoading(false)
+                          }
+                        } catch (error) {
+                          console.error('Audio playback failed:', error)
+                          setAudioError(true)
+                          setIsLoading(false)
+                          alert('Could not play audio. Please try again.')
+                        }
+                      }}
+                      disabled={isLoading || audioError}
+                      className={`
+                        bg-white rounded-full px-6 py-3 shadow-lg hover:shadow-xl flex items-center space-x-3 
+                        border border-trust-100 disabled:opacity-50 disabled:cursor-not-allowed
+                        transition-all duration-300 transform hover:scale-105 active:scale-95
+                        ${isPlaying ? 'shadow-care-500/20 shadow-2xl' : ''}
+                      `}
+                    >
+                      {/* Enhanced Play/Pause/Loading icon */}
+                      <div className={`
+                        w-6 h-6 rounded-full bg-trust-900 flex items-center justify-center transition-all duration-300
+                        ${isPlaying ? 'animate-pulse-fast bg-care-600' : isLoading ? 'bg-primary-600' : ''}
+                      `}>
+                        {isLoading ? (
+                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        ) : audioError ? (
+                          <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        ) : isPlaying ? (
+                          <div className="flex space-x-0.5">
+                            <div className="w-0.5 h-3 bg-white rounded animate-pulse"></div>
+                            <div className="w-0.5 h-3 bg-white rounded animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                          </div>
+                        ) : (
+                          <svg className="w-3 h-3 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
+                          </svg>
+                        )}
+                      </div>
+                      
+                      {/* Enhanced button text */}
+                      <span className={`
+                        font-semibold transition-all duration-300
+                        ${isPlaying ? 'text-care-600' : 'text-trust-900'}
+                      `}>
+                        {isLoading ? 'Loading...' : audioError ? 'Audio Error' : isPlaying ? 'Pause Sarah' : 'Meet Sarah'}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Enhanced subtitle with animation */}
+                <div className="text-center mt-4 animate-fade-in-up">
+                  <p className="text-trust-500 italic">✨ Experience Sarah's warm, caring voice</p>
+                  {isPlaying && (
+                    <p className="text-care-600 text-sm mt-2 animate-pulse-gentle">🎵 Sarah is speaking...</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center items-center gap-8 mb-12 text-sm text-trust-500">
@@ -152,163 +308,7 @@ export default function LandingPage() {
           volume={volume}
         />
 
-        {/* Meet Sarah - AI Voice Demo */}
-        <div className="mt-20 mb-20">
-          <div className="text-center">
-            <h2 className="text-4xl font-heading font-bold text-trust-900 mb-4">Meet Sarah, Your AI Companion</h2>
-            <p className="text-xl text-trust-600 max-w-3xl mx-auto mb-16">Click to hear how Sarah provides daily care conversations</p>
-            
-            {/* Sarah's Voice Bubble - Premium ElevenLabs Style */}
-            <div className="relative max-w-2xl mx-auto">
-              {/* Main animated bubble container */}
-              <div className="relative w-80 h-80 mx-auto">
-                
-                {/* Expanding rings effect (only when playing) */}
-                {isPlaying && (
-                  <>
-                    <div className="absolute inset-0 rounded-full border-2 border-care-400/30 animate-expanding-rings"></div>
-                    <div className="absolute inset-0 rounded-full border-2 border-care-400/20 animate-expanding-rings" style={{animationDelay: '0.5s'}}></div>
-                    <div className="absolute inset-0 rounded-full border-2 border-care-400/10 animate-expanding-rings" style={{animationDelay: '1s'}}></div>
-                  </>
-                )}
-                
-                {/* Ripple effect container for clicks */}
-                <div className="absolute inset-0 rounded-full overflow-hidden">
-                  <div className="absolute inset-0 rounded-full bg-care-400/20 opacity-0" id="ripple-effect"></div>
-                </div>
-
-                {/* Main voice bubble with dynamic animations */}
-                <div className={`
-                  absolute inset-0 rounded-full bg-gradient-to-br from-care-400 to-care-600 overflow-hidden voice-bubble-glow
-                  ${isLoading ? 'animate-pulse-gentle' : isPlaying ? 'animate-voice-active' : 'animate-voice-idle'}
-                `}>
-                  
-                  {/* Animated radial rays */}
-                  <div className="absolute inset-0">
-                    {Array.from({ length: 16 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`
-                          absolute top-0 left-1/2 w-0.5 h-full origin-bottom transition-all duration-300
-                          ${isPlaying ? 'bg-gradient-to-b from-white/40 to-transparent' : 'bg-gradient-to-b from-white/20 to-transparent'}
-                        `}
-                        style={{
-                          transform: `translateX(-50%) rotate(${i * 22.5}deg)`,
-                          animationDelay: `${i * 0.1}s`
-                        }}
-                      />
-                    ))}
-                  </div>
-                  
-                  {/* Animated waveform bars (visible when playing) */}
-                  {isPlaying && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="flex items-center space-x-1">
-                        <div className="w-1 bg-white/60 rounded-full animate-waveform-1"></div>
-                        <div className="w-1 bg-white/70 rounded-full animate-waveform-2"></div>
-                        <div className="w-1 bg-white/50 rounded-full animate-waveform-3"></div>
-                        <div className="w-1 bg-white/80 rounded-full animate-waveform-4"></div>
-                        <div className="w-1 bg-white/65 rounded-full animate-waveform-5"></div>
-                        <div className="w-1 bg-white/75 rounded-full animate-waveform-1" style={{animationDelay: '0.2s'}}></div>
-                        <div className="w-1 bg-white/55 rounded-full animate-waveform-3" style={{animationDelay: '0.3s'}}></div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Breathing overlay for idle state */}
-                  {!isPlaying && !isLoading && (
-                    <div className="absolute inset-0 rounded-full bg-care-300/20 animate-voice-idle"></div>
-                  )}
-                </div>
-
-                {/* Enhanced center button */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                  <button
-                    onClick={async () => {
-                      if (audioError) {
-                        alert('Audio file could not be loaded. Please check the file path.')
-                        return
-                      }
-
-                      if (!audioRef.current) return
-
-                      // Add ripple effect
-                      const ripple = document.getElementById('ripple-effect')
-                      if (ripple) {
-                        ripple.classList.remove('animate-ripple')
-                        ripple.classList.add('opacity-100', 'animate-ripple')
-                        setTimeout(() => {
-                          ripple.classList.remove('opacity-100', 'animate-ripple')
-                        }, 600)
-                      }
-
-                      try {
-                        if (isPlaying) {
-                          audioRef.current.pause()
-                        } else {
-                          setIsLoading(true)
-                          await audioRef.current.play()
-                          setIsLoading(false)
-                        }
-                      } catch (error) {
-                        console.error('Audio playback failed:', error)
-                        setAudioError(true)
-                        setIsLoading(false)
-                        alert('Could not play audio. Please try again.')
-                      }
-                    }}
-                    disabled={isLoading || audioError}
-                    className={`
-                      bg-white rounded-full px-8 py-4 shadow-lg hover:shadow-xl flex items-center space-x-3 
-                      border border-trust-100 disabled:opacity-50 disabled:cursor-not-allowed
-                      transition-all duration-300 transform hover:scale-105 active:scale-95
-                      ${isPlaying ? 'shadow-care-500/20 shadow-2xl' : ''}
-                    `}
-                  >
-                    {/* Enhanced Play/Pause/Loading icon */}
-                    <div className={`
-                      w-8 h-8 rounded-full bg-trust-900 flex items-center justify-center transition-all duration-300
-                      ${isPlaying ? 'animate-pulse-fast bg-care-600' : isLoading ? 'bg-primary-600' : ''}
-                    `}>
-                      {isLoading ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      ) : audioError ? (
-                        <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                      ) : isPlaying ? (
-                        <div className="flex space-x-0.5">
-                          <div className="w-1 h-4 bg-white rounded animate-pulse"></div>
-                          <div className="w-1 h-4 bg-white rounded animate-pulse" style={{animationDelay: '0.2s'}}></div>
-                        </div>
-                      ) : (
-                        <svg className="w-4 h-4 text-white ml-0.5" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z"/>
-                        </svg>
-                      )}
-                    </div>
-                    
-                    {/* Enhanced button text */}
-                    <span className={`
-                      font-semibold text-lg transition-all duration-300
-                      ${isPlaying ? 'text-care-600' : 'text-trust-900'}
-                    `}>
-                      {isLoading ? 'Loading...' : audioError ? 'Audio Error' : isPlaying ? 'Pause Sarah' : 'Meet Sarah'}
-                    </span>
-                  </button>
-                </div>
-              </div>
-              
-              {/* Enhanced subtitle with animation */}
-              <div className="text-center mt-6 animate-fade-in-up">
-                <p className="text-trust-500 italic">✨ Experience Sarah's warm, caring voice</p>
-                {isPlaying && (
-                  <p className="text-care-600 text-sm mt-2 animate-pulse-gentle">🎵 Sarah is speaking...</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        
 
         {/* How It Works */}
         <div className="mt-20">
