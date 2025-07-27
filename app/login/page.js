@@ -49,8 +49,8 @@ export default function LoginPage() {
     setError('')
 
     try {
-      const demoEmail = 'demo.user@eldercare.ai'
-      const demoPassword = 'demo123'
+      const demoEmail = 'sarah.johnson.demo@gmail.com'
+      const demoPassword = 'password123'
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email: demoEmail,
