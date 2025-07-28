@@ -285,10 +285,10 @@ export default function DashboardPage() {
   const getEmptyDataStructure = () => ({
     elderlyPerson: {
       name: 'Setup Required',
-      status: 'Account Setup Needed',
-      mood: 'Unknown',
+      status: 'Setup Needed',
+      mood: 'No Data',
       moodTrend: 'stable',
-      activity: 'Unknown',
+      activity: 'No Data',
       lastCall: 'No calls yet',
       lastCallRelative: 'N/A',
       nextCall: 'Complete setup first',
@@ -829,14 +829,30 @@ export default function DashboardPage() {
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border hover:shadow-md transition-all duration-200 cursor-pointer group`}>
             <div className="flex items-center justify-between mb-2">
               <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Current Status</h3>
-              <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                </svg>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform ${
+                dashboardData.elderlyPerson.status === 'Setup Needed' 
+                  ? 'bg-yellow-100' 
+                  : 'bg-green-100'
+              }`}>
+                {dashboardData.elderlyPerson.status === 'Setup Needed' ? (
+                  <svg className="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                  </svg>
+                )}
               </div>
             </div>
-            <p className="text-2xl font-bold text-green-600 mb-1">{dashboardData.elderlyPerson.status}</p>
-            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI analysis complete</p>
+            <p className={`text-2xl font-bold mb-1 ${
+              dashboardData.elderlyPerson.status === 'Setup Needed' 
+                ? 'text-yellow-600' 
+                : 'text-green-600'
+            }`}>{dashboardData.elderlyPerson.status}</p>
+            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {dashboardData.elderlyPerson.status === 'Setup Needed' ? 'Complete setup to begin' : 'AI analysis complete'}
+            </p>
             <button className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">View Details →</button>
           </div>
 
@@ -853,10 +869,18 @@ export default function DashboardPage() {
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border hover:shadow-md transition-all duration-200 cursor-pointer`}>
             <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Mood Today</h3>
             <div className="flex items-center space-x-2 mb-1">
-              <p className="text-2xl font-bold text-green-600">{dashboardData.elderlyPerson.mood}</p>
-              <span className="text-lg">{getTrendIcon(dashboardData.elderlyPerson.moodTrend)}</span>
+              <p className={`text-2xl font-bold ${
+                dashboardData.elderlyPerson.mood === 'No Data' 
+                  ? 'text-gray-400' 
+                  : 'text-green-600'
+              }`}>{dashboardData.elderlyPerson.mood}</p>
+              {dashboardData.elderlyPerson.mood !== 'No Data' && (
+                <span className="text-lg">{getTrendIcon(dashboardData.elderlyPerson.moodTrend)}</span>
+              )}
             </div>
-            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI voice analysis</p>
+            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+              {dashboardData.elderlyPerson.mood === 'No Data' ? 'Awaiting first call' : 'AI voice analysis'}
+            </p>
             <button className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">View Details →</button>
           </div>
 
