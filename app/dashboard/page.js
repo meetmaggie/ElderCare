@@ -155,6 +155,35 @@ export default function DashboardPage() {
 
       if (!familyUser) {
         console.log('No family user record found - user may need to complete signup process')
+        
+        // If this is a test account, try to auto-fix the database records
+        if (user?.email?.endsWith('@test.local')) {
+          console.log('Test account detected, attempting auto-fix...')
+          try {
+            const response = await fetch('/api/fix-test-account', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userEmail: user.email,
+                userId: userId
+              })
+            })
+
+            if (response.ok) {
+              console.log('Test account fixed, reloading data...')
+              // Retry loading the data after fixing
+              await loadRealUserData(userId)
+              return
+            } else {
+              console.error('Failed to fix test account')
+            }
+          } catch (error) {
+            console.error('Error auto-fixing test account:', error)
+          }
+        }
+        
         setDashboardData(getEmptyDataStructure())
         return
       }
@@ -174,6 +203,13 @@ export default function DashboardPage() {
 
       if (!elderlyUser) {
         console.log('No elderly user record found - user may need to complete setup')
+        
+        // If this is a test account, the auto-fix above should have handled it
+        // If we still don't have elderly user, there's a deeper issue
+        if (user?.email?.endsWith('@test.local')) {
+          console.log('Test account still missing elderly user after auto-fix attempt')
+        }
+        
         setDashboardData(getEmptyDataStructure())
         return
       }

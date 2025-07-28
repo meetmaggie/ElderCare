@@ -62,12 +62,64 @@ export default function SignupPage() {
       }
 
       if (data.user) {
-        // For test accounts, bypass payment and go directly to dashboard
-        if (isTestAccount) {
-          router.push('/dashboard')
-        } else {
-          // For regular accounts, redirect to payment flow (or dashboard for now)
-          router.push('/dashboard')
+        // Create database records for the user
+        const userId = data.user.id
+
+        try {
+          // Insert family user record
+          const { error: familyError } = await supabase
+            .from('family_users')
+            .insert({
+              id: userId,
+              email: formData.email,
+              name: formData.name,
+              subscription_status: isTestAccount ? 'active' : 'trial',
+              plan: isTestAccount ? 'premium' : 'trial',
+              plan_price: isTestAccount ? 29.99 : 0,
+              alert_preferences: 'email',
+              alert_frequency: 'standard',
+              call_frequency: 'daily'
+            })
+
+          if (familyError) {
+            console.error('Error creating family user:', familyError)
+            setError('Failed to complete account setup. Please try again.')
+            return
+          }
+
+          // Insert elderly user record
+          const { error: elderlyError } = await supabase
+            .from('elderly_users')
+            .insert({
+              family_user_id: userId,
+              name: formData.elderlyName,
+              phone: formData.elderlyPhone,
+              emergency_contact: formData.name,
+              emergency_phone: '', // This could be added to the form later
+              call_schedule: 'daily_9am',
+              health_conditions: '',
+              special_instructions: ''
+            })
+
+          if (elderlyError) {
+            console.error('Error creating elderly user:', elderlyError)
+            setError('Failed to complete account setup. Please try again.')
+            return
+          }
+
+          console.log('Database records created successfully for:', formData.email)
+
+          // For test accounts, bypass payment and go directly to dashboard
+          if (isTestAccount) {
+            router.push('/dashboard')
+          } else {
+            // For regular accounts, redirect to payment flow (or dashboard for now)
+            router.push('/dashboard')
+          }
+        } catch (dbError) {
+          console.error('Database setup error:', dbError)
+          setError('Failed to complete account setup. Please try again.')
+          return
         }
       }
     } catch (error) {
