@@ -20,35 +20,37 @@ export async function POST(request) {
       return Response.json({ error: 'Missing conversation_id' }, { status: 400 })
     }
 
-    // Find the call log entry
-    const { data: callLog, error: callLogError } = await supabase
-      .from('call_logs')
+    // Find the call record entry
+    const { data: callRecord, error: callRecordError } = await supabase
+      .from('call_records')
       .select('*, elderly_users(*)')
       .eq('elevenlabs_call_id', conversation_id)
       .single()
 
-    if (callLogError || !callLog) {
-      console.error('Call log not found:', callLogError)
-      return Response.json({ error: 'Call log not found' }, { status: 404 })
+    if (callRecordError || !callRecord) {
+      console.error('Call record not found:', callRecordError)
+      return Response.json({ error: 'Call record not found' }, { status: 404 })
     }
 
-    // Update call log with completion data
+    // Update call record with completion data
     const { error: updateError } = await supabase
-      .from('call_logs')
+      .from('call_records')
       .update({
         status: status === 'completed' ? 'completed' : 'failed',
-        duration: duration_seconds
+        duration: duration_seconds,
+        transcript: transcript,
+        summary: summary
       })
-      .eq('id', callLog.id)
+      .eq('id', callRecord.id)
 
     if (updateError) {
-      console.error('Error updating call log:', updateError)
-      return Response.json({ error: 'Failed to update call log' }, { status: 500 })
+      console.error('Error updating call record:', updateError)
+      return Response.json({ error: 'Failed to update call record' }, { status: 500 })
     }
 
     // If call was successful, process the conversation data
     if (status === 'completed' && transcript) {
-      await processConversationData(callLog, {
+      await processConversationData(callRecord, {
         transcript,
         summary,
         duration_seconds,
@@ -57,11 +59,11 @@ export async function POST(request) {
     }
 
     // Mark first call as completed if applicable
-    if (status === 'completed' && !callLog.elderly_users.first_call_completed) {
+    if (status === 'completed' && !callRecord.elderly_users.first_call_completed) {
       await supabase
         .from('elderly_users')
         .update({ first_call_completed: true })
-        .eq('id', callLog.user_id)
+        .eq('id', callRecord.elderly_user_id)
     }
 
     return Response.json({ success: true })
@@ -73,41 +75,28 @@ export async function POST(request) {
 }
 
 // Process conversation data and extract insights
-async function processConversationData(callLog, conversationData) {
+async function processConversationData(callRecord, conversationData) {
   try {
-    const { transcript, summary, metadata } = conversationData
+    const { transcript, summary } = conversationData
 
     // Analyze transcript for mood and health mentions
     const analysis = await analyzeConversation(transcript, summary)
 
-    // Create conversation record
-    const { data: conversation, error: convError } = await supabase
-      .from('conversations')
-      .insert({
-        call_log_id: callLog.id,
-        summary: summary || analysis.summary,
-        transcript: transcript,
-        mood_analysis: analysis.mood_description,
-        key_topics: analysis.topics,
-        health_mentions: analysis.health_keywords,
-        ai_insights: analysis.insights,
-        conversation_quality: analysis.quality
+    // Update call record with analysis
+    await supabase
+      .from('call_records')
+      .update({
+        mood: analysis.mood_description,
+        key_topics: analysis.topics
       })
-      .select()
-      .single()
-
-    if (convError) {
-      console.error('Error creating conversation:', convError)
-      return
-    }
+      .eq('id', callRecord.id)
 
     // Create mood tracking entry
     if (analysis.mood_score) {
       await supabase
         .from('mood_tracking')
         .insert({
-          elderly_user_id: callLog.user_id,
-          call_log_id: callLog.id,
+          elderly_user_id: callRecord.elderly_user_id,
           call_date: new Date().toISOString().split('T')[0],
           mood_score: analysis.mood_score,
           mood_description: analysis.mood_description,
@@ -116,7 +105,7 @@ async function processConversationData(callLog, conversationData) {
     }
 
     // Create alerts if needed
-    await createAlertsFromAnalysis(callLog, conversation.id, analysis)
+    await createAlertsFromAnalysis(callRecord, analysis)
 
   } catch (error) {
     console.error('Error processing conversation data:', error)
@@ -185,39 +174,37 @@ async function analyzeConversation(transcript, summary) {
     mood_analysis: `Mood analysis based on conversation indicators: ${positiveCount} positive, ${negativeCount} negative mentions`,
     health_keywords,
     topics: topics.length > 0 ? topics : ['General'],
-    summary: summary || 'Conversation summary not available',
-    insights: `Conversation quality appears good. ${health_keywords.length > 0 ? 'Health topics mentioned.' : 'No significant health concerns.'} Mood: ${mood_description}.`,
-    quality: 'Medium'
+    summary: summary || 'Conversation summary not available'
   }
 }
 
 // Create alerts based on conversation analysis
-async function createAlertsFromAnalysis(callLog, conversationId, analysis) {
+async function createAlertsFromAnalysis(callRecord, analysis) {
   const alerts = []
 
   // Health keyword alerts
   if (analysis.health_keywords.length > 0) {
     alerts.push({
-      call_log_id: callLog.id,
-      elderly_user_id: callLog.user_id,
-      alert_type: 'health',
-      severity: analysis.health_keywords.length > 2 ? 'MEDIUM' : 'LOW',
+      elderly_user_id: callRecord.elderly_user_id,
+      family_user_id: callRecord.elderly_users.family_user_id,
+      priority: analysis.health_keywords.length > 2 ? 'MEDIUM' : 'LOW',
+      category: 'Health',
       title: 'Health keywords detected',
       description: `Health-related topics mentioned: ${analysis.health_keywords.join(', ')}`,
-      keywords_detected: analysis.health_keywords
+      resolved: false
     })
   }
 
   // Mood alerts
   if (analysis.mood_score <= 2) {
     alerts.push({
-      call_log_id: callLog.id,
-      elderly_user_id: callLog.user_id,
-      alert_type: 'mood',
-      severity: analysis.mood_score === 1 ? 'HIGH' : 'MEDIUM',
+      elderly_user_id: callRecord.elderly_user_id,
+      family_user_id: callRecord.elderly_users.family_user_id,
+      priority: analysis.mood_score === 1 ? 'HIGH' : 'MEDIUM',
+      category: 'Mood',
       title: 'Low mood detected',
       description: `AI detected indicators of ${analysis.mood_description.toLowerCase()} mood during conversation`,
-      keywords_detected: []
+      resolved: false
     })
   }
 
@@ -230,7 +217,7 @@ async function createAlertsFromAnalysis(callLog, conversationId, analysis) {
     if (error) {
       console.error('Error creating alerts:', error)
     } else {
-      console.log(`Created ${alerts.length} alerts for call ${callLog.id}`)
+      console.log(`Created ${alerts.length} alerts for call ${callRecord.id}`)
     }
   }
 }
