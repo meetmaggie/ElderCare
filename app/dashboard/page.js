@@ -312,108 +312,157 @@ export default function DashboardPage() {
   )
 
   const FullCareReportModal = () => {
+    const [reportDateRange, setReportDateRange] = useState('7 days')
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+
+    const handleDownloadPDF = async () => {
+      setIsGeneratingPDF(true)
+      try {
+        // Add a small delay to show loading state
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        generatePDFReport(reportDateRange)
+      } catch (error) {
+        console.error('Error generating PDF:', error)
+        alert('Error generating PDF. Please try again.')
+      } finally {
+        setIsGeneratingPDF(false)
+      }
+    }
+
     return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-gray-900">Full Care Report</h2>
-            <div className="flex items-center space-x-4">
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Download PDF</button>
-              <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Email Report</button>
-              <button onClick={() => setActiveModal(null)} className="text-gray-500 hover:text-gray-700">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex justify-between items-center">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900">Full Care Report</h2>
+                <div className="mt-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Report Period</label>
+                  <select 
+                    value={reportDateRange} 
+                    onChange={(e) => setReportDateRange(e.target.value)}
+                    className="text-sm border border-gray-300 rounded px-3 py-1"
+                  >
+                    <option value="7 days">Last 7 days</option>
+                    <option value="30 days">Last 30 days</option>
+                    <option value="90 days">Last 90 days</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex items-center space-x-4">
+                <button 
+                  onClick={handleDownloadPDF}
+                  disabled={isGeneratingPDF}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center space-x-2"
+                >
+                  {isGeneratingPDF ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      <span>Generating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Download PDF</span>
+                    </>
+                  )}
+                </button>
+                <button className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Email Report</button>
+                <button onClick={() => setActiveModal(null)} className="text-gray-500 hover:text-gray-700">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="p-6 space-y-8">
-          {/* Executive Summary */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4 text-blue-900">Executive Summary - This Week</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              <div>
-                <div className="font-medium text-blue-800">Overall Status</div>
-                <div className="text-blue-700">Stable and positive</div>
-              </div>
-              <div>
-                <div className="font-medium text-blue-800">Mood Trend</div>
-                <div className="text-blue-700">Improving (↗️ +15%)</div>
-              </div>
-              <div>
-                <div className="font-medium text-blue-800">Health Mentions</div>
-                <div className="text-blue-700">2 minor concerns</div>
+          <div className="p-6 space-y-8">
+            {/* Executive Summary */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4 text-blue-900">Executive Summary - This Week</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div>
+                  <div className="font-medium text-blue-800">Overall Status</div>
+                  <div className="text-blue-700">Stable and positive</div>
+                </div>
+                <div>
+                  <div className="font-medium text-blue-800">Mood Trend</div>
+                  <div className="text-blue-700">Improving (↗️ +15%)</div>
+                </div>
+                <div>
+                  <div className="font-medium text-blue-800">Health Mentions</div>
+                  <div className="text-blue-700">2 minor concerns</div>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Detailed Mood Chart */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Monthly Mood Trends</h3>
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <div className="flex items-end space-x-2 h-40 mb-4">
-                {Array.from({length: 30}, (_, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center">
-                    <div className="flex-1 flex items-end">
-                      <div 
-                        className="w-full bg-blue-400 rounded-t-sm"
-                        style={{ height: `${Math.random() * 80 + 20}%` }}
-                      ></div>
+            {/* Detailed Mood Chart */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Monthly Mood Trends</h3>
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-end space-x-2 h-40 mb-4">
+                  {Array.from({length: 30}, (_, i) => (
+                    <div key={i} className="flex-1 flex flex-col items-center">
+                      <div className="flex-1 flex items-end">
+                        <div 
+                          className="w-full bg-blue-400 rounded-t-sm"
+                          style={{ height: `${Math.random() * 80 + 20}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="text-sm text-gray-600 text-center">Last 30 Days</div>
+              </div>
+            </div>
+
+            {/* Health Timeline */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Health Mentions Timeline</h3>
+              <div className="space-y-3">
+                {[
+                  { date: 'Jan 21', concern: 'Back pain mentioned', severity: 'Low', action: 'Monitoring' },
+                  { date: 'Jan 19', concern: 'Sleep difficulty', severity: 'Medium', action: 'Family notified' },
+                  { date: 'Jan 17', concern: 'Fatigue', severity: 'Low', action: 'Pattern tracking' }
+                ].map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div>
+                      <div className="font-medium">{item.concern}</div>
+                      <div className="text-sm text-gray-500">{item.date}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className={`text-xs px-2 py-1 rounded-full ${item.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                        {item.severity}
+                      </div>
+                      <div className="text-sm text-gray-500 mt-1">{item.action}</div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div className="text-sm text-gray-600 text-center">Last 30 Days</div>
             </div>
-          </div>
 
-          {/* Health Timeline */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">Health Mentions Timeline</h3>
-            <div className="space-y-3">
-              {[
-                { date: 'Jan 21', concern: 'Back pain mentioned', severity: 'Low', action: 'Monitoring' },
-                { date: 'Jan 19', concern: 'Sleep difficulty', severity: 'Medium', action: 'Family notified' },
-                { date: 'Jan 17', concern: 'Fatigue', severity: 'Low', action: 'Pattern tracking' }
-              ].map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <div className="font-medium">{item.concern}</div>
-                    <div className="text-sm text-gray-500">{item.date}</div>
+            {/* Recommendations */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">AI Recommendations</h3>
+              <div className="space-y-3">
+                {[
+                  'Consider scheduling a doctor visit to discuss recurring back pain',
+                  'Sleep patterns show improvement - continue current routine',
+                  'Family visits correlate with improved mood - maintain regular contact'
+                ].map((rec, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                    <div className="text-green-800">{rec}</div>
                   </div>
-                  <div className="text-right">
-                    <div className={`text-xs px-2 py-1 rounded-full ${item.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
-                      {item.severity}
-                    </div>
-                    <div className="text-sm text-gray-500 mt-1">{item.action}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Recommendations */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">AI Recommendations</h3>
-            <div className="space-y-3">
-              {[
-                'Consider scheduling a doctor visit to discuss recurring back pain',
-                'Sleep patterns show improvement - continue current routine',
-                'Family visits correlate with improved mood - maintain regular contact'
-              ].map((rec, index) => (
-                <div key={index} className="flex items-start space-x-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                  <div className="text-green-800">{rec}</div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
     )
   }
 
@@ -849,4 +898,8 @@ export default function DashboardPage() {
       {activeModal === 'report' && <FullCareReportModal />}
     </div>
   )
+}
+
+function generatePDFReport(dateRange) {
+  alert(`Generating PDF report for the last ${dateRange}`)
 }
