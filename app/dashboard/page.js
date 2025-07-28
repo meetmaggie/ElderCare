@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
 
 export default function DashboardPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState('7days')
@@ -902,16 +903,15 @@ export default function DashboardPage() {
 
 async function generatePDFReport(dateRange) {
   try {
-    // Import jsPDF and jspdf-autotable with proper error handling
-    const jsPDFModule = await import('jspdf')
-    const jsPDF = jsPDFModule.default
-
-    // Import autotable plugin
-    await import('jspdf-autotable')
+    // Dynamic import for client-side only
+    const { default: jsPDF } = await import('jspdf')
+    const { default: autoTable } = await import('jspdf-autotable')
     
     console.log('PDF libraries loaded successfully')
     
     const doc = new jsPDF()
+    
+    // The autoTable plugin should be automatically registered when imported
     
     // Cover Page
     doc.setFontSize(20)
