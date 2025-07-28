@@ -269,7 +269,8 @@ export default function DashboardPage() {
           nextCall: elderlyUser.next_scheduled_call ? 
             new Date(elderlyUser.next_scheduled_call).toLocaleString() : 
             'Scheduling...',
-          alertsThisWeek: recentAlerts.length
+          alertsThisWeek: recentAlerts.length,
+          first_call_completed: elderlyUser.first_call_completed
         },
         recentCalls: callLogs?.map(call => ({
           date: new Date(call.created_at).toLocaleString(),
@@ -459,7 +460,11 @@ export default function DashboardPage() {
 
       if (response.ok) {
         const result = await response.json()
-        alert(`🔥 Test call initiated!\n\nCalling: ${result.elderlyUser}\nPhone: ${result.phone}\n\nYou should receive a call from Sarah within 30 seconds using the Discovery agent.`)
+        const callTypeMessage = result.isFirstCall 
+          ? 'Discovery call (first meeting with Sarah)' 
+          : `Daily check-in call (#${result.conversationCount})`
+        
+        alert(`🔥 ${result.agentType} call initiated!\n\nCalling: ${result.elderlyUser}\nPhone: ${result.phone}\nCall Type: ${callTypeMessage}\n\nYou should receive a call from Sarah within 30 seconds.`)
         
         // Refresh dashboard data after call
         setTimeout(() => {
@@ -472,6 +477,53 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error triggering test call:', error)
       alert('Error initiating test call')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resetToDiscovery = async () => {
+    if (isDemoUser) {
+      alert('Demo mode: Reset feature not available in demo')
+      return
+    }
+
+    const isTestAccount = user?.email?.endsWith('@test.local')
+    if (!isTestAccount) {
+      alert('Reset feature only available for test accounts')
+      return
+    }
+
+    const confirmed = confirm('Reset to Discovery call mode?\n\nThis will reset the relationship with Sarah and the next call will be a first-time introduction.')
+    if (!confirmed) return
+
+    try {
+      setLoading(true)
+      const response = await fetch('/api/reset-discovery', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: user.email
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(`🔄 Reset successful!\n\n${result.elderlyUser} has been reset to Discovery call mode.\n\nNext call will be a first-time introduction with Sarah.`)
+        
+        // Refresh dashboard data
+        setTimeout(() => {
+          checkUserAndLoadData()
+        }, 1000)
+      } else {
+        const error = await response.json()
+        alert('Failed to reset: ' + (error.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Error resetting to discovery:', error)
+      alert('Error resetting call mode')
     } finally {
       setLoading(false)
     }
@@ -1008,7 +1060,15 @@ export default function DashboardPage() {
 
         {/* Quick Actions Panel */}
         <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border mb-8`}>
-          <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Quick Actions</h3>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Quick Actions</h3>
+            {/* Next Call Type Indicator */}
+            {user?.email?.endsWith('@test.local') && !isDemoUser && dashboardData.elderlyPerson.name !== 'Setup Required' && (
+              <div className="text-sm bg-blue-50 text-blue-700 px-3 py-1 rounded-full border border-blue-200">
+                Next call: {dashboardData.elderlyPerson.first_call_completed === false ? 'Discovery' : 'Daily check-in'}
+              </div>
+            )}
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             {/* Test Call Button - Only show for test accounts */}
             {user?.email?.endsWith('@test.local') && !isDemoUser && (
@@ -1020,6 +1080,25 @@ export default function DashboardPage() {
                 <div className="text-2xl mb-2">🔥</div>
                 <div className="text-sm font-medium">
                   {loading ? 'Calling...' : 'Test Call Now'}
+                </div>
+                <div className="text-xs mt-1 opacity-75">
+                  {dashboardData.elderlyPerson.first_call_completed === false ? 'Discovery' : 'Daily check-in'}
+                </div>
+              </button>
+            )}
+            {/* Reset Discovery Button - Only show for test accounts */}
+            {user?.email?.endsWith('@test.local') && !isDemoUser && dashboardData.elderlyPerson.name !== 'Setup Required' && (
+              <button 
+                onClick={resetToDiscovery}
+                disabled={loading}
+                className="bg-purple-100 text-purple-800 hover:bg-purple-200 p-4 rounded-lg transition-colors duration-200 text-center disabled:opacity-50 disabled:cursor-not-allowed border-2 border-purple-300"
+              >
+                <div className="text-2xl mb-2">🔄</div>
+                <div className="text-sm font-medium">
+                  {loading ? 'Resetting...' : 'Reset Discovery'}
+                </div>
+                <div className="text-xs mt-1 opacity-75">
+                  First call mode
                 </div>
               </button>
             )}

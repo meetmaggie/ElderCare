@@ -1,4 +1,3 @@
-
 import { supabase } from '../../../lib/supabase'
 import crypto from 'crypto'
 
@@ -7,7 +6,7 @@ export async function POST(request) {
     // Get the raw body for signature verification
     const rawBody = await request.text()
     const webhookData = JSON.parse(rawBody)
-    
+
     // Verify webhook signature if secret is configured
     const webhookSecret = process.env.ELEVENLABS_WEBHOOK_SECRET
     if (webhookSecret) {
@@ -16,23 +15,23 @@ export async function POST(request) {
         console.error('Missing webhook signature')
         return Response.json({ error: 'Missing signature' }, { status: 401 })
       }
-      
+
       const expectedSignature = crypto
         .createHmac('sha256', webhookSecret)
         .update(rawBody)
         .digest('hex')
-      
+
       if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
         console.error('Invalid webhook signature')
         return Response.json({ error: 'Invalid signature' }, { status: 401 })
       }
     }
-    
+
     console.log('ElevenLabs webhook received:', webhookData)
 
     // Validate environment on first run
     validateEnvironment()
-    
+
     // Extract data from webhook - handle different ElevenLabs event formats
     const {
       conversation_id,
@@ -44,7 +43,7 @@ export async function POST(request) {
       event_type,
       agent_id
     } = webhookData
-    
+
     // Log the agent that was used
     if (agent_id) {
       const agentType = agent_id === 'agent_01k0q3vpk7f8bsrq2aqk71v9j9' ? 'Discovery' : 
@@ -155,7 +154,7 @@ function validateEnvironment() {
   if (missing.length > 0) {
     console.warn(`Missing environment variables: ${missing.join(', ')}`)
   }
-  
+
   if (process.env.ELEVENLABS_WEBHOOK_SECRET) {
     console.log('✓ Webhook signature verification enabled')
   } else {
@@ -166,7 +165,7 @@ function validateEnvironment() {
 // Analyze conversation for mood, topics, and health mentions
 async function analyzeConversation(transcript, summary) {
   const text = transcript.toLowerCase()
-  
+
   // Health keywords to detect
   const healthKeywords = [
     'pain', 'hurt', 'ache', 'sick', 'ill', 'doctor', 'hospital', 'medicine', 

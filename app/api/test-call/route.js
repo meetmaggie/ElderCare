@@ -1,10 +1,10 @@
-
 import { supabase } from '../../../lib/supabase'
 
 // ElevenLabs API configuration
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY
 const ELEVENLABS_BASE_URL = 'https://api.elevenlabs.io/v1'
 const DISCOVERY_AGENT_ID = 'agent_01k0q3vpk7f8bsrq2aqk71v9j9'
+const DAILY_CHECKIN_AGENT_ID = 'agent_01k0pz5awhf8xbn85wrg227fve'
 
 export async function POST(request) {
   try {
@@ -43,15 +43,32 @@ export async function POST(request) {
 
     console.log(`Initiating test call for ${elderlyUser.name} at ${elderlyUser.phone}`)
 
+    // Determine which agent to use based on call history
+    const isFirstCall = !elderlyUser.first_call_completed
+    const agentId = isFirstCall ? DISCOVERY_AGENT_ID : DAILY_CHECKIN_AGENT_ID
+    const agentType = isFirstCall ? 'Discovery' : 'Daily check-in'
+
+    console.log(`Agent selection: ${agentType} (first_call_completed: ${elderlyUser.first_call_completed})`)
+
+    // Get recent conversation history for context
+    const { data: recentCalls } = await supabase
+      .from('call_records')
+      .select('summary, key_topics, mood')
+      .eq('elderly_user_id', elderlyUser.id)
+      .eq('status', 'completed')
+      .order('call_date', { ascending: false })
+      .limit(3)
+
     // Create call record entry
     const { data: callRecord, error: callRecordError } = await supabase
       .from('call_records')
       .insert({
         elderly_user_id: elderlyUser.id,
-        agent_used: DISCOVERY_AGENT_ID,
+        agent_used: agentId,
         phone_number: elderlyUser.phone,
         status: 'pending',
-        call_date: new Date().toISOString()
+        call_date: new Date().toISOString(),
+        agent_type: agentType
       })
       .select()
       .single()
@@ -61,18 +78,27 @@ export async function POST(request) {
       return Response.json({ error: 'Failed to create call record' }, { status: 500 })
     }
 
-    // Prepare user context for ElevenLabs
+    // Prepare enhanced user context for ElevenLabs
+    const recentTopics = recentCalls?.flatMap(call => call.key_topics || []).slice(0, 5) || []
+    const lastMood = recentCalls?.[0]?.mood || null
+    const conversationCount = recentCalls?.length || 0
+
     const userContext = {
       user_name: elderlyUser.name,
-      is_first_call: !elderlyUser.first_call_completed,
+      is_first_call: isFirstCall,
+      conversation_count: conversationCount,
+      recent_topics: recentTopics,
+      last_mood: lastMood,
+      recent_summary: recentCalls?.[0]?.summary || null,
       emergency_contact: elderlyUser.emergency_contact || '',
       emergency_phone: elderlyUser.emergency_phone || '',
-      test_call: true
+      test_call: true,
+      agent_type: agentType
     }
 
     // Make ElevenLabs API call
     const elevenlabsPayload = {
-      agent_id: DISCOVERY_AGENT_ID,
+      agent_id: agentId,
       mode: 'phone',
       phone_number: elderlyUser.phone,
       context: userContext,
@@ -93,13 +119,13 @@ export async function POST(request) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error(`ElevenLabs API error: ${response.status} - ${errorText}`)
-      
+
       // Update call record with error status
       await supabase
         .from('call_records')
         .update({ status: 'failed' })
         .eq('id', callRecord.id)
-      
+
       return Response.json({ 
         error: `ElevenLabs API error: ${response.status}` 
       }, { status: 500 })
@@ -107,7 +133,7 @@ export async function POST(request) {
 
     const result = await response.json()
     console.log('ElevenLabs response:', result)
-    
+
     // Update call record with ElevenLabs call ID
     await supabase
       .from('call_records')
