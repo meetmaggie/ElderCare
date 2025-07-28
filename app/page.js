@@ -718,7 +718,7 @@ export default function LandingPage() {
                 <h3 className="text-2xl font-heading font-bold">ElderCare AI</h3>
               </div>
               <p className="text-trust-300 leading-relaxed mb-6">
-                Keeping families connected and elderly parents safe through compassionate AI companionship.
+                Keeping families connected and older loved ones supported through compassionate AI companionship.
               </p>
               <div className="flex space-x-4">
                 <div className="w-10 h-10 bg-trust-800 rounded-full flex items-center justify-center hover:bg-primary-600 transition-colors duration-200 cursor-pointer">
