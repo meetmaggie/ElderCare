@@ -1,20 +1,56 @@
 
 import { supabase } from '../../../lib/supabase'
+import crypto from 'crypto'
 
 export async function POST(request) {
   try {
-    const webhookData = await request.json()
+    // Get the raw body for signature verification
+    const rawBody = await request.text()
+    const webhookData = JSON.parse(rawBody)
+    
+    // Verify webhook signature if secret is configured
+    const webhookSecret = process.env.ELEVENLABS_WEBHOOK_SECRET
+    if (webhookSecret) {
+      const signature = request.headers.get('x-elevenlabs-signature')
+      if (!signature) {
+        console.error('Missing webhook signature')
+        return Response.json({ error: 'Missing signature' }, { status: 401 })
+      }
+      
+      const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(rawBody)
+        .digest('hex')
+      
+      if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
+        console.error('Invalid webhook signature')
+        return Response.json({ error: 'Invalid signature' }, { status: 401 })
+      }
+    }
+    
     console.log('ElevenLabs webhook received:', webhookData)
 
-    // Extract data from webhook
+    // Validate environment on first run
+    validateEnvironment()
+    
+    // Extract data from webhook - handle different ElevenLabs event formats
     const {
       conversation_id,
       status,
       duration_seconds,
       transcript,
       summary,
-      metadata
+      metadata,
+      event_type,
+      agent_id
     } = webhookData
+    
+    // Log the agent that was used
+    if (agent_id) {
+      const agentType = agent_id === 'agent_01k0q3vpk7f8bsrq2aqk71v9j9' ? 'Discovery' : 
+                       agent_id === 'agent_01k0pz5awhf8xbn85wrg227fve' ? 'Daily Check-in' : 'Unknown'
+      console.log(`Webhook from ${agentType} agent (${agent_id})`)
+    }
 
     if (!conversation_id) {
       return Response.json({ error: 'Missing conversation_id' }, { status: 400 })
@@ -109,6 +145,21 @@ async function processConversationData(callRecord, conversationData) {
 
   } catch (error) {
     console.error('Error processing conversation data:', error)
+  }
+}
+
+// Validate required environment variables
+function validateEnvironment() {
+  const required = ['ELEVENLABS_API_KEY']
+  const missing = required.filter(key => !process.env[key])
+  if (missing.length > 0) {
+    console.warn(`Missing environment variables: ${missing.join(', ')}`)
+  }
+  
+  if (process.env.ELEVENLABS_WEBHOOK_SECRET) {
+    console.log('✓ Webhook signature verification enabled')
+  } else {
+    console.warn('⚠ Webhook signature verification disabled - consider setting ELEVENLABS_WEBHOOK_SECRET')
   }
 }
 
