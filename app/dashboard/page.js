@@ -120,13 +120,15 @@ export default function DashboardPage() {
 
       // Check if this is a demo account
       const isDemo = currentUser.email && demoAccounts[currentUser.email]
+      const isTestAccount = currentUser.email && currentUser.email.endsWith('@test.local')
+      
       setIsDemoUser(isDemo)
 
       if (isDemo) {
-        // Use demo data
+        // Use demo data for sales demonstration
         setDashboardData(demoData)
       } else {
-        // Load real data from Supabase
+        // Load real data from Supabase (both regular and test accounts)
         await loadRealUserData(currentUser.id)
       }
     } catch (error) {
@@ -279,20 +281,28 @@ export default function DashboardPage() {
       return
     }
 
+    const isTestAccount = user?.email?.endsWith('@test.local')
+
     try {
-      // For real users, trigger actual ElevenLabs call
+      // For real users and test accounts, trigger actual ElevenLabs call
       const response = await fetch('/api/emergency-call', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          elderlyUserId: dashboardData?.elderlyPerson?.id
+          elderlyUserId: dashboardData?.elderlyPerson?.id,
+          isTestAccount: isTestAccount
         })
       })
 
       if (response.ok) {
-        alert('Emergency call initiated successfully')
+        const result = await response.json()
+        if (isTestAccount) {
+          alert(`Test Account: Emergency call initiated for ${result.elderlyUser || 'family member'}`)
+        } else {
+          alert('Emergency call initiated successfully')
+        }
       } else {
         alert('Failed to initiate emergency call')
       }
@@ -705,10 +715,12 @@ export default function DashboardPage() {
               </button>
               <div>
                 <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                  Family Dashboard {isDemoUser && <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">DEMO</span>}
+                  Family Dashboard 
+                  {isDemoUser && <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">DEMO</span>}
+                  {user?.email?.endsWith('@test.local') && <span className="text-sm bg-green-100 text-green-800 px-2 py-1 rounded-full ml-2">TEST</span>}
                 </h1>
                 <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                  {isDemoUser ? 'Demonstration Mode' : 'Automated AI monitoring and care insights'}
+                  {isDemoUser ? 'Demonstration Mode' : user?.email?.endsWith('@test.local') ? 'Testing Mode - Full Access' : 'Automated AI monitoring and care insights'}
                 </p>
               </div>
             </div>

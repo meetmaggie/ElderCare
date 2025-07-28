@@ -4,7 +4,7 @@ import { supabase } from '../../../lib/supabase'
 
 export async function POST(request) {
   try {
-    const { elderlyUserId } = await request.json()
+    const { elderlyUserId, isTestAccount } = await request.json()
     
     // Get the current session
     const { data: { session }, error: sessionError } = await supabase.auth.getSession()
@@ -24,9 +24,9 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Elderly user not found' }, { status: 404 })
     }
 
-    // For now, we'll log the emergency call request
-    // In a real implementation, this would trigger an actual ElevenLabs call
-    console.log('Emergency call requested for:', elderlyUser.name, elderlyUser.phone)
+    // For test accounts, log with test prefix
+    const logPrefix = isTestAccount ? '[TEST ACCOUNT]' : ''
+    console.log(`${logPrefix} Emergency call requested for:`, elderlyUser.name, elderlyUser.phone)
 
     // Log the emergency call in the database
     const { error: logError } = await supabase
@@ -37,7 +37,7 @@ export async function POST(request) {
           call_type: 'emergency',
           status: 'initiated',
           duration: '0',
-          summary: 'Emergency call initiated by family member',
+          summary: `${isTestAccount ? '[TEST] ' : ''}Emergency call initiated by family member`,
           created_at: new Date().toISOString()
         }
       ])
@@ -54,9 +54,9 @@ export async function POST(request) {
           elderly_user_id: elderlyUserId,
           priority: 'HIGH',
           category: 'Emergency',
-          title: 'Emergency call initiated',
-          description: 'Family member initiated an emergency call',
-          action_taken: 'Emergency call placed',
+          title: `${isTestAccount ? '[TEST] ' : ''}Emergency call initiated`,
+          description: `${isTestAccount ? '[TEST ACCOUNT] ' : ''}Family member initiated an emergency call`,
+          action_taken: `${isTestAccount ? '[TEST] ' : ''}Emergency call placed`,
           resolved: false,
           created_at: new Date().toISOString()
         }
@@ -71,8 +71,9 @@ export async function POST(request) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Emergency call initiated successfully',
-      elderlyUser: elderlyUser.name
+      message: `${isTestAccount ? '[TEST] ' : ''}Emergency call initiated successfully`,
+      elderlyUser: elderlyUser.name,
+      accountType: isTestAccount ? 'test' : 'production'
     })
 
   } catch (error) {

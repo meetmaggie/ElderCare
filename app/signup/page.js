@@ -38,6 +38,9 @@ export default function SignupPage() {
       return
     }
 
+    // Check if this is a testing account
+    const isTestAccount = formData.email.endsWith('@test.local')
+    
     try {
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
@@ -47,7 +50,8 @@ export default function SignupPage() {
             name: formData.name,
             elderly_name: formData.elderlyName,
             elderly_phone: formData.elderlyPhone,
-            relationship: formData.relationship
+            relationship: formData.relationship,
+            account_type: isTestAccount ? 'test' : 'regular'
           }
         }
       })
@@ -58,7 +62,13 @@ export default function SignupPage() {
       }
 
       if (data.user) {
-        router.push('/dashboard')
+        // For test accounts, bypass payment and go directly to dashboard
+        if (isTestAccount) {
+          router.push('/dashboard')
+        } else {
+          // For regular accounts, redirect to payment flow (or dashboard for now)
+          router.push('/dashboard')
+        }
       }
     } catch (error) {
       console.error('Signup error:', error)
@@ -245,6 +255,11 @@ export default function SignupPage() {
 
           <div className="mt-8 text-center text-sm text-trust-500">
             <p>By signing up, you agree to our Terms of Service and Privacy Policy</p>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-700 text-xs">
+                <strong>Developers:</strong> Use @test.local email to bypass payment and access full features
+              </p>
+            </div>
             <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium mt-4 block">
               Already have an account? Sign in
             </Link>
