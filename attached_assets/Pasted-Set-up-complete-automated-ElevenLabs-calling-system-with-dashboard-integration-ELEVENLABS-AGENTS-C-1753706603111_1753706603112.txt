@@ -1,0 +1,81 @@
+Set up complete automated ElevenLabs calling system with dashboard integration:
+
+ELEVENLABS AGENTS CONFIGURATION:
+- Discovery call agent: agent_01k0q3vpk7f8bsrq2aqk71v9j9 (for first-time calls)
+- Daily check-in agent: agent_01k0pz5awhf8xbn85wrg227fve (for ongoing calls)
+- Use existing ElevenLabs API key that's already configured
+
+CALL FREQUENCY MAPPING:
+Use existing frequency options from Care Settings:
+- "Daily" = call every day (7 times per week)
+- "Every other day" = call every 2 days alternating
+- "3 times per week" = Monday, Wednesday, Friday
+- "Weekly" = once per week (same day each week)
+
+AUTOMATED CALLING SCHEDULER:
+- Set up cron job that runs every 30 minutes to check for due calls
+- Read user's frequency setting from existing Care Settings
+- Calculate next call date based on selected frequency:
+  * Daily: next day at same time
+  * Every other day: add 2 days to last call
+  * 3 times per week: Monday/Wednesday/Friday pattern
+  * Weekly: add 7 days to last call
+- For testing@test.local: allow multiple calls per day for rapid testing
+
+AGENT SELECTION LOGIC:
+- Check user's call history in call_logs table
+- If no previous calls exist OR first_call_completed = false:
+  * Use Discovery agent (agent_01k0q3vpk7f8bsrq2aqk71v9j9)
+  * Set first_call_completed = true after successful call
+- If previous calls exist AND first_call_completed = true:
+  * Use Daily check-in agent (agent_01k0pz5awhf8xbn85wrg227fve)
+
+SUPABASE DATABASE TABLES:
+Create/update these tables:
+- users: include phone_number, call_frequency ("Daily", "Every other day", "3 times per week", "Weekly"), preferred_call_time, first_call_completed, next_scheduled_call
+- call_logs: id, user_id, agent_used, call_date, call_time, duration, status, phone_number
+- conversations: id, call_log_id, summary, transcript, mood_analysis, key_topics, health_mentions
+- alerts: id, call_log_id, alert_type, severity, keywords_detected, family_notified
+- mood_tracking: id, user_id, call_date, mood_score, mood_description, analysis
+
+ELEVENLABS API INTEGRATION:
+- Use ElevenLabs Conversational AI outbound calling endpoint
+- API call structure:
+  * Agent ID (determined by logic above)
+  * Phone number from user account
+  * User context (name, previous conversation topics, preferences)
+- Handle API responses and errors
+- Log all call attempts in call_logs table
+
+WEBHOOK SETUP:
+- Create webhook endpoint to receive ElevenLabs call completion data
+- Expected webhook data: call_id, duration, transcript, conversation_summary, mood_indicators
+- Process incoming webhook data:
+  * Update call_logs with duration and completion status
+  * Create conversation record with summary and analysis
+  * Extract mood indicators and store in mood_tracking
+  * Detect health keywords and create alerts if needed
+  * Calculate and store next_scheduled_call based on user's frequency setting
+
+DASHBOARD DATA INTEGRATION:
+- Connect all dashboard sections to real Supabase data:
+- Current Status: "All Good" based on recent call analysis
+- Last Call: Pull latest call from call_logs with relative timestamp
+- Mood Today: Get latest mood_score from mood_tracking table
+- This Week's Alerts: Count alerts from past 7 days
+- Recent AI Conversations: Show last 5 conversations with summaries
+- Automated Alerts: Display unresolved alerts with severity levels
+
+TESTING ACCOUNT SETUP:
+- Configure testing@test.local account:
+  * Set call_frequency to "Daily" for rapid testing
+  * Allow admin override for immediate next call (testing only)
+  * Use phone number from account signup
+  * Set preferred_call_time or default to current time for testing
+
+CALL SCHEDULING LOGIC:
+After successful call, calculate next call based on frequency:
+- Daily: tomorrow at same time
+- Every other day: day after tomorrow at same time  
+- 3 times per week: next scheduled day (Mon→Wed→Fri→Mon)
+- Weekly: same day next week at same time
