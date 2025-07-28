@@ -35,7 +35,7 @@ export async function POST(request) {
           phone: '+1-555-987-6543',
           subscription_status: 'active',
           plan: 'premium',
-          plan_price: 29.99,
+          plan_price: 2999,
           alert_preferences: 'email',
           alert_frequency: 'standard',
           call_frequency: 'Daily'
@@ -54,7 +54,7 @@ export async function POST(request) {
             phone: '+1-555-987-6543',
             subscription_status: 'active',
             plan: 'premium',
-            plan_price: 29.99,
+            plan_price: 2999,
             alert_preferences: 'email',
             alert_frequency: 'standard',
             call_frequency: 'Daily'
