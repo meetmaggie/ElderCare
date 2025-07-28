@@ -1083,13 +1083,47 @@ export default function DashboardPage() {
                   {!isDemoUser && dashboardData.elderlyPerson.name === 'Setup Required' && (
                     <div className="mt-4 space-y-2">
                       <p className="text-sm text-gray-600">
-                        Test accounts (@test.local) need to complete the signup process in the database
+                        {user?.email?.endsWith('@test.local') 
+                          ? 'Test account needs database setup - click to auto-configure'
+                          : 'Account setup required - please complete registration'
+                        }
                       </p>
                       <button 
-                        onClick={() => window.location.href = '/signup'}
+                        onClick={async () => {
+                          if (user?.email?.endsWith('@test.local')) {
+                            // For test accounts, use the auto-fix API
+                            try {
+                              const response = await fetch('/api/fix-test-account', {
+                                method: 'POST',
+                                headers: {
+                                  'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                  userEmail: user.email,
+                                  userId: user.id
+                                })
+                              })
+
+                              const result = await response.json()
+                              
+                              if (response.ok && result.success) {
+                                alert('Test account setup complete! Refreshing dashboard...')
+                                window.location.reload()
+                              } else {
+                                alert('Setup failed: ' + (result.error || 'Unknown error'))
+                              }
+                            } catch (error) {
+                              console.error('Error fixing test account:', error)
+                              alert('Error setting up test account. Please try again.')
+                            }
+                          } else {
+                            // For regular accounts, redirect to signup
+                            window.location.href = '/signup'
+                          }
+                        }}
                         className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                       >
-                        Complete Setup
+                        {user?.email?.endsWith('@test.local') ? 'Auto-Setup Test Account' : 'Complete Setup'}
                       </button>
                     </div>
                   )}
