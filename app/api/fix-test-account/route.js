@@ -67,11 +67,15 @@ export async function POST(request) {
           family_user_id: userId,
           name: 'Test Elderly Person',
           phone: '+44 7700 900123',
+          phone_number: '+44 7700 900123',
           emergency_contact: 'Test User',
           emergency_phone: '+44 7700 900456',
           call_schedule: 'daily_9am',
+          call_frequency: 'Daily',
+          preferred_call_time: '09:00:00',
+          first_call_completed: false,
           health_conditions: 'Test conditions',
-          special_instructions: 'Test account setup'
+          special_instructions: 'Test account setup for automated calling system'
         })
 
       if (elderlyError) {

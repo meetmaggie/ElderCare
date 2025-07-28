@@ -218,15 +218,19 @@ export default function DashboardPage() {
         return
       }
 
-      // Fetch recent calls
-      const { data: calls, error: callsError } = await supabase
-        .from('calls')
-        .select('*')
-        .eq('elderly_user_id', elderlyUser.id)
+      // Fetch recent calls from new call_logs table
+      const { data: callLogs, error: callLogsError } = await supabase
+        .from('call_logs')
+        .select(`
+          *,
+          conversations(*),
+          mood_tracking(*)
+        `)
+        .eq('user_id', elderlyUser.id)
         .order('created_at', { ascending: false })
         .limit(10)
 
-      // Fetch alerts
+      // Fetch alerts from new alerts table
       const { data: alerts, error: alertsError } = await supabase
         .from('alerts')
         .select('*')
@@ -234,43 +238,63 @@ export default function DashboardPage() {
         .order('created_at', { ascending: false })
         .limit(10)
 
+      // Get latest mood data
+      const { data: latestMood, error: moodError } = await supabase
+        .from('mood_tracking')
+        .select('*')
+        .eq('elderly_user_id', elderlyUser.id)
+        .order('call_date', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      // Calculate status based on recent data
+      const recentAlerts = alerts?.filter(alert => 
+        new Date(alert.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+      ) || []
+      
+      const highPriorityAlerts = recentAlerts.filter(alert => alert.severity === 'HIGH')
+      const status = highPriorityAlerts.length > 0 ? 'Needs Attention' : 'All Good'
+
       // Transform real data to match demo data structure
       const realData = {
         elderlyPerson: {
+          id: elderlyUser.id,
           name: elderlyUser.name,
-          status: 'All Good', // This would be calculated based on recent data
-          mood: 'Content', // This would come from latest call analysis
-          moodTrend: 'stable',
+          status: status,
+          mood: latestMood?.mood_description || 'No Data',
+          moodTrend: 'stable', // Would be calculated from mood history
           activity: 'Active',
-          lastCall: calls?.[0] ? new Date(calls[0].created_at).toLocaleString() : 'No calls yet',
-          lastCallRelative: calls?.[0] ? getRelativeTime(calls[0].created_at) : 'N/A',
-          nextCall: 'Tomorrow 9:00 AM', // This would come from schedule
-          alertsThisWeek: alerts?.length || 0
+          lastCall: callLogs?.[0] ? new Date(callLogs[0].created_at).toLocaleString() : 'No calls yet',
+          lastCallRelative: callLogs?.[0] ? getRelativeTime(callLogs[0].created_at) : 'N/A',
+          nextCall: elderlyUser.next_scheduled_call ? 
+            new Date(elderlyUser.next_scheduled_call).toLocaleString() : 
+            'Scheduling...',
+          alertsThisWeek: recentAlerts.length
         },
-        recentCalls: calls?.map(call => ({
+        recentCalls: callLogs?.map(call => ({
           date: new Date(call.created_at).toLocaleString(),
-          duration: call.duration || 'N/A',
-          mood: call.mood_analysis || 'Unknown',
-          summary: call.summary || 'No summary available',
-          insights: call.ai_insights || 'No insights available',
-          moodScore: call.mood_score || 3,
-          emoji: getMoodEmoji(call.mood_score || 3),
-          topics: call.topics ? call.topics.split(',') : ['General'],
-          quality: call.quality || 'Medium',
-          keyMoments: call.key_moments ? call.key_moments.split(',') : []
+          duration: call.duration ? `${Math.floor(call.duration / 60)} minutes` : 'N/A',
+          mood: call.conversations?.[0]?.mood_analysis || 'Unknown',
+          summary: call.conversations?.[0]?.summary || 'No summary available',
+          insights: call.conversations?.[0]?.ai_insights || 'No insights available',
+          moodScore: call.mood_tracking?.[0]?.mood_score || 3,
+          emoji: getMoodEmoji(call.mood_tracking?.[0]?.mood_score || 3),
+          topics: call.conversations?.[0]?.key_topics || ['General'],
+          quality: call.conversations?.[0]?.conversation_quality || 'Medium',
+          keyMoments: call.conversations?.[0]?.health_mentions || []
         })) || [],
         automatedAlerts: alerts?.map(alert => ({
           id: alert.id,
-          priority: alert.priority || 'LOW',
-          category: alert.category || 'General',
+          priority: alert.severity || 'LOW',
+          category: alert.alert_type || 'General',
           title: alert.title,
           description: alert.description,
-          action: alert.action_taken || 'No action taken',
+          action: alert.action_taken || 'Email notification sent',
           time: new Date(alert.created_at).toLocaleString(),
           resolved: alert.resolved || false,
           pattern: alert.pattern_info || 'No pattern detected'
         })) || [],
-        moodChart: generateMoodChart(calls || []),
+        moodChart: generateMoodChartFromData(callLogs || []),
         familyUpdates: [], // Would come from family_updates table
         upcomingEvents: [] // Would come from events table
       }
@@ -341,6 +365,31 @@ export default function DashboardPage() {
     }))
   }
 
+  const generateMoodChartFromData = (callLogs) => {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    const today = new Date()
+    
+    return days.map((day, index) => {
+      const date = new Date(today)
+      date.setDate(today.getDate() - (6 - index))
+      const dateString = date.toISOString().split('T')[0]
+      
+      // Find call for this date
+      const callForDate = callLogs.find(call => {
+        const callDate = new Date(call.call_date || call.created_at).toISOString().split('T')[0]
+        return callDate === dateString
+      })
+      
+      const moodScore = callForDate?.mood_tracking?.[0]?.mood_score || 0
+      
+      return {
+        day,
+        mood: moodScore,
+        date: dateString
+      }
+    })
+  }
+
   const triggerEmergencyCall = async () => {
     if (isDemoUser) {
       alert('Demo mode: Emergency call would be initiated for Margaret Johnson')
@@ -351,14 +400,14 @@ export default function DashboardPage() {
 
     try {
       // For real users and test accounts, trigger actual ElevenLabs call
-      const response = await fetch('/api/emergency-call', {
+      const response = await fetch('/api/trigger-call', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          elderlyUserId: dashboardData?.elderlyPerson?.id,
-          isTestAccount: isTestAccount
+          userId: dashboardData?.elderlyPerson?.id,
+          isTestCall: isTestAccount
         })
       })
 
@@ -369,8 +418,14 @@ export default function DashboardPage() {
         } else {
           alert('Emergency call initiated successfully')
         }
+        
+        // Refresh dashboard data after call
+        setTimeout(() => {
+          checkUserAndLoadData()
+        }, 2000)
       } else {
-        alert('Failed to initiate emergency call')
+        const error = await response.json()
+        alert('Failed to initiate emergency call: ' + (error.error || 'Unknown error'))
       }
     } catch (error) {
       console.error('Error triggering emergency call:', error)
