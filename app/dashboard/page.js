@@ -1,8 +1,10 @@
+
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
-import dynamic from 'next/dynamic'
+import { useState, useEffect } from 'react'
+import { supabase } from '../../lib/supabase'
+import { demoAccounts } from '../../lib/demo-accounts'
 
 export default function DashboardPage() {
   const [selectedTimeRange, setSelectedTimeRange] = useState('7days')
@@ -10,14 +12,20 @@ export default function DashboardPage() {
   const [activeModal, setActiveModal] = useState(null)
   const [expandedAlert, setExpandedAlert] = useState(null)
   const [darkMode, setDarkMode] = useState(false)
+  
+  // User and data state
+  const [user, setUser] = useState(null)
+  const [isDemoUser, setIsDemoUser] = useState(false)
+  const [dashboardData, setDashboardData] = useState(null)
+  const [loading, setLoading] = useState(true)
 
-  // Demo data for showcasing
+  // Demo data for demonstration accounts
   const demoData = {
     elderlyPerson: {
       name: 'Margaret Johnson',
       status: 'All Good',
       mood: 'Content',
-      moodTrend: 'stable', // up, down, stable
+      moodTrend: 'stable',
       activity: 'Active',
       lastCall: 'Today at 9:15 AM',
       lastCallRelative: '2 hours ago',
@@ -93,6 +101,234 @@ export default function DashboardPage() {
     ]
   }
 
+  useEffect(() => {
+    checkUserAndLoadData()
+  }, [])
+
+  const checkUserAndLoadData = async () => {
+    try {
+      // Get current user
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+      
+      if (userError || !currentUser) {
+        // Redirect to login if not authenticated
+        window.location.href = '/login'
+        return
+      }
+
+      setUser(currentUser)
+
+      // Check if this is a demo account
+      const isDemo = currentUser.email && demoAccounts[currentUser.email]
+      setIsDemoUser(isDemo)
+
+      if (isDemo) {
+        // Use demo data
+        setDashboardData(demoData)
+      } else {
+        // Load real data from Supabase
+        await loadRealUserData(currentUser.id)
+      }
+    } catch (error) {
+      console.error('Error checking user and loading data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadRealUserData = async (userId) => {
+    try {
+      // Fetch family user data
+      const { data: familyUser, error: familyError } = await supabase
+        .from('family_users')
+        .select('*')
+        .eq('id', userId)
+        .single()
+
+      if (familyError) {
+        console.error('Error fetching family user:', familyError)
+        return
+      }
+
+      // Fetch elderly user data
+      const { data: elderlyUser, error: elderlyError } = await supabase
+        .from('elderly_users')
+        .select('*')
+        .eq('family_user_id', userId)
+        .single()
+
+      if (elderlyError) {
+        console.error('Error fetching elderly user:', elderlyError)
+        return
+      }
+
+      // Fetch recent calls
+      const { data: calls, error: callsError } = await supabase
+        .from('calls')
+        .select('*')
+        .eq('elderly_user_id', elderlyUser.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      // Fetch alerts
+      const { data: alerts, error: alertsError } = await supabase
+        .from('alerts')
+        .select('*')
+        .eq('elderly_user_id', elderlyUser.id)
+        .order('created_at', { ascending: false })
+        .limit(10)
+
+      // Transform real data to match demo data structure
+      const realData = {
+        elderlyPerson: {
+          name: elderlyUser.name,
+          status: 'All Good', // This would be calculated based on recent data
+          mood: 'Content', // This would come from latest call analysis
+          moodTrend: 'stable',
+          activity: 'Active',
+          lastCall: calls?.[0] ? new Date(calls[0].created_at).toLocaleString() : 'No calls yet',
+          lastCallRelative: calls?.[0] ? getRelativeTime(calls[0].created_at) : 'N/A',
+          nextCall: 'Tomorrow 9:00 AM', // This would come from schedule
+          alertsThisWeek: alerts?.length || 0
+        },
+        recentCalls: calls?.map(call => ({
+          date: new Date(call.created_at).toLocaleString(),
+          duration: call.duration || 'N/A',
+          mood: call.mood_analysis || 'Unknown',
+          summary: call.summary || 'No summary available',
+          insights: call.ai_insights || 'No insights available',
+          moodScore: call.mood_score || 3,
+          emoji: getMoodEmoji(call.mood_score || 3),
+          topics: call.topics ? call.topics.split(',') : ['General'],
+          quality: call.quality || 'Medium',
+          keyMoments: call.key_moments ? call.key_moments.split(',') : []
+        })) || [],
+        automatedAlerts: alerts?.map(alert => ({
+          id: alert.id,
+          priority: alert.priority || 'LOW',
+          category: alert.category || 'General',
+          title: alert.title,
+          description: alert.description,
+          action: alert.action_taken || 'No action taken',
+          time: new Date(alert.created_at).toLocaleString(),
+          resolved: alert.resolved || false,
+          pattern: alert.pattern_info || 'No pattern detected'
+        })) || [],
+        moodChart: generateMoodChart(calls || []),
+        familyUpdates: [], // Would come from family_updates table
+        upcomingEvents: [] // Would come from events table
+      }
+
+      setDashboardData(realData)
+    } catch (error) {
+      console.error('Error loading real user data:', error)
+      // Fallback to empty data structure
+      setDashboardData({
+        elderlyPerson: {
+          name: 'Unknown',
+          status: 'No Data',
+          mood: 'Unknown',
+          moodTrend: 'stable',
+          activity: 'Unknown',
+          lastCall: 'No calls yet',
+          lastCallRelative: 'N/A',
+          nextCall: 'Not scheduled',
+          alertsThisWeek: 0
+        },
+        recentCalls: [],
+        automatedAlerts: [],
+        moodChart: [],
+        familyUpdates: [],
+        upcomingEvents: []
+      })
+    }
+  }
+
+  const getRelativeTime = (dateString) => {
+    const now = new Date()
+    const callTime = new Date(dateString)
+    const diffMs = now - callTime
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+    const diffDays = Math.floor(diffHours / 24)
+    
+    if (diffHours < 1) return 'Less than an hour ago'
+    if (diffHours < 24) return `${diffHours} hours ago`
+    return `${diffDays} days ago`
+  }
+
+  const getMoodEmoji = (score) => {
+    if (score >= 4) return '😊'
+    if (score >= 3) return '🙂'
+    if (score >= 2) return '😐'
+    return '😔'
+  }
+
+  const generateMoodChart = (calls) => {
+    // Generate last 7 days mood chart from calls
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    return days.map((day, index) => ({
+      day,
+      mood: Math.floor(Math.random() * 3) + 3, // Placeholder - would be calculated from actual data
+      date: new Date(Date.now() - (6 - index) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+    }))
+  }
+
+  const triggerEmergencyCall = async () => {
+    if (isDemoUser) {
+      alert('Demo mode: Emergency call would be initiated for Margaret Johnson')
+      return
+    }
+
+    try {
+      // For real users, trigger actual ElevenLabs call
+      const response = await fetch('/api/emergency-call', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          elderlyUserId: dashboardData?.elderlyPerson?.id
+        })
+      })
+
+      if (response.ok) {
+        alert('Emergency call initiated successfully')
+      } else {
+        alert('Failed to initiate emergency call')
+      }
+    } catch (error) {
+      console.error('Error triggering emergency call:', error)
+      alert('Error initiating emergency call')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!dashboardData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Error loading dashboard data</p>
+          <button 
+            onClick={checkUserAndLoadData}
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   const getTrendIcon = (trend) => {
     switch(trend) {
       case 'up': return '↗️'
@@ -124,7 +360,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="p-6 space-y-8">
-          {/* Alert Types */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Alert Types</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +382,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Notification Preferences */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
             <div className="space-y-4">
@@ -169,7 +403,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Alert Sensitivity */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Alert Sensitivity</h3>
             <div className="space-y-3">
@@ -213,7 +446,6 @@ export default function DashboardPage() {
         </div>
 
         <div className="p-6 space-y-8">
-          {/* Call Schedule */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Call Schedule</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -251,7 +483,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Conversation Focus */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Conversation Focus</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -267,7 +498,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Personal Interests */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Personal Interests</h3>
             <div className="space-y-3">
@@ -282,7 +512,6 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Sarah's Personality */}
           <div>
             <h3 className="text-lg font-semibold mb-4">AI Assistant Personality</h3>
             <div className="grid grid-cols-2 gap-4">
@@ -319,7 +548,6 @@ export default function DashboardPage() {
     const handleDownloadPDF = async () => {
       setIsGeneratingPDF(true)
       try {
-        // Add a small delay to show loading state
         await new Promise(resolve => setTimeout(resolve, 1000))
         generatePDFReport(reportDateRange)
       } catch (error) {
@@ -381,7 +609,6 @@ export default function DashboardPage() {
           </div>
 
           <div className="p-6 space-y-8">
-            {/* Executive Summary */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <h3 className="text-lg font-semibold mb-4 text-blue-900">Executive Summary - This Week</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -400,7 +627,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Detailed Mood Chart */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Monthly Mood Trends</h3>
               <div className="bg-gray-50 p-4 rounded-lg">
@@ -420,7 +646,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Health Timeline */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Health Mentions Timeline</h3>
               <div className="space-y-3">
@@ -445,7 +670,6 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Recommendations */}
             <div>
               <h3 className="text-lg font-semibold mb-4">AI Recommendations</h3>
               <div className="space-y-3">
@@ -480,8 +704,12 @@ export default function DashboardPage() {
                 </svg>
               </button>
               <div>
-                <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Family Dashboard</h1>
-                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Automated AI monitoring and care insights</p>
+                <h1 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                  Family Dashboard {isDemoUser && <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">DEMO</span>}
+                </h1>
+                <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                  {isDemoUser ? 'Demonstration Mode' : 'Automated AI monitoring and care insights'}
+                </p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
@@ -495,9 +723,15 @@ export default function DashboardPage() {
               >
                 {darkMode ? '☀️' : '🌙'}
               </button>
-              <Link href="/" className={`${darkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'} font-medium transition-colors duration-200`}>
-                Back to Home
-              </Link>
+              <button
+                onClick={async () => {
+                  await supabase.auth.signOut()
+                  window.location.href = '/'
+                }}
+                className={`${darkMode ? 'text-gray-300 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'} font-medium transition-colors duration-200`}
+              >
+                Sign Out
+              </button>
             </div>
           </div>
         </div>
@@ -523,7 +757,7 @@ export default function DashboardPage() {
                 </svg>
               </div>
             </div>
-            <p className="text-2xl font-bold text-green-600 mb-1">{demoData.elderlyPerson.status}</p>
+            <p className="text-2xl font-bold text-green-600 mb-1">{dashboardData.elderlyPerson.status}</p>
             <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI analysis complete</p>
             <button className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">View Details →</button>
           </div>
@@ -531,8 +765,8 @@ export default function DashboardPage() {
           {/* Last Call */}
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border hover:shadow-md transition-all duration-200 cursor-pointer`}>
             <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Last Call</h3>
-            <p className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-1`}>{demoData.elderlyPerson.lastCall}</p>
-            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>{demoData.elderlyPerson.lastCallRelative}</p>
+            <p className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-1`}>{dashboardData.elderlyPerson.lastCall}</p>
+            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>{dashboardData.elderlyPerson.lastCallRelative}</p>
             <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Automatic daily check-in</p>
             <button className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">View Details →</button>
           </div>
@@ -541,8 +775,8 @@ export default function DashboardPage() {
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border hover:shadow-md transition-all duration-200 cursor-pointer`}>
             <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>Mood Today</h3>
             <div className="flex items-center space-x-2 mb-1">
-              <p className="text-2xl font-bold text-green-600">{demoData.elderlyPerson.mood}</p>
-              <span className="text-lg">{getTrendIcon(demoData.elderlyPerson.moodTrend)}</span>
+              <p className="text-2xl font-bold text-green-600">{dashboardData.elderlyPerson.mood}</p>
+              <span className="text-lg">{getTrendIcon(dashboardData.elderlyPerson.moodTrend)}</span>
             </div>
             <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>AI voice analysis</p>
             <button className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">View Details →</button>
@@ -554,7 +788,7 @@ export default function DashboardPage() {
             onClick={() => setExpandedAlert(expandedAlert ? null : 'summary')}
           >
             <h3 className={`text-sm font-medium ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>This Week's Alerts</h3>
-            <p className="text-2xl font-bold text-blue-600 mb-1">{demoData.elderlyPerson.alertsThisWeek}</p>
+            <p className="text-2xl font-bold text-blue-600 mb-1">{dashboardData.elderlyPerson.alertsThisWeek}</p>
             <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Auto-generated by AI</p>
             <button className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">
               {expandedAlert ? 'Hide Summary ↑' : 'View Summary →'}
@@ -575,25 +809,38 @@ export default function DashboardPage() {
         <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border mb-8`}>
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {[
-              { name: 'Emergency Call', icon: '📞', color: 'bg-red-100 text-red-800 hover:bg-red-200' },
-              { name: 'Special Request', icon: '💭', color: 'bg-blue-100 text-blue-800 hover:bg-blue-200' },
-              { name: 'Extra Call', icon: '📅', color: 'bg-green-100 text-green-800 hover:bg-green-200' },
-              { name: 'Family News', icon: '📢', color: 'bg-purple-100 text-purple-800 hover:bg-purple-200' },
-              { name: 'Quick Settings', icon: '⚙️', color: 'bg-gray-100 text-gray-800 hover:bg-gray-200' },
-              { name: 'Download Report', icon: '📄', color: 'bg-orange-100 text-orange-800 hover:bg-orange-200' }
-            ].map((action, index) => (
-              <button key={index} className={`${action.color} p-4 rounded-lg transition-colors duration-200 text-center`}>
-                <div className="text-2xl mb-2">{action.icon}</div>
-                <div className="text-sm font-medium">{action.name}</div>
-              </button>
-            ))}
+            <button 
+              onClick={triggerEmergencyCall}
+              className="bg-red-100 text-red-800 hover:bg-red-200 p-4 rounded-lg transition-colors duration-200 text-center"
+            >
+              <div className="text-2xl mb-2">📞</div>
+              <div className="text-sm font-medium">Emergency Call</div>
+            </button>
+            <button className="bg-blue-100 text-blue-800 hover:bg-blue-200 p-4 rounded-lg transition-colors duration-200 text-center">
+              <div className="text-2xl mb-2">💭</div>
+              <div className="text-sm font-medium">Special Request</div>
+            </button>
+            <button className="bg-green-100 text-green-800 hover:bg-green-200 p-4 rounded-lg transition-colors duration-200 text-center">
+              <div className="text-2xl mb-2">📅</div>
+              <div className="text-sm font-medium">Extra Call</div>
+            </button>
+            <button className="bg-purple-100 text-purple-800 hover:bg-purple-200 p-4 rounded-lg transition-colors duration-200 text-center">
+              <div className="text-2xl mb-2">📢</div>
+              <div className="text-sm font-medium">Family News</div>
+            </button>
+            <button className="bg-gray-100 text-gray-800 hover:bg-gray-200 p-4 rounded-lg transition-colors duration-200 text-center">
+              <div className="text-2xl mb-2">⚙️</div>
+              <div className="text-sm font-medium">Quick Settings</div>
+            </button>
+            <button className="bg-orange-100 text-orange-800 hover:bg-orange-200 p-4 rounded-lg transition-colors duration-200 text-center">
+              <div className="text-2xl mb-2">📄</div>
+              <div className="text-sm font-medium">Download Report</div>
+            </button>
           </div>
         </div>
 
         {/* Enhanced Action Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          {/* Alert Settings */}
           <button 
             onClick={() => setActiveModal('alerts')}
             className="bg-blue-500 rounded-lg p-6 text-white hover:bg-blue-600 transition-all duration-200 transform hover:scale-105 text-left"
@@ -611,7 +858,6 @@ export default function DashboardPage() {
             </div>
           </button>
 
-          {/* Care Settings */}
           <button 
             onClick={() => setActiveModal('care')}
             className="bg-green-500 rounded-lg p-6 text-white hover:bg-green-600 transition-all duration-200 transform hover:scale-105 text-left"
@@ -629,7 +875,6 @@ export default function DashboardPage() {
             </div>
           </button>
 
-          {/* Full Care Report */}
           <button 
             onClick={() => setActiveModal('report')}
             className="bg-orange-400 rounded-lg p-6 text-white hover:bg-orange-500 transition-all duration-200 transform hover:scale-105 text-left"
@@ -653,11 +898,10 @@ export default function DashboardPage() {
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Family Updates Hub</h3>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Recent Family Interactions */}
             <div>
               <h4 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Recent Family Interactions</h4>
               <div className="space-y-3">
-                {demoData.familyUpdates.map((update, index) => (
+                {dashboardData.familyUpdates.map((update, index) => (
                   <div key={index} className={`p-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg`}>
                     <div className="flex items-center justify-between">
                       <div>
@@ -668,14 +912,18 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
+                {dashboardData.familyUpdates.length === 0 && (
+                  <div className={`p-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg text-center text-gray-500`}>
+                    No recent family interactions recorded
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Upcoming Events */}
             <div>
               <h4 className={`font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'} mb-4`}>Upcoming Events</h4>
               <div className="space-y-3">
-                {demoData.upcomingEvents.map((event, index) => (
+                {dashboardData.upcomingEvents.map((event, index) => (
                   <div key={index} className={`p-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg`}>
                     <div className="flex items-center justify-between">
                       <div>
@@ -688,6 +936,11 @@ export default function DashboardPage() {
                     </div>
                   </div>
                 ))}
+                {dashboardData.upcomingEvents.length === 0 && (
+                  <div className={`p-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg text-center text-gray-500`}>
+                    No upcoming events scheduled
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -700,7 +953,7 @@ export default function DashboardPage() {
             <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Recent AI Conversations</h3>
 
             <div className="space-y-6">
-              {demoData.recentCalls.map((call, index) => (
+              {dashboardData.recentCalls.map((call, index) => (
                 <div key={index} className={`border-b ${darkMode ? 'border-gray-700' : 'border-gray-100'} pb-6 last:border-b-0`}>
                   <div className="flex items-start space-x-4">
                     <div className="text-2xl">{call.emoji}</div>
@@ -716,7 +969,6 @@ export default function DashboardPage() {
                         </div>
                       </div>
 
-                      {/* Topic Tags */}
                       <div className="flex flex-wrap gap-2 mb-3">
                         {call.topics.map((topic, topicIndex) => (
                           <span key={topicIndex} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">
@@ -727,7 +979,6 @@ export default function DashboardPage() {
 
                       <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-3`}>{call.summary}</p>
 
-                      {/* Key Moments */}
                       <div className="mb-3">
                         <div className={`text-sm font-medium ${darkMode ? 'text-gray-200' : 'text-gray-800'} mb-2`}>Key Moments:</div>
                         <ul className="space-y-1">
@@ -749,6 +1000,21 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
+              {dashboardData.recentCalls.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-4">
+                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500">No recent conversations available</p>
+                  {!isDemoUser && (
+                    <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                      Schedule First Call
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
@@ -757,7 +1023,7 @@ export default function DashboardPage() {
             <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Automated Alerts</h3>
 
             <div className="space-y-4">
-              {demoData.automatedAlerts.map((alert, index) => (
+              {dashboardData.automatedAlerts.map((alert, index) => (
                 <div key={index} className={`border ${darkMode ? 'border-gray-700' : 'border-gray-200'} rounded-lg p-4`}>
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
@@ -792,6 +1058,16 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
+              {dashboardData.automatedAlerts.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 mb-4">
+                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-500">No alerts at this time</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -814,7 +1090,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-end space-x-4 h-40 mb-4">
-            {demoData.moodChart.map((data, index) => (
+            {dashboardData.moodChart.map((data, index) => (
               <div key={index} className="flex-1 flex flex-col items-center group">
                 <div className="flex-1 flex items-end mb-2 w-full">
                   <div 
@@ -877,20 +1153,22 @@ export default function DashboardPage() {
         </div>
 
         {/* Call to Action */}
-        <div className="mt-12 text-center">
-          <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-lg p-8 text-white">
-            <h3 className="text-2xl font-bold mb-4">Experience This Level of Care</h3>
-            <p className="text-lg mb-6 opacity-90">This is what peace of mind looks like. Real families use ElderCare AI every day.</p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/signup" className="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold hover:bg-gray-50 transition-all duration-200">
-                Start Your Free Trial
-              </Link>
-              <Link href="/" className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 transition-all duration-200">
-                Learn More
-              </Link>
+        {isDemoUser && (
+          <div className="mt-12 text-center">
+            <div className="bg-gradient-to-r from-blue-500 to-green-500 rounded-lg p-8 text-white">
+              <h3 className="text-2xl font-bold mb-4">Experience This Level of Care</h3>
+              <p className="text-lg mb-6 opacity-90">This is what peace of mind looks like. Real families use ElderCare AI every day.</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link href="/signup" className="bg-white text-blue-600 px-8 py-4 rounded-full font-semibold hover:bg-gray-50 transition-all duration-200">
+                  Start Your Free Trial
+                </Link>
+                <Link href="/" className="border-2 border-white text-white px-8 py-4 rounded-full font-semibold hover:bg-white/10 transition-all duration-200">
+                  Learn More
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Modals */}
@@ -903,33 +1181,28 @@ export default function DashboardPage() {
 
 async function generatePDFReport(dateRange) {
   try {
-    // Import jsPDF first
     const jsPDFModule = await import('jspdf')
     const jsPDF = jsPDFModule.default
     
-    // Import autoTable plugin
     await import('jspdf-autotable')
     
     console.log('PDF libraries loaded successfully')
     
     const doc = new jsPDF()
     
-    // Define colors for consistent theming
     const colors = {
-      primary: [59, 130, 246],      // Blue for conversations
-      mood: [34, 197, 94],          // Green for mood
-      alert: [251, 146, 60],        // Orange for alerts
-      accent: [139, 92, 246],       // Purple for highlights
-      light: [248, 250, 252],       // Light gray backgrounds
-      text: [31, 41, 55],           // Dark text
-      subtext: [107, 114, 128]      // Gray text
+      primary: [59, 130, 246],
+      mood: [34, 197, 94],
+      alert: [251, 146, 60],
+      accent: [139, 92, 246],
+      light: [248, 250, 252],
+      text: [31, 41, 55],
+      subtext: [107, 114, 128]
     }
     
     let pageNumber = 1
     
-    // Helper function to add header and footer
     const addHeaderFooter = (title) => {
-      // Header
       doc.setFillColor(...colors.primary)
       doc.rect(0, 0, 210, 15, 'F')
       doc.setTextColor(255, 255, 255)
@@ -937,10 +1210,8 @@ async function generatePDFReport(dateRange) {
       doc.text('Family Wellbeing Summary Report', 20, 10)
       doc.text(`Page ${pageNumber}`, 170, 10)
       
-      // Reset text color
       doc.setTextColor(...colors.text)
       
-      // Footer
       const pageHeight = doc.internal.pageSize.height
       doc.setFillColor(...colors.light)
       doc.rect(0, pageHeight - 15, 210, 15, 'F')
@@ -952,24 +1223,20 @@ async function generatePDFReport(dateRange) {
       pageNumber++
     }
     
-    // === COVER PAGE ===
     addHeaderFooter()
     
-    // Logo placeholder (blue circle with heart)
     doc.setFillColor(...colors.primary)
     doc.circle(105, 40, 12, 'F')
     doc.setTextColor(255, 255, 255)
     doc.setFontSize(16)
     doc.text('❤️', 101, 45)
     
-    // Title
     doc.setTextColor(...colors.text)
     doc.setFontSize(28)
     doc.setFont('helvetica', 'bold')
     doc.text('Family Wellbeing', 105, 65, { align: 'center' })
     doc.text('Summary Report', 105, 75, { align: 'center' })
     
-    // Report details box
     doc.setFillColor(...colors.light)
     doc.roundedRect(30, 90, 150, 60, 5, 5, 'F')
     doc.setDrawColor(...colors.primary)
@@ -985,7 +1252,6 @@ async function generatePDFReport(dateRange) {
     doc.text('Family Contact: Johnson Family', 40, 135)
     doc.text('Primary Contact: sarah.johnson@email.com | (555) 123-4567', 40, 145)
     
-    // Companionship quality indicator
     doc.setFillColor(...colors.mood)
     doc.roundedRect(30, 170, 150, 25, 5, 5, 'F')
     doc.setTextColor(255, 255, 255)
@@ -993,402 +1259,6 @@ async function generatePDFReport(dateRange) {
     doc.setFont('helvetica', 'bold')
     doc.text('Overall Companionship Quality: Excellent', 105, 185, { align: 'center' })
     
-    // === PAGE 2: EXECUTIVE SUMMARY ===
-    doc.addPage()
-    addHeaderFooter()
-    
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.primary)
-    doc.text('Executive Summary', 20, 35)
-    
-    // Summary boxes
-    const summaryBoxes = [
-      { title: 'Daily Companionship', value: '7 calls this week', subtext: 'Avg duration: 12 minutes', color: colors.primary },
-      { title: 'Emotional Wellbeing', value: 'Positive & Content', subtext: '15% improvement trend', color: colors.mood },
-      { title: 'Engagement Level', value: 'Highly Engaged', subtext: 'Active in all conversations', color: colors.accent }
-    ]
-    
-    summaryBoxes.forEach((box, index) => {
-      const x = 20 + (index * 60)
-      const y = 50
-      
-      doc.setFillColor(...box.color)
-      doc.roundedRect(x, y, 55, 40, 3, 3, 'F')
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(10)
-      doc.setFont('helvetica', 'bold')
-      doc.text(box.title, x + 27.5, y + 10, { align: 'center' })
-      doc.setFontSize(12)
-      doc.text(box.value, x + 27.5, y + 22, { align: 'center' })
-      doc.setFontSize(8)
-      doc.text(box.subtext, x + 27.5, y + 32, { align: 'center' })
-    })
-    
-    // Key highlights
-    doc.setTextColor(...colors.text)
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Key Highlights This Week', 20, 110)
-    
-    const highlights = [
-      '🌟 Margaret expressed joy about her garden blooming beautifully',
-      '👥 Mentioned upcoming family visit with great enthusiasm',
-      '💬 Shared wonderful stories about her late husband during conversations',
-      '🏡 Discussed plans for redecorating the living room',
-      '📚 Excited about the new mystery novel she\'s reading'
-    ]
-    
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'normal')
-    highlights.forEach((highlight, index) => {
-      doc.text(highlight, 20, 125 + (index * 12))
-    })
-    
-    // Wellbeing indicators
-    doc.setFillColor(...colors.light)
-    doc.roundedRect(20, 190, 170, 50, 5, 5, 'F')
-    doc.setFontSize(14)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.text)
-    doc.text('Wellbeing Indicators', 25, 205)
-    
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-    doc.text('• Social Connection: Excellent - actively discusses family and friends', 25, 220)
-    doc.text('• Emotional State: Positive - consistent contentment and joy expressions', 25, 230)
-    doc.text('• Mental Engagement: High - asks questions and shares detailed stories', 25, 240)
-    
-    // === PAGE 3: DAILY COMPANIONSHIP OVERVIEW ===
-    doc.addPage()
-    addHeaderFooter()
-    
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.primary)
-    doc.text('Daily Companionship Overview', 20, 35)
-    
-    // Call frequency chart (simple bar representation)
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Call Pattern This Week', 20, 55)
-    
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-    const callDurations = [12, 8, 15, 10, 13, 16, 11] // minutes
-    
-    days.forEach((day, index) => {
-      const x = 30 + (index * 20)
-      const height = callDurations[index] * 2 // Scale for visibility
-      const y = 100 - height
-      
-      doc.setFillColor(...colors.primary)
-      doc.rect(x, y, 15, height, 'F')
-      doc.setTextColor(...colors.text)
-      doc.setFontSize(8)
-      doc.text(day, x + 7.5, 105, { align: 'center' })
-      doc.text(`${callDurations[index]}m`, x + 7.5, y - 3, { align: 'center' })
-    })
-    
-    // Engagement metrics
-    if (typeof doc.autoTable === 'function') {
-      doc.autoTable({
-        head: [['Metric', 'This Week', 'Trend', 'Notes']],
-        body: [
-          ['Average Call Duration', '12.1 minutes', '↗️ +2min', 'Increasingly engaged conversations'],
-          ['Conversation Quality', 'Excellent', '→ Stable', 'Rich, detailed discussions'],
-          ['Emotional Responses', 'Very Positive', '↗️ Improving', 'More laughter and joy expressed'],
-          ['Topic Engagement', 'High Interest', '→ Consistent', 'Active participation in all topics'],
-          ['Question Asking', '3-4 per call', '↗️ +1', 'Shows curiosity and engagement']
-        ],
-        startY: 120,
-        theme: 'striped',
-        headStyles: { fillColor: colors.primary },
-        styles: { fontSize: 10 }
-      })
-    }
-    
-    // === PAGE 4: MOOD & EMOTIONAL WELLBEING ===
-    doc.addPage()
-    addHeaderFooter()
-    
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.mood)
-    doc.text('Mood & Emotional Wellbeing', 20, 35)
-    
-    // Mood trend visualization
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.text)
-    doc.text('Daily Spirits Trend', 20, 55)
-    
-    const moodData = [
-      { day: 'Mon', mood: 4, emoji: '😊', note: 'Content and chatty' },
-      { day: 'Tue', mood: 3, emoji: '🙂', note: 'Pleasant but quieter' },
-      { day: 'Wed', mood: 2, emoji: '😔', note: 'Mentioned feeling tired' },
-      { day: 'Thu', mood: 3, emoji: '🙂', note: 'Energy returning' },
-      { day: 'Fri', mood: 4, emoji: '😊', note: 'Excited about weekend' },
-      { day: 'Sat', mood: 5, emoji: '😄', note: 'Family visit joy' },
-      { day: 'Sun', mood: 4, emoji: '😊', note: 'Peaceful and grateful' }
-    ]
-    
-    // Draw mood chart
-    moodData.forEach((data, index) => {
-      const x = 30 + (index * 22)
-      const height = data.mood * 8
-      const y = 100 - height
-      
-      // Bar
-      doc.setFillColor(...colors.mood)
-      doc.rect(x, y, 18, height, 'F')
-      
-      // Day label
-      doc.setTextColor(...colors.text)
-      doc.setFontSize(9)
-      doc.text(data.day, x + 9, 105, { align: 'center' })
-      
-      // Emoji
-      doc.setFontSize(12)
-      doc.text(data.emoji, x + 9, y - 5, { align: 'center' })
-      
-      // Mood score
-      doc.setFontSize(8)
-      doc.text(`${data.mood}/5`, x + 9, y - 15, { align: 'center' })
-    })
-    
-    // Mood insights table
-    if (typeof doc.autoTable === 'function') {
-      doc.autoTable({
-        head: [['Day', 'Mood', 'Emotional Indicators', 'Notable Moments']],
-        body: moodData.map(data => [
-          data.day,
-          `${data.mood}/5 ${data.emoji}`,
-          data.note,
-          data.mood >= 4 ? 'Shared positive memories' : 'Offered gentle support'
-        ]),
-        startY: 120,
-        theme: 'striped',
-        headStyles: { fillColor: colors.mood },
-        styles: { fontSize: 10 }
-      })
-    }
-    
-    // === PAGE 5: CONVERSATION HIGHLIGHTS ===
-    doc.addPage()
-    addHeaderFooter()
-    
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.accent)
-    doc.text('Conversation Highlights', 20, 35)
-    
-    // Favorite topics
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.text)
-    doc.text('Favorite Discussion Topics', 20, 55)
-    
-    const topics = [
-      { topic: '🌺 Gardening', frequency: '85%', engagement: 'Very High' },
-      { topic: '👨‍👩‍👧‍👦 Family Stories', frequency: '70%', engagement: 'High' },
-      { topic: '📚 Books & Reading', frequency: '60%', engagement: 'High' },
-      { topic: '🍳 Cooking & Recipes', frequency: '45%', engagement: 'Medium' },
-      { topic: '🌤️ Weather & Seasons', frequency: '40%', engagement: 'Medium' }
-    ]
-    
-    if (typeof doc.autoTable === 'function') {
-      doc.autoTable({
-        head: [['Topic', 'Discussion Frequency', 'Engagement Level']],
-        body: topics.map(t => [t.topic, t.frequency, t.engagement]),
-        startY: 65,
-        theme: 'striped',
-        headStyles: { fillColor: colors.accent },
-        styles: { fontSize: 11 }
-      })
-    }
-    
-    // Meaningful moments
-    const meaningfulMoments = [
-      '"I spent all morning in the garden and the roses are absolutely beautiful this year!"',
-      '"My grandson called yesterday and we talked for an hour about his new job."',
-      '"I found my mother\'s old recipe book and made her famous apple pie."',
-      '"The weather reminds me of the spring when your grandfather and I got married."',
-      '"I\'m so grateful for these daily chats - they brighten my whole day."'
-    ]
-    
-    let startY = typeof doc.autoTable === 'function' ? doc.lastAutoTable.finalY + 20 : 120
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Meaningful Moments This Week', 20, startY)
-    
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'italic')
-    meaningfulMoments.forEach((moment, index) => {
-      const lines = doc.splitTextToSize(moment, 160)
-      doc.text(lines, 25, startY + 15 + (index * 20))
-    })
-    
-    // === PAGE 6: SOCIAL & FAMILY CONNECTIONS ===
-    doc.addPage()
-    addHeaderFooter()
-    
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.primary)
-    doc.text('Social & Family Connections', 20, 35)
-    
-    // Family mentions
-    const familyMentions = [
-      { name: 'Sarah (Daughter)', mentions: 12, context: 'Upcoming visit, grandchildren' },
-      { name: 'Michael (Son)', mentions: 8, context: 'Work updates, weekend calls' },
-      { name: 'Emma (Granddaughter)', mentions: 6, context: 'School achievements, art projects' },
-      { name: 'Tom (Grandson)', mentions: 4, context: 'Sports, new job excitement' },
-      { name: 'Close Friends', mentions: 15, context: 'Neighbors, book club friends' }
-    ]
-    
-    if (typeof doc.autoTable === 'function') {
-      doc.autoTable({
-        head: [['Family/Friend', 'Mentions This Week', 'Context & Topics']],
-        body: familyMentions.map(f => [f.name, f.mentions.toString(), f.context]),
-        startY: 50,
-        theme: 'striped',
-        headStyles: { fillColor: colors.primary },
-        styles: { fontSize: 10 }
-      })
-    }
-    
-    // Social activities
-    let socialY = typeof doc.autoTable === 'function' ? doc.lastAutoTable.finalY + 20 : 120
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Social Activities & Connections', 20, socialY)
-    
-    const activities = [
-      '🏡 Regular chats with neighbor Mrs. Thompson about garden tips',
-      '📚 Book club discussion about the latest mystery novel selection',
-      '⛪ Sunday service attendance and fellowship time mentioned',
-      '🛒 Weekly grocery shopping interactions with familiar store staff',
-      '☎️ Phone calls with old friends from her hometown'
-    ]
-    
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-    activities.forEach((activity, index) => {
-      doc.text(activity, 25, socialY + 15 + (index * 12))
-    })
-    
-    // === PAGE 7: AREAS NOTED & JOYFUL MOMENTS ===
-    doc.addPage()
-    addHeaderFooter()
-    
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.alert)
-    doc.text('Areas Noted for Family Awareness', 20, 35)
-    
-    // Gentle areas of note
-    const areasNoted = [
-      { area: 'Sleep Patterns', note: 'Mentioned feeling tired on Wednesday', action: 'Monitoring pattern' },
-      { area: 'Back Comfort', note: 'Brief mention of back stiffness', action: 'Gentle inquiry about comfort' },
-      { area: 'Memory Moments', note: 'Occasionally searches for words', action: 'Patient, supportive conversation' }
-    ]
-    
-    if (typeof doc.autoTable === 'function') {
-      doc.autoTable({
-        head: [['Area', 'Observation', 'Our Response']],
-        body: areasNoted.map(a => [a.area, a.note, a.action]),
-        startY: 50,
-        theme: 'striped',
-        headStyles: { fillColor: colors.alert },
-        styles: { fontSize: 11 }
-      })
-    }
-    
-    // Joyful moments section
-    let joyY = typeof doc.autoTable === 'function' ? doc.lastAutoTable.finalY + 30 : 120
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.mood)
-    doc.text('Joyful Moments & Interests', 20, joyY)
-    
-    const joyfulMoments = [
-      '🌹 Excitement about her rose garden reaching full bloom',
-      '😊 Laughter when sharing funny stories about her cats',
-      '📖 Enthusiasm for her new mystery novel series',
-      '👶 Pure joy when talking about grandchildren\'s achievements',
-      '🍰 Pride in successfully baking her mother\'s cake recipe',
-      '☀️ Appreciation for beautiful sunny morning walks'
-    ]
-    
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'normal')
-    joyfulMoments.forEach((moment, index) => {
-      doc.text(moment, 25, joyY + 20 + (index * 10))
-    })
-    
-    // === PAGE 8: FAMILY INSIGHTS & CONTACT INFORMATION ===
-    doc.addPage()
-    addHeaderFooter()
-    
-    doc.setFontSize(22)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.accent)
-    doc.text('Family Insights & Observations', 20, 35)
-    
-    const insights = [
-      '💝 Family visits continue to be the highlight of Margaret\'s week',
-      '🌻 Her garden brings consistent joy and is a favorite conversation topic',
-      '📞 She looks forward to and values these daily companionship calls',
-      '🎭 Storytelling about past experiences brings her great satisfaction',
-      '🔗 She maintains strong connections with longtime friends and neighbors',
-      '📚 Reading remains an active hobby that keeps her mind engaged'
-    ]
-    
-    doc.setFontSize(12)
-    doc.setFont('helvetica', 'normal')
-    insights.forEach((insight, index) => {
-      const lines = doc.splitTextToSize(insight, 160)
-      doc.text(lines, 25, 55 + (index * 15))
-    })
-    
-    // Contact information box
-    doc.setFillColor(...colors.light)
-    doc.roundedRect(20, 160, 170, 70, 5, 5, 'F')
-    doc.setDrawColor(...colors.primary)
-    doc.setLineWidth(1)
-    doc.roundedRect(20, 160, 170, 70, 5, 5, 'S')
-    
-    doc.setFontSize(16)
-    doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...colors.primary)
-    doc.text('Contact Information', 30, 175)
-    
-    doc.setFontSize(11)
-    doc.setFont('helvetica', 'normal')
-    doc.setTextColor(...colors.text)
-    doc.text('Primary Family Contact:', 30, 190)
-    doc.text('Sarah Johnson (Daughter)', 30, 200)
-    doc.text('Email: sarah.johnson@email.com', 30, 210)
-    doc.text('Phone: (555) 123-4567', 30, 220)
-    
-    doc.text('Care Preferences:', 110, 190)
-    doc.text('• Daily calls at 9:00 AM', 110, 200)
-    doc.text('• Duration: 10-15 minutes', 110, 210)
-    doc.text('• Focus: Companionship & wellbeing', 110, 220)
-    
-    // Final footer
-    const pageHeight = doc.internal.pageSize.height
-    doc.setFillColor(...colors.primary)
-    doc.rect(20, pageHeight - 40, 170, 25, 'F')
-    doc.setTextColor(255, 255, 255)
-    doc.setFontSize(14)
-    doc.setFont('helvetica', 'bold')
-    doc.text('Daily Companionship & Wellbeing Report', 105, pageHeight - 25, { align: 'center' })
-    doc.setFontSize(10)
-    doc.setFont('helvetica', 'normal')
-    doc.text(`Generated on ${new Date().toLocaleDateString()} - Family Care Summary`, 105, pageHeight - 20, { align: 'center' })
-    
-    // Save the PDF
     const fileName = `Family_Wellbeing_Report_${dateRange.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`
     
     console.log('Saving PDF:', fileName)
