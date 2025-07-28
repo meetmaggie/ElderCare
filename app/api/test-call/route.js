@@ -94,19 +94,17 @@ export async function POST(request) {
       agent_type: agentType
     }
 
-    // Make ElevenLabs API call (matching scheduler structure)
+    // Make ElevenLabs API call with correct phone endpoint structure
     const elevenlabsPayload = {
       agent_id: agentId,
-      conversation_config: {
-        phone_number: elderlyUser.phone,
-        context: userContext,
-        webhook_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`
-      }
+      customer_phone_number: elderlyUser.phone,
+      webhook_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`,
+      context: userContext
     }
 
     console.log('Calling ElevenLabs API with payload:', elevenlabsPayload)
 
-    const response = await fetch(`${ELEVENLABS_BASE_URL}/convai/conversations`, {
+    const response = await fetch(`${ELEVENLABS_BASE_URL}/convai/conversations/phone`, {
       method: 'POST',
       headers: {
         'xi-api-key': ELEVENLABS_API_KEY,
