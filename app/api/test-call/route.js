@@ -64,10 +64,9 @@ export async function POST(request) {
       .from('call_records')
       .insert({
         elderly_user_id: elderlyUser.id,
-        agent_used: agentId,
-        phone_number: elderlyUser.phone,
-        status: 'pending',
-        call_date: new Date().toISOString()
+        call_date: new Date().toISOString(),
+        call_status: 'pending',
+        conversation_id: null
       })
       .select()
       .single()
@@ -122,7 +121,7 @@ export async function POST(request) {
       // Update call record with error status
       await supabase
         .from('call_records')
-        .update({ status: 'failed' })
+        .update({ call_status: 'failed' })
         .eq('id', callRecord.id)
 
       return Response.json({ 
@@ -137,8 +136,8 @@ export async function POST(request) {
     await supabase
       .from('call_records')
       .update({
-        elevenlabs_call_id: result.conversation_id,
-        status: 'initiated'
+        conversation_id: result.conversation_id,
+        call_status: 'initiated'
       })
       .eq('id', callRecord.id)
 
