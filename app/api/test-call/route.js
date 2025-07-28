@@ -97,15 +97,14 @@ export async function POST(request) {
     // Make ElevenLabs API call
     const elevenlabsPayload = {
       agent_id: agentId,
-      mode: 'phone',
-      phone_number: elderlyUser.phone,
-      context: userContext,
+      customer_phone_number: elderlyUser.phone,
+      customer_context: userContext,
       webhook_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`
     }
 
     console.log('Calling ElevenLabs API with payload:', elevenlabsPayload)
 
-    const response = await fetch(`${ELEVENLABS_BASE_URL}/convai/conversations`, {
+    const response = await fetch(`${ELEVENLABS_BASE_URL}/convai/conversations/phone`, {
       method: 'POST',
       headers: {
         'xi-api-key': ELEVENLABS_API_KEY,
