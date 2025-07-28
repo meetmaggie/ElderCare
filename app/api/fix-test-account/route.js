@@ -25,7 +25,8 @@ export async function POST(request) {
     if (familyError && familyError.code === 'PGRST116') {
       console.log(`Creating missing family user for ${testEmail}`)
       
-      const { data: newFamilyUser, error: createFamilyError } = await supabase
+      // Try with user ID first, if that fails, let Supabase generate an ID
+      let { data: newFamilyUser, error: createFamilyError } = await supabase
         .from('family_users')
         .insert({
           id: testUserId,
@@ -42,19 +43,43 @@ export async function POST(request) {
         .select()
         .single()
 
+      // If ID conflict, try without specifying ID
+      if (createFamilyError && createFamilyError.code === '23505') {
+        console.log('ID conflict, creating family user without specified ID')
+        const result = await supabase
+          .from('family_users')
+          .insert({
+            email: testEmail,
+            name: 'Testing Family',
+            phone: '+1-555-987-6543',
+            subscription_status: 'active',
+            plan: 'premium',
+            plan_price: 29.99,
+            alert_preferences: 'email',
+            alert_frequency: 'standard',
+            call_frequency: 'Daily'
+          })
+          .select()
+          .single()
+
+        newFamilyUser = result.data
+        createFamilyError = result.error
+      }
+
       if (createFamilyError) {
         console.error('Error creating family user:', createFamilyError)
-        return Response.json({ error: 'Failed to create family user' }, { status: 500 })
+        return Response.json({ error: `Failed to create family user: ${createFamilyError.message}` }, { status: 500 })
       }
 
       // Use the newly created family user
-      const finalFamilyUser = newFamilyUser || { id: testUserId, email: testEmail }
+      const finalFamilyUser = newFamilyUser
+      const familyUserId = finalFamilyUser.id
       
       // Continue with elderly user creation
       const { data: elderlyUser, error: elderlyError } = await supabase
         .from('elderly_users')
         .select('*')
-        .eq('family_user_id', testUserId)
+        .eq('family_user_id', familyUserId)
         .single()
 
       if (elderlyError && elderlyError.code === 'PGRST116') {
@@ -63,7 +88,7 @@ export async function POST(request) {
           .insert({
             name: 'Margaret Johnson',
             phone: '+1-555-123-4567',
-            family_user_id: testUserId,
+            family_user_id: familyUserId,
             emergency_contact: 'Testing Family',
             emergency_phone: '+1-555-987-6543',
             first_call_completed: false,

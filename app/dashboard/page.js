@@ -140,12 +140,26 @@ export default function DashboardPage() {
 
   const loadRealUserData = async (userId) => {
     try {
-      // Fetch family user data
-      const { data: familyUser, error: familyError } = await supabase
+      // Fetch family user data - for test accounts, we might need to search by email
+      let { data: familyUser, error: familyError } = await supabase
         .from('family_users')
         .select('*')
         .eq('id', userId)
         .maybeSingle()
+
+      // If not found by ID and this is a test account, try searching by email
+      if (!familyUser && user?.email?.endsWith('@test.local')) {
+        const { data: familyUserByEmail, error: emailError } = await supabase
+          .from('family_users')
+          .select('*')
+          .eq('email', user.email)
+          .maybeSingle()
+        
+        if (familyUserByEmail && !emailError) {
+          familyUser = familyUserByEmail
+          familyError = null
+        }
+      }
 
       if (familyError) {
         console.error('Error fetching family user:', familyError)
@@ -196,7 +210,7 @@ export default function DashboardPage() {
       const { data: elderlyUser, error: elderlyError } = await supabase
         .from('elderly_users')
         .select('*')
-        .eq('family_user_id', userId)
+        .eq('family_user_id', familyUser.id)
         .maybeSingle()
 
       if (elderlyError) {
