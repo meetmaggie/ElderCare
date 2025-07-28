@@ -33,7 +33,7 @@ export async function POST(request) {
           name: 'Test User',
           subscription_status: 'active',
           plan: 'premium',
-          plan_price: 29.99,
+          plan_price: 2999,
           alert_preferences: 'email',
           alert_frequency: 'standard',
           call_frequency: 'daily'
