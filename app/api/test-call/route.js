@@ -67,8 +67,7 @@ export async function POST(request) {
         agent_used: agentId,
         phone_number: elderlyUser.phone,
         status: 'pending',
-        call_date: new Date().toISOString(),
-        agent_type: agentType
+        call_date: new Date().toISOString()
       })
       .select()
       .single()
