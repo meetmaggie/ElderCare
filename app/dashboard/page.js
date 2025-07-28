@@ -433,6 +433,50 @@ export default function DashboardPage() {
     }
   }
 
+  const triggerTestCall = async () => {
+    if (isDemoUser) {
+      alert('Demo mode: Test call feature not available in demo')
+      return
+    }
+
+    const isTestAccount = user?.email?.endsWith('@test.local')
+    if (!isTestAccount) {
+      alert('Test calls are only available for test accounts')
+      return
+    }
+
+    try {
+      setLoading(true)
+      const response = await fetch('/api/test-call', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail: user.email
+        })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(`🔥 Test call initiated!\n\nCalling: ${result.elderlyUser}\nPhone: ${result.phone}\n\nYou should receive a call from Sarah within 30 seconds using the Discovery agent.`)
+        
+        // Refresh dashboard data after call
+        setTimeout(() => {
+          checkUserAndLoadData()
+        }, 3000)
+      } else {
+        const error = await response.json()
+        alert('Failed to initiate test call: ' + (error.error || 'Unknown error'))
+      }
+    } catch (error) {
+      console.error('Error triggering test call:', error)
+      alert('Error initiating test call')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 flex items-center justify-center">
@@ -966,6 +1010,19 @@ export default function DashboardPage() {
         <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border mb-8`}>
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Quick Actions</h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            {/* Test Call Button - Only show for test accounts */}
+            {user?.email?.endsWith('@test.local') && !isDemoUser && (
+              <button 
+                onClick={triggerTestCall}
+                disabled={loading}
+                className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200 p-4 rounded-lg transition-colors duration-200 text-center disabled:opacity-50 disabled:cursor-not-allowed border-2 border-yellow-300"
+              >
+                <div className="text-2xl mb-2">🔥</div>
+                <div className="text-sm font-medium">
+                  {loading ? 'Calling...' : 'Test Call Now'}
+                </div>
+              </button>
+            )}
             <button 
               onClick={triggerEmergencyCall}
               className="bg-red-100 text-red-800 hover:bg-red-200 p-4 rounded-lg transition-colors duration-200 text-center"
