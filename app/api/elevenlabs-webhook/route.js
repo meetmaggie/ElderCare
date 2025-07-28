@@ -162,70 +162,143 @@ function validateEnvironment() {
   }
 }
 
-// Analyze conversation for mood, topics, and health mentions
+// Enhanced conversation analysis for dynamic variables
 async function analyzeConversation(transcript, summary) {
   const text = transcript.toLowerCase()
 
-  // Health keywords to detect
-  const healthKeywords = [
-    'pain', 'hurt', 'ache', 'sick', 'ill', 'doctor', 'hospital', 'medicine', 
-    'medication', 'tired', 'dizzy', 'fall', 'fell', 'injury', 'blood pressure',
-    'diabetes', 'heart', 'chest', 'breathing', 'sleep', 'insomnia'
+  // Expanded keyword categories for better variable extraction
+  const keywords = {
+    health: [
+      'pain', 'hurt', 'ache', 'sick', 'ill', 'doctor', 'hospital', 'medicine', 
+      'medication', 'tired', 'dizzy', 'fall', 'fell', 'injury', 'blood pressure',
+      'diabetes', 'heart', 'chest', 'breathing', 'sleep', 'insomnia', 'appointment',
+      'therapy', 'physical therapy', 'prescription', 'pills'
+    ],
+    hobbies: [
+      'garden', 'gardening', 'reading', 'books', 'cooking', 'baking', 'knitting',
+      'sewing', 'painting', 'drawing', 'music', 'piano', 'walking', 'exercise',
+      'crossword', 'puzzle', 'television', 'tv', 'movies', 'crafts', 'hobby',
+      'bird watching', 'fishing', 'dancing'
+    ],
+    family: [
+      'son', 'daughter', 'grandson', 'granddaughter', 'grandchild', 'children',
+      'family', 'visit', 'visited', 'husband', 'wife', 'spouse', 'brother',
+      'sister', 'nephew', 'niece', 'cousin', 'relatives'
+    ],
+    social: [
+      'friend', 'neighbor', 'church', 'community', 'group', 'club', 'meeting',
+      'social', 'visit', 'lunch', 'dinner', 'party', 'celebration'
+    ],
+    activities: [
+      'shopping', 'grocery', 'store', 'errands', 'appointment', 'outing',
+      'drive', 'walk', 'exercise', 'class', 'group', 'volunteer'
+    ]
+  }
+
+  // Mood indicators (expanded)
+  const positiveWords = [
+    'happy', 'good', 'great', 'wonderful', 'excellent', 'fine', 'well',
+    'fantastic', 'amazing', 'lovely', 'beautiful', 'excited', 'pleased',
+    'content', 'cheerful', 'joyful', 'delighted'
+  ]
+  const negativeWords = [
+    'sad', 'bad', 'terrible', 'awful', 'worried', 'anxious', 'depressed',
+    'upset', 'frustrated', 'angry', 'lonely', 'bored', 'tired', 'exhausted',
+    'stressed', 'overwhelmed', 'disappointed'
   ]
 
-  // Mood indicators
-  const positiveWords = ['happy', 'good', 'great', 'wonderful', 'excellent', 'fine', 'well']
-  const negativeWords = ['sad', 'bad', 'terrible', 'awful', 'worried', 'anxious', 'depressed']
+  // Extract variables by category
+  const extractedVariables = {}
+  Object.keys(keywords).forEach(category => {
+    extractedVariables[category] = keywords[category].filter(keyword => 
+      text.includes(keyword)
+    )
+  })
 
-  // Extract health mentions
-  const health_keywords = healthKeywords.filter(keyword => text.includes(keyword))
-
-  // Basic mood analysis
+  // Enhanced mood analysis
   const positiveCount = positiveWords.reduce((count, word) => 
-    count + (text.match(new RegExp(word, 'g')) || []).length, 0)
+    count + (text.match(new RegExp(`\\b${word}\\b`, 'g')) || []).length, 0)
   const negativeCount = negativeWords.reduce((count, word) => 
-    count + (text.match(new RegExp(word, 'g')) || []).length, 0)
+    count + (text.match(new RegExp(`\\b${word}\\b`, 'g')) || []).length, 0)
 
   let mood_score = 3 // neutral
   let mood_description = 'Neutral'
 
-  if (positiveCount > negativeCount + 1) {
+  if (positiveCount > negativeCount + 2) {
+    mood_score = 5
+    mood_description = 'Very Happy'
+  } else if (positiveCount > negativeCount + 1) {
     mood_score = 4
     mood_description = 'Content'
-  } else if (positiveCount > negativeCount + 2) {
-    mood_score = 5
-    mood_description = 'Happy'
+  } else if (negativeCount > positiveCount + 2) {
+    mood_score = 1
+    mood_description = 'Very Sad'  
   } else if (negativeCount > positiveCount + 1) {
     mood_score = 2
     mood_description = 'Concerned'
-  } else if (negativeCount > positiveCount + 2) {
-    mood_score = 1
-    mood_description = 'Sad'
   }
 
-  // Extract topics (simple keyword-based)
+  // Extract topics with better categorization
   const topics = []
-  if (text.includes('family') || text.includes('children') || text.includes('grandchildren')) {
-    topics.push('Family')
-  }
-  if (text.includes('health') || health_keywords.length > 0) {
-    topics.push('Health')
-  }
-  if (text.includes('weather')) {
-    topics.push('Weather')
-  }
-  if (text.includes('food') || text.includes('eat') || text.includes('meal')) {
-    topics.push('Food')
-  }
+  if (extractedVariables.family.length > 0) topics.push('Family')
+  if (extractedVariables.health.length > 0) topics.push('Health')
+  if (extractedVariables.hobbies.length > 0) topics.push('Hobbies')
+  if (extractedVariables.social.length > 0) topics.push('Social')
+  if (extractedVariables.activities.length > 0) topics.push('Activities')
+  if (text.includes('weather')) topics.push('Weather')
+  if (text.includes('food') || text.includes('eat') || text.includes('meal')) topics.push('Food')
+
+  // Extract specific mentions for future reference
+  const specificMentions = extractSpecificMentions(text, transcript)
 
   return {
     mood_score,
     mood_description,
-    mood_analysis: `Mood analysis based on conversation indicators: ${positiveCount} positive, ${negativeCount} negative mentions`,
-    health_keywords,
+    mood_analysis: `Mood analysis: ${positiveCount} positive, ${negativeCount} negative indicators`,
+    health_keywords: extractedVariables.health,
+    hobby_keywords: extractedVariables.hobbies,
+    family_keywords: extractedVariables.family,
+    social_keywords: extractedVariables.social,
+    activity_keywords: extractedVariables.activities,
     topics: topics.length > 0 ? topics : ['General'],
+    specific_mentions: specificMentions,
     summary: summary || 'Conversation summary not available'
   }
+}
+
+// Extract specific mentions that agents can reference later
+function extractSpecificMentions(text, fullTranscript) {
+  const mentions = {
+    names: [],
+    places: [],
+    activities: [],
+    concerns: []
+  }
+
+  // Simple name extraction (capitalized words that appear multiple times)
+  const words = fullTranscript.split(/\s+/)
+  const capitalized = words.filter(word => /^[A-Z][a-z]+$/.test(word))
+  const nameCounts = {}
+  
+  capitalized.forEach(word => {
+    if (word.length > 2 && !['The', 'And', 'But', 'So', 'Then', 'Well', 'Yes', 'No'].includes(word)) {
+      nameCounts[word] = (nameCounts[word] || 0) + 1
+    }
+  })
+  
+  mentions.names = Object.keys(nameCounts).filter(name => nameCounts[name] > 1).slice(0, 3)
+
+  // Extract activities mentioned
+  if (text.includes('went to') || text.includes('visited')) {
+    const activityMatch = text.match(/(?:went to|visited) ([^.!?]+)/g)
+    if (activityMatch) {
+      mentions.activities = activityMatch.map(match => 
+        match.replace(/(?:went to|visited) /, '').trim()
+      ).slice(0, 2)
+    }
+  }
+
+  return mentions
 }
 
 // Create alerts based on conversation analysis

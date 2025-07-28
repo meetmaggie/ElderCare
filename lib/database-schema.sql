@@ -15,25 +15,39 @@ ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS preferred_call_time TIME DEFA
 ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS first_call_completed BOOLEAN DEFAULT FALSE;
 ALTER TABLE elderly_users ADD COLUMN IF NOT EXISTS next_scheduled_call TIMESTAMP WITH TIME ZONE;
 
--- Call logs table
-CREATE TABLE IF NOT EXISTS call_logs (
+-- Call records table (updated with enhanced fields)
+CREATE TABLE IF NOT EXISTS call_records (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id UUID REFERENCES elderly_users(id) ON DELETE CASCADE,
-    agent_used TEXT NOT NULL,
-    call_date DATE NOT NULL DEFAULT CURRENT_DATE,
-    call_time TIME NOT NULL DEFAULT CURRENT_TIME,
+    elderly_user_id UUID REFERENCES elderly_users(id) ON DELETE CASCADE,
+    agent_used TEXT,
+    call_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     duration INTEGER, -- in seconds
     status TEXT NOT NULL DEFAULT 'pending', -- pending, completed, failed, no_answer
-    phone_number TEXT NOT NULL,
+    phone_number TEXT,
     elevenlabs_call_id TEXT,
+    
+    -- Conversation content
+    transcript TEXT,
+    summary TEXT,
+    mood TEXT,
+    key_topics TEXT[], -- array of topics
+    
+    -- Enhanced dynamic variables
+    health_keywords TEXT[],
+    hobby_keywords TEXT[],
+    family_keywords TEXT[],
+    social_keywords TEXT[],
+    activity_keywords TEXT[],
+    specific_mentions JSONB, -- structured mentions like names, places, activities
+    
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Conversations table for storing call analysis
+-- Conversations table for storing call analysis (legacy support)
 CREATE TABLE IF NOT EXISTS conversations (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    call_log_id UUID REFERENCES call_logs(id) ON DELETE CASCADE,
+    call_log_id UUID REFERENCES call_records(id) ON DELETE CASCADE,
     summary TEXT,
     transcript TEXT,
     mood_analysis TEXT,
@@ -43,6 +57,12 @@ CREATE TABLE IF NOT EXISTS conversations (
     conversation_quality TEXT DEFAULT 'Medium',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Add indexes for better query performance
+CREATE INDEX IF NOT EXISTS idx_call_records_elderly_user ON call_records(elderly_user_id);
+CREATE INDEX IF NOT EXISTS idx_call_records_date ON call_records(call_date);
+CREATE INDEX IF NOT EXISTS idx_call_records_status ON call_records(status);
+CREATE INDEX IF NOT EXISTS idx_mood_tracking_user_date ON mood_tracking(elderly_user_id, call_date);
 
 -- Enhanced alerts table
 CREATE TABLE IF NOT EXISTS alerts (
