@@ -94,20 +94,25 @@ export async function POST(request) {
       agent_type: agentType
     }
 
-    // Make ElevenLabs API call with correct phone endpoint structure
+    // Make ElevenLabs API call with correct format
     const elevenlabsPayload = {
       agent_id: agentId,
-      customer_phone_number: elderlyUser.phone,
-      webhook_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`,
-      context: userContext
+      phone_number: elderlyUser.phone,
+      customer_data: {
+        name: elderlyUser.name,
+        context: `${agentType} call for ${elderlyUser.name}. ${isFirstCall ? 'First time introduction' : 'Follow-up check-in'}`,
+        webhook_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`,
+        user_context: userContext
+      }
     }
 
     console.log('Calling ElevenLabs API with payload:', elevenlabsPayload)
+    console.log('API endpoint:', `${ELEVENLABS_BASE_URL}/convai/conversations`)
 
-    const response = await fetch(`${ELEVENLABS_BASE_URL}/convai/conversations/phone`, {
+    const response = await fetch(`${ELEVENLABS_BASE_URL}/convai/conversations`, {
       method: 'POST',
       headers: {
-        'xi-api-key': ELEVENLABS_API_KEY,
+        'Authorization': `Bearer ${ELEVENLABS_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(elevenlabsPayload)
