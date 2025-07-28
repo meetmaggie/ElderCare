@@ -171,13 +171,17 @@ export default function DashboardPage() {
               })
             })
 
-            if (response.ok) {
-              console.log('Test account fixed, reloading data...')
+            const result = await response.json()
+            
+            if (response.ok && result.success) {
+              console.log('Test account fixed successfully, reloading data...')
               // Retry loading the data after fixing
-              await loadRealUserData(userId)
+              setTimeout(async () => {
+                await loadRealUserData(userId)
+              }, 500) // Small delay to ensure database changes are committed
               return
             } else {
-              console.error('Failed to fix test account')
+              console.error('Failed to fix test account:', result.error || 'Unknown error')
             }
           } catch (error) {
             console.error('Error auto-fixing test account:', error)

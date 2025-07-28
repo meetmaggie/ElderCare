@@ -17,16 +17,17 @@ export async function POST(request) {
       .eq('id', userId)
       .maybeSingle()
 
-    if (checkError) {
+    if (checkError && checkError.code !== 'PGRST116') {
       console.error('Error checking family user:', checkError)
       return Response.json({ error: 'Database error' }, { status: 500 })
     }
 
-    // If family user doesn't exist, create it
+    // If family user doesn't exist, create it using upsert to avoid conflicts
     if (!existingFamily) {
+      console.log('Creating family user for:', userEmail)
       const { error: familyError } = await supabase
         .from('family_users')
-        .insert({
+        .upsert({
           id: userId,
           email: userEmail,
           name: 'Test User',
@@ -40,8 +41,9 @@ export async function POST(request) {
 
       if (familyError) {
         console.error('Error creating family user:', familyError)
-        return Response.json({ error: 'Failed to create family user' }, { status: 500 })
+        return Response.json({ error: 'Failed to create family user: ' + familyError.message }, { status: 500 })
       }
+      console.log('Family user created successfully')
     }
 
     // Check if elderly user exists
@@ -51,16 +53,17 @@ export async function POST(request) {
       .eq('family_user_id', userId)
       .maybeSingle()
 
-    if (elderlyCheckError) {
+    if (elderlyCheckError && elderlyCheckError.code !== 'PGRST116') {
       console.error('Error checking elderly user:', elderlyCheckError)
       return Response.json({ error: 'Database error' }, { status: 500 })
     }
 
-    // If elderly user doesn't exist, create it
+    // If elderly user doesn't exist, create it using upsert
     if (!existingElderly) {
+      console.log('Creating elderly user for family:', userId)
       const { error: elderlyError } = await supabase
         .from('elderly_users')
-        .insert({
+        .upsert({
           family_user_id: userId,
           name: 'Test Elderly Person',
           phone: '+44 7700 900123',
@@ -73,8 +76,9 @@ export async function POST(request) {
 
       if (elderlyError) {
         console.error('Error creating elderly user:', elderlyError)
-        return Response.json({ error: 'Failed to create elderly user' }, { status: 500 })
+        return Response.json({ error: 'Failed to create elderly user: ' + elderlyError.message }, { status: 500 })
       }
+      console.log('Elderly user created successfully')
     }
 
     return Response.json({ 
