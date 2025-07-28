@@ -903,15 +903,16 @@ export default function DashboardPage() {
 
 async function generatePDFReport(dateRange) {
   try {
-    // Dynamic import for client-side only
-    const { default: jsPDF } = await import('jspdf')
-    const { default: autoTable } = await import('jspdf-autotable')
+    // Import jsPDF first
+    const jsPDFModule = await import('jspdf')
+    const jsPDF = jsPDFModule.default
+    
+    // Import autoTable plugin
+    await import('jspdf-autotable')
     
     console.log('PDF libraries loaded successfully')
     
     const doc = new jsPDF()
-    
-    // The autoTable plugin should be automatically registered when imported
     
     // Cover Page
     doc.setFontSize(20)
@@ -956,33 +957,62 @@ async function generatePDFReport(dateRange) {
       ['Jan 21', '4/5', '→', 'Today - feeling content']
     ]
     
-    doc.autoTable({
-      head: [moodData[0]],
-      body: moodData.slice(1),
-      startY: 40,
-      theme: 'striped',
-      headStyles: { fillColor: [59, 130, 246] }
-    })
-    
-    // Health Timeline
-    const finalY = doc.lastAutoTable.finalY + 20
-    doc.setFontSize(16)
-    doc.text('Health Mentions Timeline', 20, finalY)
-    
-    const healthData = [
-      ['Date', 'Concern', 'Severity', 'Action Taken'],
-      ['Jan 21', 'Back pain mentioned', 'Low', 'Monitoring pattern'],
-      ['Jan 19', 'Sleep difficulty', 'Medium', 'Family notified'],
-      ['Jan 17', 'Fatigue reported', 'Low', 'Tracking energy levels']
-    ]
-    
-    doc.autoTable({
-      head: [healthData[0]],
-      body: healthData.slice(1),
-      startY: finalY + 10,
-      theme: 'striped',
-      headStyles: { fillColor: [34, 197, 94] }
-    })
+    // Check if autoTable is available
+    if (typeof doc.autoTable === 'function') {
+      doc.autoTable({
+        head: [moodData[0]],
+        body: moodData.slice(1),
+        startY: 40,
+        theme: 'striped',
+        headStyles: { fillColor: [59, 130, 246] }
+      })
+      
+      // Health Timeline
+      const finalY = doc.lastAutoTable.finalY + 20
+      doc.setFontSize(16)
+      doc.text('Health Mentions Timeline', 20, finalY)
+      
+      const healthData = [
+        ['Date', 'Concern', 'Severity', 'Action Taken'],
+        ['Jan 21', 'Back pain mentioned', 'Low', 'Monitoring pattern'],
+        ['Jan 19', 'Sleep difficulty', 'Medium', 'Family notified'],
+        ['Jan 17', 'Fatigue reported', 'Low', 'Tracking energy levels']
+      ]
+      
+      doc.autoTable({
+        head: [healthData[0]],
+        body: healthData.slice(1),
+        startY: finalY + 10,
+        theme: 'striped',
+        headStyles: { fillColor: [34, 197, 94] }
+      })
+    } else {
+      // Fallback: create tables manually with text
+      doc.setFontSize(16)
+      doc.text('Daily Mood Trends', 20, 40)
+      doc.setFontSize(10)
+      let yPos = 50
+      moodData.forEach((row, index) => {
+        doc.text(row.join(' | '), 20, yPos)
+        yPos += 8
+      })
+      
+      yPos += 10
+      doc.setFontSize(16)
+      doc.text('Health Mentions Timeline', 20, yPos)
+      yPos += 10
+      doc.setFontSize(10)
+      const healthData = [
+        ['Date', 'Concern', 'Severity', 'Action Taken'],
+        ['Jan 21', 'Back pain mentioned', 'Low', 'Monitoring pattern'],
+        ['Jan 19', 'Sleep difficulty', 'Medium', 'Family notified'],
+        ['Jan 17', 'Fatigue reported', 'Low', 'Tracking energy levels']
+      ]
+      healthData.forEach((row, index) => {
+        doc.text(row.join(' | '), 20, yPos)
+        yPos += 8
+      })
+    }
     
     // New page for recommendations
     doc.addPage()
