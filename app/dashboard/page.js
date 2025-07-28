@@ -1,4 +1,3 @@
-
 'use client'
 
 import Link from 'next/link'
@@ -122,7 +121,7 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
-        
+
         <div className="p-6 space-y-8">
           {/* Alert Types */}
           <div>
@@ -211,7 +210,7 @@ export default function DashboardPage() {
             </button>
           </div>
         </div>
-        
+
         <div className="p-6 space-y-8">
           {/* Call Schedule */}
           <div>
@@ -312,7 +311,8 @@ export default function DashboardPage() {
     </div>
   )
 
-  const FullCareReportModal = () => (
+  const FullCareReportModal = () => {
+    return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6 border-b border-gray-200">
@@ -329,7 +329,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-        
+
         <div className="p-6 space-y-8">
           {/* Executive Summary */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
@@ -414,7 +414,8 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  )
+    )
+  }
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gradient-to-br from-gray-50 via-white to-blue-50'}`}>
@@ -508,7 +509,7 @@ export default function DashboardPage() {
             <button className="mt-2 text-xs text-blue-600 hover:text-blue-800 font-medium">
               {expandedAlert ? 'Hide Summary ↑' : 'View Summary →'}
             </button>
-            
+
             {expandedAlert && (
               <div className="mt-4 pt-4 border-t border-gray-200 space-y-2">
                 <div className="text-sm">
@@ -600,7 +601,7 @@ export default function DashboardPage() {
         {/* Family Updates Hub */}
         <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border mb-8`}>
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Family Updates Hub</h3>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Recent Family Interactions */}
             <div>
@@ -722,7 +723,7 @@ export default function DashboardPage() {
 
                   <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>{alert.title}</h4>
                   <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-2`}>{alert.description}</p>
-                  
+
                   {alert.pattern && (
                     <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-3`}>
                       <span className="font-medium">Pattern:</span> {alert.pattern}
@@ -797,26 +798,26 @@ export default function DashboardPage() {
         {/* Wellbeing Dashboard */}
         <div className={`mt-8 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border`}>
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Wellbeing Dashboard</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600 mb-2">85%</div>
               <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Activity Level</div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Highly engaged</div>
             </div>
-            
+
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600 mb-2">12</div>
               <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Social Mentions</div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Friends & neighbors</div>
             </div>
-            
+
             <div className="text-center">
               <div className="text-3xl font-bold text-yellow-600 mb-2">3</div>
               <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Health Keywords</div>
               <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>This week</div>
             </div>
-            
+
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600 mb-2">Good</div>
               <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Sleep Quality</div>
