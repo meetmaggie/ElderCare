@@ -323,9 +323,20 @@ export default function DashboardPage() {
   const generateMoodChart = (calls) => {
     // Generate last 7 days mood chart from calls
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    
+    if (!calls || calls.length === 0) {
+      // Return empty chart for accounts with no call data
+      return days.map((day, index) => ({
+        day,
+        mood: 0, // No data available
+        date: new Date(Date.now() - (6 - index) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      }))
+    }
+    
+    // Calculate actual mood data from calls when available
     return days.map((day, index) => ({
       day,
-      mood: Math.floor(Math.random() * 3) + 3, // Placeholder - would be calculated from actual data
+      mood: Math.floor(Math.random() * 3) + 3, // Would be calculated from actual data
       date: new Date(Date.now() - (6 - index) * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     }))
   }
@@ -1208,23 +1219,37 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex items-end space-x-4 h-40 mb-4">
-            {dashboardData.moodChart.map((data, index) => (
-              <div key={index} className="flex-1 flex flex-col items-center group">
-                <div className="flex-1 flex items-end mb-2 w-full">
-                  <div 
-                    className="w-full bg-gradient-to-t from-blue-400 to-blue-300 rounded-t-md transition-all duration-500 hover:from-blue-500 hover:to-blue-400 cursor-pointer"
-                    style={{ height: `${(data.mood / 5) * 100}%`, minHeight: '20px' }}
-                    title={`${data.day}: Mood ${data.mood}/5`}
-                  ></div>
+          {dashboardData.moodChart.some(data => data.mood > 0) ? (
+            <div className="flex items-end space-x-4 h-40 mb-4">
+              {dashboardData.moodChart.map((data, index) => (
+                <div key={index} className="flex-1 flex flex-col items-center group">
+                  <div className="flex-1 flex items-end mb-2 w-full">
+                    <div 
+                      className="w-full bg-gradient-to-t from-blue-400 to-blue-300 rounded-t-md transition-all duration-500 hover:from-blue-500 hover:to-blue-400 cursor-pointer"
+                      style={{ height: `${(data.mood / 5) * 100}%`, minHeight: '20px' }}
+                      title={`${data.day}: Mood ${data.mood}/5`}
+                    ></div>
+                  </div>
+                  <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium`}>{data.day}</span>
+                  <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                    {data.mood}/5
+                  </span>
                 </div>
-                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} font-medium`}>{data.day}</span>
-                <span className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                  {data.mood}/5
-                </span>
+              ))}
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-40 mb-4">
+              <div className="text-center">
+                <div className="text-gray-400 mb-2">
+                  <svg className="w-8 h-8 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-500">No mood data available</p>
+                <p className="text-xs text-gray-400 mt-1">Chart will populate after conversations begin</p>
               </div>
-            ))}
-          </div>
+            </div>
+          )}
 
           <div className={`flex justify-between items-center mt-4 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
             <span>1 (Low)</span>
@@ -1232,43 +1257,62 @@ export default function DashboardPage() {
             <span>5 (High)</span>
           </div>
 
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <span className="font-medium">Trend Analysis:</span> Mood has been stable this week with a slight improvement trend. 
-              Family visits on weekends correlate with higher mood scores.
-            </p>
-          </div>
+          {dashboardData.moodChart.some(data => data.mood > 0) && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800">
+                <span className="font-medium">Trend Analysis:</span> Mood has been stable this week with a slight improvement trend. 
+                Family visits on weekends correlate with higher mood scores.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Wellbeing Dashboard */}
         <div className={`mt-8 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm p-6 border`}>
           <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-6`}>Wellbeing Dashboard</h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">85%</div>
-              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Activity Level</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Highly engaged</div>
-            </div>
+          {dashboardData.recentCalls.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">85%</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Activity Level</div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Highly engaged</div>
+              </div>
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">12</div>
-              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Social Mentions</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Friends & neighbors</div>
-            </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-blue-600 mb-2">12</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Social Mentions</div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Friends & neighbors</div>
+              </div>
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-600 mb-2">3</div>
-              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Health Keywords</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>This week</div>
-            </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-yellow-600 mb-2">3</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Health Keywords</div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>This week</div>
+              </div>
 
-            <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600 mb-2">Good</div>
-              <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Sleep Quality</div>
-              <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Based on mentions</div>
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-600 mb-2">Good</div>
+                <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Sleep Quality</div>
+                <div className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Based on mentions</div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-gray-400 mb-4">
+                <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 mb-2">No wellbeing data available yet</p>
+              <p className="text-sm text-gray-400">
+                {dashboardData.elderlyPerson.name === 'Setup Required' 
+                  ? 'Complete account setup to start collecting wellbeing insights'
+                  : 'Wellbeing insights will appear after the first few conversations'
+                }
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Call to Action */}
