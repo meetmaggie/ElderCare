@@ -145,10 +145,17 @@ export default function DashboardPage() {
         .from('family_users')
         .select('*')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
 
       if (familyError) {
         console.error('Error fetching family user:', familyError)
+        setDashboardData(getEmptyDataStructure())
+        return
+      }
+
+      if (!familyUser) {
+        console.log('No family user record found - user may need to complete signup process')
+        setDashboardData(getEmptyDataStructure())
         return
       }
 
@@ -157,10 +164,17 @@ export default function DashboardPage() {
         .from('elderly_users')
         .select('*')
         .eq('family_user_id', userId)
-        .single()
+        .maybeSingle()
 
       if (elderlyError) {
         console.error('Error fetching elderly user:', elderlyError)
+        setDashboardData(getEmptyDataStructure())
+        return
+      }
+
+      if (!elderlyUser) {
+        console.log('No elderly user record found - user may need to complete setup')
+        setDashboardData(getEmptyDataStructure())
         return
       }
 
@@ -224,27 +238,28 @@ export default function DashboardPage() {
       setDashboardData(realData)
     } catch (error) {
       console.error('Error loading real user data:', error)
-      // Fallback to empty data structure
-      setDashboardData({
-        elderlyPerson: {
-          name: 'Unknown',
-          status: 'No Data',
-          mood: 'Unknown',
-          moodTrend: 'stable',
-          activity: 'Unknown',
-          lastCall: 'No calls yet',
-          lastCallRelative: 'N/A',
-          nextCall: 'Not scheduled',
-          alertsThisWeek: 0
-        },
-        recentCalls: [],
-        automatedAlerts: [],
-        moodChart: [],
-        familyUpdates: [],
-        upcomingEvents: []
-      })
+      setDashboardData(getEmptyDataStructure())
     }
   }
+
+  const getEmptyDataStructure = () => ({
+    elderlyPerson: {
+      name: 'Setup Required',
+      status: 'Account Setup Needed',
+      mood: 'Unknown',
+      moodTrend: 'stable',
+      activity: 'Unknown',
+      lastCall: 'No calls yet',
+      lastCallRelative: 'N/A',
+      nextCall: 'Complete setup first',
+      alertsThisWeek: 0
+    },
+    recentCalls: [],
+    automatedAlerts: [],
+    moodChart: [],
+    familyUpdates: [],
+    upcomingEvents: []
+  })
 
   const getRelativeTime = (dateString) => {
     const now = new Date()
@@ -1019,8 +1034,26 @@ export default function DashboardPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
                   </div>
-                  <p className="text-gray-500">No recent conversations available</p>
-                  {!isDemoUser && (
+                  <p className="text-gray-500">
+                    {dashboardData.elderlyPerson.name === 'Setup Required' 
+                      ? 'Please complete your account setup to see conversation data'
+                      : 'No recent conversations available'
+                    }
+                  </p>
+                  {!isDemoUser && dashboardData.elderlyPerson.name === 'Setup Required' && (
+                    <div className="mt-4 space-y-2">
+                      <p className="text-sm text-gray-600">
+                        Test accounts (@test.local) need to complete the signup process in the database
+                      </p>
+                      <button 
+                        onClick={() => window.location.href = '/signup'}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                      >
+                        Complete Setup
+                      </button>
+                    </div>
+                  )}
+                  {!isDemoUser && dashboardData.elderlyPerson.name !== 'Setup Required' && (
                     <button className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                       Schedule First Call
                     </button>
