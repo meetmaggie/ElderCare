@@ -173,23 +173,11 @@ export async function POST(request) {
       return guidance
     }
 
-    // Use Twilio to make the actual call
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-    const twilioResponse = await fetch(`${baseUrl}/api/make-outbound-call`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        elderly_user_id: elderlyUser.id,
-        force_call: true,
-        call_type: 'test'
-      })
-    })
+    // Directly make the Twilio call without internal fetch
+    const twilioResult = await makeTwilioCallDirect(elderlyUser, callRecord.id)
 
-    if (!twilioResponse.ok) {
-      const errorData = await twilioResponse.json()
-      console.error('Twilio call failed:', errorData)
+    if (!twilioResult.success) {
+      console.error('Twilio call failed:', twilioResult.error)
 
       // Update call record with error status
       await supabase
@@ -198,11 +186,20 @@ export async function POST(request) {
         .eq('id', callRecord.id)
 
       return Response.json({ 
-        error: `Call initiation failed: ${errorData.error}` 
+        error: `Call initiation failed: ${twilioResult.error}` 
       }, { status: 500 })
     }
 
-    const result = await twilioResponse.json()
+    // Update call record with Twilio CallSid
+    await supabase
+      .from('call_records')
+      .update({
+        twilio_call_sid: twilioResult.callSid,
+        call_status: 'calling'
+      })
+      .eq('id', callRecord.id)
+
+    const result = { callSid: twilioResult.callSid, agentType: agentType }
     console.log('Twilio call response:', result)
 
     console.log(`Test call initiated successfully for ${elderlyUser.name}`)
@@ -221,5 +218,58 @@ export async function POST(request) {
     return Response.json({ 
       error: 'Failed to initiate test call: ' + error.message 
     }, { status: 500 })
+  }
+}
+
+// Direct Twilio calling function to avoid internal fetch
+async function makeTwilioCallDirect(elderlyUser, callRecordId) {
+  try {
+    const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
+    const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN  
+    const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER
+
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+      return { success: false, error: 'Twilio credentials not configured' }
+    }
+
+    const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/incoming-call`
+    const statusCallbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/twilio-status`
+
+    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Calls.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        To: `+1${elderlyUser.phone}`,
+        From: TWILIO_PHONE_NUMBER,
+        Url: webhookUrl,
+        StatusCallback: statusCallbackUrl,
+        StatusCallbackEvent: 'initiated,ringing,answered,completed',
+        StatusCallbackMethod: 'POST'
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Twilio API error:', errorText)
+      return { success: false, error: `Twilio API error: ${response.status}` }
+    }
+
+    const result = await response.json()
+    console.log('Twilio call initiated:', result.sid)
+
+    return { 
+      success: true, 
+      callSid: result.sid 
+    }
+
+  } catch (error) {
+    console.error('Error making Twilio call:', error)
+    return { 
+      success: false, 
+      error: error.message 
+    }
   }
 }
