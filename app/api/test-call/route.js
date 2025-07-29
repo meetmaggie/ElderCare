@@ -243,7 +243,7 @@ async function makeTwilioCallDirect(elderlyUser, callRecordId) {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
-        To: formatPhoneNumber(elderlyUser.phone),
+        To: '+44 7562 277268', // Use exact format from Twilio verified numbers
         From: TWILIO_PHONE_NUMBER,
         Url: webhookUrl,
         StatusCallback: statusCallbackUrl,
