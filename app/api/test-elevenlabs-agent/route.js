@@ -17,7 +17,7 @@ export async function GET() {
     // Test Discovery Agent
     const discoveryResponse = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${DISCOVERY_AGENT_ID}`, {
       headers: {
-        'Authorization': `Bearer ${ELEVENLABS_API_KEY}`,
+        'xi-api-key': ELEVENLABS_API_KEY,
         'Content-Type': 'application/json'
       }
     })
@@ -25,7 +25,7 @@ export async function GET() {
     // Test Daily Check-in Agent
     const dailyResponse = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${DAILY_AGENT_ID}`, {
       headers: {
-        'Authorization': `Bearer ${ELEVENLABS_API_KEY}`,
+        'xi-api-key': ELEVENLABS_API_KEY,
         'Content-Type': 'application/json'
       }
     })
