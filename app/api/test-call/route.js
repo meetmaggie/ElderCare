@@ -42,7 +42,9 @@ export async function POST(request) {
       return Response.json({ error: 'No phone number configured for test user' }, { status: 400 })
     }
 
-    console.log(`Initiating test call for ${elderlyUser.name} at ${elderlyUser.phone}`)
+    // Ensure we use the exact verified phone format
+    const verifiedPhone = '+44 7562 277268' // Hardcode the exact verified format
+    console.log(`Initiating test call for ${elderlyUser.name} at ${verifiedPhone}`)
 
     // Determine which agent to use based on call history
     const isFirstCall = !elderlyUser.first_call_completed
@@ -175,7 +177,7 @@ export async function POST(request) {
     }
 
     // Directly make the Twilio call without internal fetch
-    const twilioResult = await makeTwilioCallDirect(elderlyUser, callRecord.id)
+    const twilioResult = await makeTwilioCallDirect(elderlyUser, callRecord.id, verifiedPhone)
 
     if (!twilioResult.success) {
       console.error('Twilio call failed:', twilioResult.error)
@@ -223,7 +225,7 @@ export async function POST(request) {
 }
 
 // Direct Twilio calling function to avoid internal fetch
-async function makeTwilioCallDirect(elderlyUser, callRecordId) {
+async function makeTwilioCallDirect(elderlyUser, callRecordId, phoneNumber) {
   try {
     const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
     const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN  
@@ -243,7 +245,7 @@ async function makeTwilioCallDirect(elderlyUser, callRecordId) {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
-        To: '+44 7562 277268', // Use exact verified format from Twilio console
+        To: phoneNumber, // Use the verified phone number passed as parameter
         From: TWILIO_PHONE_NUMBER,
         Url: webhookUrl,
         StatusCallback: statusCallbackUrl,
