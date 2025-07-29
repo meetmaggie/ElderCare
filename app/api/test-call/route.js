@@ -173,33 +173,22 @@ export async function POST(request) {
       return guidance
     }
 
-    // Make ElevenLabs API call with correct format
-    const elevenlabsPayload = {
-      agent_id: agentId,
-      phone_number: elderlyUser.phone,
-      customer_data: {
-        name: elderlyUser.name,
-        context: `${agentType} call for ${elderlyUser.name}. ${isFirstCall ? 'First time introduction' : 'Follow-up check-in'}`,
-        webhook_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`,
-        user_context: userContext
-      }
-    }
-
-    console.log('Calling ElevenLabs API with payload:', elevenlabsPayload)
-    console.log('API endpoint:', `${ELEVENLABS_BASE_URL}/convai/conversations`)
-
-    const response = await fetch(`${ELEVENLABS_BASE_URL}/convai/conversations`, {
+    // Use Twilio to make the actual call
+    const twilioResponse = await fetch('/api/make-outbound-call', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${ELEVENLABS_API_KEY}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(elevenlabsPayload)
+      body: JSON.stringify({
+        elderly_user_id: elderlyUser.id,
+        force_call: true,
+        call_type: 'test'
+      })
     })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`ElevenLabs API error: ${response.status} - ${errorText}`)
+    if (!twilioResponse.ok) {
+      const errorData = await twilioResponse.json()
+      console.error('Twilio call failed:', errorData)
 
       // Update call record with error status
       await supabase
@@ -208,21 +197,12 @@ export async function POST(request) {
         .eq('id', callRecord.id)
 
       return Response.json({ 
-        error: `ElevenLabs API error: ${response.status}` 
+        error: `Call initiation failed: ${errorData.error}` 
       }, { status: 500 })
     }
 
-    const result = await response.json()
-    console.log('ElevenLabs response:', result)
-
-    // Update call record with ElevenLabs call ID
-    await supabase
-      .from('call_records')
-      .update({
-        conversation_id: result.conversation_id,
-        call_status: 'initiated'
-      })
-      .eq('id', callRecord.id)
+    const result = await twilioResponse.json()
+    console.log('Twilio call response:', result)
 
     console.log(`Test call initiated successfully for ${elderlyUser.name}`)
 
@@ -231,7 +211,8 @@ export async function POST(request) {
       message: `Test call initiated for ${elderlyUser.name}`,
       elderlyUser: elderlyUser.name,
       phone: elderlyUser.phone,
-      callId: result.conversation_id
+      callSid: result.callSid,
+      agentType: result.agentType
     })
 
   } catch (error) {

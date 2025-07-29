@@ -22,9 +22,12 @@ CREATE TABLE IF NOT EXISTS call_records (
     agent_used TEXT,
     call_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     duration INTEGER, -- in seconds
-    status TEXT NOT NULL DEFAULT 'pending', -- pending, completed, failed, no_answer
+    status TEXT NOT NULL DEFAULT 'pending', -- pending, completed, failed, no_answer, calling, initiating
     phone_number TEXT,
     elevenlabs_call_id TEXT,
+    twilio_call_sid TEXT, -- Twilio call identifier
+    conversation_id TEXT, -- ElevenLabs conversation ID
+    call_type TEXT DEFAULT 'scheduled', -- scheduled, test, emergency
     
     -- Conversation content
     transcript TEXT,

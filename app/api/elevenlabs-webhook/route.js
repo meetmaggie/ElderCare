@@ -55,12 +55,26 @@ export async function POST(request) {
       return Response.json({ error: 'Missing conversation_id' }, { status: 400 })
     }
 
-    // Find the call record entry
-    const { data: callRecord, error: callRecordError } = await supabase
+    // Find the call record entry - check both ElevenLabs ID and conversation ID
+    let { data: callRecord, error: callRecordError } = await supabase
       .from('call_records')
       .select('*, elderly_users(*)')
       .eq('elevenlabs_call_id', conversation_id)
       .single()
+
+    // If not found by ElevenLabs ID, try finding by conversation_id
+    if (callRecordError || !callRecord) {
+      const { data: altCallRecord, error: altError } = await supabase
+        .from('call_records')
+        .select('*, elderly_users(*)')
+        .eq('conversation_id', conversation_id)
+        .single()
+      
+      if (!altError && altCallRecord) {
+        callRecord = altCallRecord
+        callRecordError = null
+      }
+    }
 
     if (callRecordError || !callRecord) {
       console.error('Call record not found:', callRecordError)
@@ -74,7 +88,9 @@ export async function POST(request) {
         status: status === 'completed' ? 'completed' : 'failed',
         duration: duration_seconds,
         transcript: transcript,
-        summary: summary
+        summary: summary,
+        conversation_id: conversation_id,
+        elevenlabs_call_id: conversation_id
       })
       .eq('id', callRecord.id)
 
