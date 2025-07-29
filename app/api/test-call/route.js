@@ -174,7 +174,7 @@ export async function POST(request) {
     }
 
     // Use Twilio to make the actual call
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${process.env.REPL_ID}.${process.env.REPL_OWNER}.repl.co`
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
     const twilioResponse = await fetch(`${baseUrl}/api/make-outbound-call`, {
       method: 'POST',
       headers: {
