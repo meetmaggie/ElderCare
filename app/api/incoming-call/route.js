@@ -25,16 +25,45 @@ export async function POST(request) {
       })
     }
 
-    // Find the call record
-    const { data: callRecord, error: callError } = await supabase
+    // Find the call record - try multiple approaches
+    let callRecord = null
+    let callError = null
+
+    // First try by twilio_call_sid
+    const { data: recordBySid, error: sidError } = await supabase
       .from('call_records')
       .select('*, elderly_users(*)')
       .eq('twilio_call_sid', callSid)
       .single()
 
-    if (callError || !callRecord) {
-      console.error('Call record not found:', callSid)
-      return new Response(generateErrorTwiML('Call record not found'), {
+    if (!sidError && recordBySid) {
+      callRecord = recordBySid
+    } else {
+      // If not found, try to find the most recent call record for debugging
+      const { data: recentCall, error: recentError } = await supabase
+        .from('call_records')
+        .select('*, elderly_users(*)')
+        .is('twilio_call_sid', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (!recentError && recentCall) {
+        // Update the record with the CallSid
+        await supabase
+          .from('call_records')
+          .update({ twilio_call_sid: callSid })
+          .eq('id', recentCall.id)
+        
+        callRecord = recentCall
+        console.log('Updated call record with CallSid:', callSid)
+      }
+    }
+
+    if (!callRecord) {
+      console.error('No call record found for CallSid:', callSid)
+      console.error('Available call records check needed')
+      return new Response(generateErrorTwiML('Service temporarily unavailable'), {
         headers: { 'Content-Type': 'application/xml' }
       })
     }
