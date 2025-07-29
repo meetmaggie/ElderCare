@@ -1,116 +1,92 @@
 
 import { supabase } from '../../../lib/supabase'
 
+// ElevenLabs configuration
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY
+const DISCOVERY_AGENT_ID = 'agent_01k0q3vpk7f8bsrq2aqk71v9j9'
+const DAILY_CHECKIN_AGENT_ID = 'agent_01k0pz5awhf8xbn85wrg227fve'
+
 export async function POST(request) {
+  console.log('📞 Incoming call webhook received')
+
   try {
-    // Parse Twilio webhook data
+    // Parse Twilio form data
     const formData = await request.formData()
     const callSid = formData.get('CallSid')
     const from = formData.get('From')
     const to = formData.get('To')
-    const callStatus = formData.get('CallStatus')
 
-    console.log('Incoming call webhook:', { callSid, from, to, callStatus })
+    console.log('Incoming call details:', { callSid, from, to })
 
-    // Clean phone number (remove +1, spaces, etc.)
-    const cleanPhone = from?.replace(/[\+\-\s\(\)]/g, '')
-    
-    if (!cleanPhone) {
-      console.error('No caller phone number provided')
-      return new Response(generateErrorTwiML('Unable to identify caller'), {
-        headers: { 'Content-Type': 'text/xml' }
+    if (!callSid) {
+      console.error('Missing CallSid in webhook')
+      return new Response(generateErrorTwiML('System error'), {
+        headers: { 'Content-Type': 'application/xml' }
       })
     }
 
-    // Look up elderly user by phone number
-    const { data: elderlyUser, error: userError } = await supabase
-      .from('elderly_users')
-      .select('*')
-      .eq('phone', cleanPhone)
-      .single()
-
-    if (userError || !elderlyUser) {
-      console.error('Elderly user not found for phone:', cleanPhone)
-      
-      // Create call record for unknown caller
-      await supabase
-        .from('call_records')
-        .insert({
-          phone_number: cleanPhone,
-          call_date: new Date().toISOString(),
-          status: 'rejected',
-          twilio_call_sid: callSid,
-          notes: 'Unknown caller - no user found in database'
-        })
-
-      return new Response(generateErrorTwiML('This number is not registered in our system'), {
-        headers: { 'Content-Type': 'text/xml' }
-      })
-    }
-
-    // Determine which agent to use based on call history
-    const isFirstCall = !elderlyUser.first_call_completed
-    const agentId = isFirstCall ? 
-      'agent_01k0q3vpk7f8bsrq2aqk71v9j9' : // Discovery agent
-      'agent_01k0pz5awhf8xbn85wrg227fve'   // Daily check-in agent
-    
-    const agentType = isFirstCall ? 'Discovery' : 'Daily check-in'
-
-    console.log(`Routing ${elderlyUser.name} to ${agentType} agent`)
-
-    // Create call record
+    // Find the call record
     const { data: callRecord, error: callError } = await supabase
       .from('call_records')
-      .insert({
-        elderly_user_id: elderlyUser.id,
-        phone_number: cleanPhone,
-        call_date: new Date().toISOString(),
-        status: 'in_progress',
-        twilio_call_sid: callSid,
-        agent_used: agentId
-      })
-      .select()
+      .select('*, elderly_users(*)')
+      .eq('twilio_call_sid', callSid)
       .single()
 
-    if (callError) {
-      console.error('Error creating call record:', callError)
+    if (callError || !callRecord) {
+      console.error('Call record not found:', callSid)
+      return new Response(generateErrorTwiML('Call record not found'), {
+        headers: { 'Content-Type': 'application/xml' }
+      })
     }
 
-    // Prepare user context for ElevenLabs
-    const userContext = await prepareUserContext(elderlyUser)
+    // Determine which agent to use
+    const isFirstCall = !callRecord.elderly_users.first_call_completed
+    const agentId = isFirstCall ? DISCOVERY_AGENT_ID : DAILY_CHECKIN_AGENT_ID
+
+    console.log(`Using ${isFirstCall ? 'Discovery' : 'Daily Check-in'} agent: ${agentId}`)
+
+    // Prepare user context for the agent
+    const userContext = await prepareUserContext(callRecord.elderly_users)
 
     // Generate TwiML to connect to ElevenLabs
-    const twiml = generateElevenLabsTwiML(agentId, elderlyUser, userContext, callRecord?.id)
-    
-    console.log('Generated TwiML for ElevenLabs connection:', twiml)
-    console.log('Agent ID being used:', agentId)
-    console.log('Call record ID:', callRecord?.id)
+    const twiml = generateElevenLabsTwiML(agentId, userContext, callSid)
+
+    // Update call record status
+    await supabase
+      .from('call_records')
+      .update({ 
+        call_status: 'connected',
+        agent_used: agentId
+      })
+      .eq('id', callRecord.id)
+
+    console.log('TwiML response generated successfully')
 
     return new Response(twiml, {
-      headers: { 'Content-Type': 'text/xml' }
+      headers: { 'Content-Type': 'application/xml' }
     })
 
   } catch (error) {
-    console.error('Error in incoming call webhook:', error)
+    console.error('Error in incoming call handler:', error)
     return new Response(generateErrorTwiML('System temporarily unavailable'), {
-      headers: { 'Content-Type': 'text/xml' }
+      headers: { 'Content-Type': 'application/xml' }
     })
   }
 }
 
-// Prepare enhanced user context for ElevenLabs agent
+// Prepare user context for ElevenLabs agent
 async function prepareUserContext(elderlyUser) {
   try {
-    // Get recent call history
+    // Get recent conversation data
     const { data: recentCalls } = await supabase
       .from('call_records')
-      .select('summary, key_topics, mood, call_date, health_keywords, hobby_keywords, family_keywords')
+      .select('summary, key_topics, mood, transcript, call_date, specific_mentions, hobby_keywords, family_keywords, health_keywords')
       .eq('elderly_user_id', elderlyUser.id)
-      .eq('status', 'completed')
+      .eq('call_status', 'completed')
       .order('call_date', { ascending: false })
       .limit(3)
 
-    // Get mood tracking
+    // Get mood tracking for trend analysis
     const { data: moodHistory } = await supabase
       .from('mood_tracking')
       .select('mood_score, mood_description, call_date')
@@ -118,75 +94,108 @@ async function prepareUserContext(elderlyUser) {
       .order('call_date', { ascending: false })
       .limit(5)
 
-    // Extract insights from conversation history
-    const hobbies = recentCalls?.flatMap(call => call.hobby_keywords || []) || []
-    const familyTopics = recentCalls?.flatMap(call => call.family_keywords || []) || []
-    const healthMentions = recentCalls?.filter(call => call.health_keywords?.length > 0) || []
-    const previousTopics = recentCalls?.map(call => call.summary).filter(Boolean) || []
-    
+    // Extract dynamic variables from conversation history
+    const recentTopics = recentCalls?.flatMap(call => call.key_topics || []).slice(0, 5) || []
+    const lastMood = recentCalls?.[0]?.mood || null
+    const conversationCount = recentCalls?.length || 0
+
+    // Extract hobbies from all conversations
+    const allHobbies = recentCalls?.flatMap(call => call.hobby_keywords || []) || []
+    const uniqueHobbies = [...new Set(allHobbies)].slice(0, 5)
+
+    // Extract family mentions
+    const familyMentions = recentCalls?.flatMap(call => call.family_keywords || []) || []
+    const uniqueFamilyTopics = [...new Set(familyMentions)].slice(0, 5)
+
+    // Extract health mentions from recent calls
+    const healthMentions = recentCalls?.filter(call => 
+      call.key_topics?.includes('Health') || (call.health_keywords && call.health_keywords.length > 0)
+    ).map(call => ({
+      date: call.call_date,
+      summary: call.summary,
+      keywords: call.health_keywords || []
+    })).slice(0, 3)
+
     // Calculate mood trend
     const avgMood = moodHistory && moodHistory.length > 0 
       ? moodHistory.reduce((sum, mood) => sum + (mood.mood_score || 3), 0) / moodHistory.length
       : 3
 
+    const moodTrend = avgMood >= 4 ? 'Positive' : avgMood >= 3 ? 'Stable' : 'Needs Attention'
+
+    // Previous conversation summaries
+    const previousTopics = recentCalls?.map(call => call.summary).filter(Boolean).slice(0, 3) || []
+
     return {
       user_name: elderlyUser.name,
       is_first_call: !elderlyUser.first_call_completed,
-      hobbies: [...new Set(hobbies)].slice(0, 5),
-      family_updates: [...new Set(familyTopics)].slice(0, 3),
-      previous_topics: previousTopics.slice(0, 3),
-      health_mentions: healthMentions.slice(0, 2),
-      mood_trend: avgMood >= 4 ? 'Positive' : avgMood >= 3 ? 'Stable' : 'Needs Attention',
+      conversation_count: conversationCount,
+
+      // Dynamic variables from conversation history
+      hobbies: uniqueHobbies,
+      family_updates: uniqueFamilyTopics,
+      previous_topics: previousTopics,
+      health_mentions: healthMentions,
+      recent_topics: recentTopics,
+
+      // Mood and wellness tracking
+      last_mood: lastMood,
+      mood_trend: moodTrend,
+      recent_mood_history: moodHistory?.slice(0, 3) || [],
+
+      // Contact and emergency info
       emergency_contact: elderlyUser.emergency_contact || '',
-      total_conversations: recentCalls?.length || 0
+      emergency_phone: elderlyUser.emergency_phone || ''
     }
+
   } catch (error) {
     console.error('Error preparing user context:', error)
     return {
       user_name: elderlyUser.name,
-      is_first_call: !elderlyUser.first_call_completed
+      is_first_call: !elderlyUser.first_call_completed,
+      conversation_count: 0
     }
   }
 }
 
-// Generate TwiML to connect call to ElevenLabs agent
-function generateElevenLabsTwiML(agentId, elderlyUser, userContext, callRecordId) {
-  const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/twilio-status`
+// Generate TwiML for ElevenLabs connection
+function generateElevenLabsTwiML(agentId, userContext, callSid) {
+  const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`
   
-  // Validate required environment variables
-  if (!process.env.ELEVENLABS_API_KEY) {
-    console.error('ELEVENLABS_API_KEY not configured!')
-    return generateErrorTwiML('Service temporarily unavailable')
+  // Convert user context to URL parameters for ElevenLabs
+  const contextParams = new URLSearchParams({
+    user_name: userContext.user_name,
+    is_first_call: userContext.is_first_call.toString(),
+    conversation_count: userContext.conversation_count.toString(),
+    call_sid: callSid
+  })
+
+  // Add arrays and objects as JSON strings
+  if (userContext.hobbies?.length > 0) {
+    contextParams.append('hobbies', JSON.stringify(userContext.hobbies))
   }
-  
-  if (!process.env.NEXT_PUBLIC_SITE_URL) {
-    console.error('NEXT_PUBLIC_SITE_URL not configured!')
+  if (userContext.previous_topics?.length > 0) {
+    contextParams.append('previous_topics', JSON.stringify(userContext.previous_topics))
   }
-  
-  console.log('ElevenLabs TwiML generation:')
-  console.log('- Agent ID:', agentId)
-  console.log('- User:', elderlyUser.name)
-  console.log('- Call Record ID:', callRecordId)
-  console.log('- Webhook URL:', `${process.env.NEXT_PUBLIC_SITE_URL}/api/elevenlabs-webhook`)
-  console.log('- API Key configured:', !!process.env.ELEVENLABS_API_KEY)
-  
+  if (userContext.last_mood) {
+    contextParams.append('last_mood', userContext.last_mood)
+  }
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna">Hello ${elderlyUser.name}, connecting you now.</Say>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation/stream">
-      <Parameter name="agent_id" value="${agentId}" />
-      <Parameter name="authorization" value="Bearer ${process.env.ELEVENLABS_API_KEY}" />
-      <Parameter name="user_name" value="${elderlyUser.name}" />
-      <Parameter name="user_context" value="${JSON.stringify(userContext)}" />
-      <Parameter name="webhook_url" value="${process.env.NEXT_PUBLIC_SITE_URL}/api/elevenlabs-webhook" />
-      <Parameter name="call_record_id" value="${callRecordId}" />
+    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${agentId}">
+      <Parameter name="authorization" value="${ELEVENLABS_API_KEY}" />
+      <Parameter name="user_name" value="${userContext.user_name}" />
+      <Parameter name="is_first_call" value="${userContext.is_first_call}" />
+      <Parameter name="conversation_count" value="${userContext.conversation_count}" />
+      <Parameter name="call_sid" value="${callSid}" />
     </Stream>
   </Connect>
 </Response>`
 }
 
-// Generate error TwiML response
+// Generate error TwiML
 function generateErrorTwiML(message) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
