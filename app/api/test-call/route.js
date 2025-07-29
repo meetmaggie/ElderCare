@@ -1,4 +1,5 @@
 import { supabase } from '../../../lib/supabase'
+import { formatPhoneNumber } from '../../../lib/twilio-helper'
 
 // ElevenLabs API configuration
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY
@@ -242,7 +243,7 @@ async function makeTwilioCallDirect(elderlyUser, callRecordId) {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
-        To: `+1${elderlyUser.phone}`,
+        To: formatPhoneNumber(elderlyUser.phone),
         From: TWILIO_PHONE_NUMBER,
         Url: webhookUrl,
         StatusCallback: statusCallbackUrl,
