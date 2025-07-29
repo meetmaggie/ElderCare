@@ -89,15 +89,15 @@ export async function POST(request) {
     const recentTopics = recentCalls?.flatMap(call => call.key_topics || []).slice(0, 5) || []
     const lastMood = recentCalls?.[0]?.mood || null
     const conversationCount = recentCalls?.length || 0
-    
+
     // Extract hobbies from all conversations
     const allHobbies = recentCalls?.flatMap(call => call.hobby_keywords || []) || []
     const uniqueHobbies = [...new Set(allHobbies)].slice(0, 5)
-    
+
     // Extract family mentions
     const familyMentions = recentCalls?.flatMap(call => call.family_keywords || []) || []
     const uniqueFamilyTopics = [...new Set(familyMentions)].slice(0, 5)
-    
+
     // Extract health mentions from recent calls
     const healthMentions = recentCalls?.filter(call => 
       call.key_topics?.includes('Health') || (call.health_keywords && call.health_keywords.length > 0)
@@ -106,14 +106,14 @@ export async function POST(request) {
       summary: call.summary,
       keywords: call.health_keywords || []
     })).slice(0, 3)
-    
+
     // Calculate mood trend
     const avgMood = moodHistory && moodHistory.length > 0 
       ? moodHistory.reduce((sum, mood) => sum + (mood.mood_score || 3), 0) / moodHistory.length
       : 3
-      
+
     const moodTrend = avgMood >= 4 ? 'Positive' : avgMood >= 3 ? 'Stable' : 'Needs Attention'
-    
+
     // Previous conversation summaries
     const previousTopics = recentCalls?.map(call => call.summary).filter(Boolean).slice(0, 3) || []
 
@@ -121,26 +121,26 @@ export async function POST(request) {
       user_name: elderlyUser.name,
       is_first_call: isFirstCall,
       conversation_count: conversationCount,
-      
+
       // Dynamic variables from conversation history
       hobbies: uniqueHobbies,
       family_updates: uniqueFamilyTopics,
       previous_topics: previousTopics,
       health_mentions: healthMentions,
       recent_topics: recentTopics,
-      
+
       // Mood and wellness tracking
       last_mood: lastMood,
       mood_trend: moodTrend,
       recent_mood_history: moodHistory?.slice(0, 3) || [],
-      
+
       // Contact and emergency info
       emergency_contact: elderlyUser.emergency_contact || '',
       emergency_phone: elderlyUser.emergency_phone || '',
-      
+
       // Agent guidance based on data
       agent_guidance: generateAgentGuidance(isFirstCall, healthMentions, avgMood, recentCalls),
-      
+
       // Test call identifier
       test_call: true,
       agent_type: agentType
@@ -149,20 +149,20 @@ export async function POST(request) {
     // Helper function to generate agent guidance
     function generateAgentGuidance(isFirstCall, healthMentions, avgMood, recentCalls) {
       const guidance = []
-      
+
       if (isFirstCall) {
         guidance.push("Discovery call: Focus on learning about the user's interests, family, daily routine, and hobbies")
       } else {
         guidance.push("Follow-up call: Reference previous conversations and check on topics mentioned before")
-        
+
         if (healthMentions.length > 0) {
           guidance.push("Health topics were mentioned recently - gently check in on their wellbeing")
         }
-        
+
         if (avgMood < 3) {
           guidance.push("Recent mood indicators suggest they may need extra support and encouragement")
         }
-        
+
         if (recentCalls && recentCalls.length > 0) {
           const lastCall = recentCalls[0]
           if (lastCall.summary) {
@@ -170,7 +170,7 @@ export async function POST(request) {
           }
         }
       }
-      
+
       return guidance
     }
 
@@ -243,7 +243,7 @@ async function makeTwilioCallDirect(elderlyUser, callRecordId) {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
-        To: '+44 7562 277268', // Use exact format from Twilio verified numbers
+        To: elderlyUser.phone, // Use phone number from database
         From: TWILIO_PHONE_NUMBER,
         Url: webhookUrl,
         StatusCallback: statusCallbackUrl,
