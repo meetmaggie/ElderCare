@@ -2,10 +2,16 @@ import { supabase } from '../../../lib/supabase'
 import crypto from 'crypto'
 
 export async function POST(request) {
+  console.log('🎯 ElevenLabs webhook received!')
+  console.log('Request headers:', Object.fromEntries(request.headers.entries()))
+  
   try {
     // Get the raw body for signature verification
     const rawBody = await request.text()
+    console.log('Raw webhook body:', rawBody)
+    
     const webhookData = JSON.parse(rawBody)
+    console.log('Parsed webhook data:', JSON.stringify(webhookData, null, 2))
 
     // Verify webhook signature if secret is configured
     const webhookSecret = process.env.ELEVENLABS_WEBHOOK_SECRET

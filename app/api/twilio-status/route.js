@@ -1,9 +1,10 @@
-
 import { supabase } from '../../../lib/supabase'
 
 export async function POST(request) {
+  console.log('📞 Twilio status webhook received!')
+
   try {
-    // Parse Twilio status webhook data
+    // Parse Twilio webhook data
     const formData = await request.formData()
     const callSid = formData.get('CallSid')
     const callStatus = formData.get('CallStatus')
@@ -11,12 +12,12 @@ export async function POST(request) {
     const from = formData.get('From')
     const to = formData.get('To')
 
-    console.log('Twilio status webhook:', { 
-      callSid, 
-      callStatus, 
-      callDuration, 
-      from, 
-      to 
+    console.log('Twilio status data:', {
+      callSid,
+      callStatus,
+      callDuration,
+      from,
+      to
     })
 
     if (!callSid) {
@@ -74,7 +75,7 @@ export async function POST(request) {
         .from('elderly_users')
         .update({ first_call_completed: true })
         .eq('id', callRecord.elderly_user_id)
-      
+
       console.log(`Marked first call completed for user ${callRecord.elderly_users.name}`)
     }
 
@@ -103,7 +104,7 @@ async function createFailedCallAlert(callRecord, callStatus) {
   try {
     const alertTitle = `Call ${callStatus.replace('-', ' ')}`
     const alertDescription = `Attempted call to ${callRecord.elderly_users?.name || 'user'} was ${callStatus}`
-    
+
     await supabase
       .from('alerts')
       .insert({

@@ -81,6 +81,10 @@ export async function POST(request) {
 
     // Generate TwiML to connect to ElevenLabs
     const twiml = generateElevenLabsTwiML(agentId, elderlyUser, userContext, callRecord?.id)
+    
+    console.log('Generated TwiML for ElevenLabs connection:', twiml)
+    console.log('Agent ID being used:', agentId)
+    console.log('Call record ID:', callRecord?.id)
 
     return new Response(twiml, {
       headers: { 'Content-Type': 'text/xml' }
@@ -148,6 +152,23 @@ async function prepareUserContext(elderlyUser) {
 // Generate TwiML to connect call to ElevenLabs agent
 function generateElevenLabsTwiML(agentId, elderlyUser, userContext, callRecordId) {
   const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/twilio-status`
+  
+  // Validate required environment variables
+  if (!process.env.ELEVENLABS_API_KEY) {
+    console.error('ELEVENLABS_API_KEY not configured!')
+    return generateErrorTwiML('Service temporarily unavailable')
+  }
+  
+  if (!process.env.NEXT_PUBLIC_SITE_URL) {
+    console.error('NEXT_PUBLIC_SITE_URL not configured!')
+  }
+  
+  console.log('ElevenLabs TwiML generation:')
+  console.log('- Agent ID:', agentId)
+  console.log('- User:', elderlyUser.name)
+  console.log('- Call Record ID:', callRecordId)
+  console.log('- Webhook URL:', `${process.env.NEXT_PUBLIC_SITE_URL}/api/elevenlabs-webhook`)
+  console.log('- API Key configured:', !!process.env.ELEVENLABS_API_KEY)
   
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
