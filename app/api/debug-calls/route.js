@@ -30,12 +30,22 @@ export async function GET() {
       null_mood_count: 0,
       null_transcript_count: 0,
       agent_usage: {},
+      failed_calls_count: 0,
+      successful_calls_count: 0,
       recent_calls: callRecords.slice(0, 5)
     }
     
     callRecords.forEach(call => {
-      // Status breakdown
-      analysis.status_breakdown[call.status] = (analysis.status_breakdown[call.status] || 0) + 1
+      // Status breakdown - use call_status field
+      const status = call.call_status || 'unknown'
+      analysis.status_breakdown[status] = (analysis.status_breakdown[status] || 0) + 1
+      
+      // Track success/failure
+      if (status === 'failed') {
+        analysis.failed_calls_count++
+      } else if (status === 'completed') {
+        analysis.successful_calls_count++
+      }
       
       // Null data counts
       if (call.duration === null) analysis.null_duration_count++
