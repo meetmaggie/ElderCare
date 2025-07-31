@@ -1,93 +1,62 @@
-
-// app/api/incoming-call/route.js - Comprehensive debug version
+// app/api/incoming-call/route.js - Try different WebSocket formats
 export async function POST(request) {
   console.log('📞 Incoming call webhook triggered!')
-  
+
   try {
     const formData = await request.formData()
     const callSid = formData.get('CallSid')
     const from = formData.get('From')
     const to = formData.get('To')
-    const callStatus = formData.get('CallStatus')
-    
-    console.log('📋 Full call details:', { callSid, from, to, callStatus })
-    
-    // Log ALL form data to see what Twilio is sending
-    console.log('📋 All Twilio form data:')
-    for (const [key, value] of formData.entries()) {
-      console.log(`  ${key}: ${value}`)
-    }
-    
+
+    console.log('📋 Call details:', { callSid, from, to })
+
     // Get ElevenLabs credentials
     const discoveryAgentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
-    
-    console.log('🔑 ElevenLabs config:', {
-      agentId: discoveryAgentId,
-      hasApiKey: !!apiKey,
-      apiKeyPrefix: apiKey?.substring(0, 10) + '...'
-    })
-    
+
+    console.log('🔑 Using agent:', discoveryAgentId)
+
     if (!discoveryAgentId || !apiKey) {
-      console.error('❌ Missing ElevenLabs credentials!')
+      console.error('❌ Missing credentials!')
       return new Response(
         `<?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          <Say>Configuration error. API keys missing.</Say>
+          <Say>Configuration error.</Say>
           <Hangup/>
         </Response>`,
         { headers: { 'Content-Type': 'application/xml' } }
       )
     }
-    
-    // Test ElevenLabs agent accessibility
-    console.log('🔍 Testing ElevenLabs agent accessibility...')
-    try {
-      const testResponse = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${discoveryAgentId}`, {
-        headers: {
-          'xi-api-key': apiKey
-        }
-      })
-      console.log('🔍 ElevenLabs agent test response:', testResponse.status)
-      if (!testResponse.ok) {
-        const errorText = await testResponse.text()
-        console.error('❌ ElevenLabs agent test failed:', errorText)
-      }
-    } catch (testError) {
-      console.error('❌ ElevenLabs agent test error:', testError.message)
-    }
-    
-    // Try the most basic TwiML format first
-    const basicTwimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+
+    // Try Format 1: Latest ElevenLabs + Twilio integration format
+    const format1 = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Hello! I am your AI companion. Let me introduce myself and learn about you.</Say>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation">
+    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation/twilio">
       <Parameter name="agent_id" value="${discoveryAgentId}" />
-      <Parameter name="authorization" value="Bearer ${apiKey}" />
+      <Parameter name="xi-api-key" value="${apiKey}" />
+      <Parameter name="sample_rate" value="8000" />
     </Stream>
   </Connect>
 </Response>`
-    
-    console.log('📋 Sending BASIC TwiML format:')
-    console.log(basicTwimlResponse)
-    
-    return new Response(basicTwimlResponse, {
+
+    console.log('📋 Trying FORMAT 1 (Twilio-specific endpoint):')
+    console.log(format1)
+
+    return new Response(format1, {
       headers: { 
         'Content-Type': 'application/xml',
         'Cache-Control': 'no-cache'
       }
     })
-    
+
   } catch (error) {
-    console.error('❌ Webhook error details:')
-    console.error('Error message:', error.message)
-    console.error('Error stack:', error.stack)
-    
+    console.error('❌ Webhook error:', error)
+
     return new Response(
       `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
-        <Say>Sorry, there was a technical error. Please try again later.</Say>
+        <Say>Technical error occurred.</Say>
         <Hangup/>
       </Response>`,
       { headers: { 'Content-Type': 'application/xml' } }
