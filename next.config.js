@@ -5,16 +5,10 @@ const nextConfig = {
   async rewrites() {
     return []
   },
-  // Ensure the dev server binds to all interfaces
   experimental: {
     serverActions: {
       allowedOrigins: ['*']
-    },
-    allowedDevOrigins: ['*']
-  },
-  // Configure server to accept external connections
-  server: {
-    host: '0.0.0.0'
+    }
   }
 }
 

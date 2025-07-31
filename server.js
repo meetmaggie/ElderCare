@@ -9,8 +9,8 @@ const port = process.env.PORT || 3000
 
 const app = next({ 
   dev, 
-  hostname: '0.0.0.0',
-  port: port
+  hostname,
+  port
 })
 const handle = app.getRequestHandler()
 
