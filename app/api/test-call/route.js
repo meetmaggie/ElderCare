@@ -1,5 +1,5 @@
 
-// app/api/test-call/route.js - Debug Version
+// app/api/test-call/route.js - Fixed for call_date column
 import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request) {
@@ -61,42 +61,34 @@ export async function POST(request) {
     const targetPhone = phoneNumber || '+447562277268'
     console.log('📱 Target phone:', targetPhone)
 
-    // Test database connection by checking if call_records table exists
-    console.log('🔍 Testing database connection and table structure...')
+    // Determine which agent to use
+    let agentType = 'Discovery'
     
-    try {
-      // First, try to query the table structure
-      const { data: tableCheck, error: tableError } = await supabase
+    if (callType === 'daily') {
+      // Check if they've had a discovery call before
+      const { data: previousCalls } = await supabase
         .from('call_records')
         .select('*')
-        .limit(1)
-
-      if (tableError) {
-        console.error('❌ Table check failed:', tableError)
-        return Response.json({ 
-          error: 'Database table check failed: ' + tableError.message,
-          details: tableError,
-          suggestion: 'The call_records table might not exist or has wrong permissions'
-        }, { status: 500 })
+        .eq('caller_phone', targetPhone)
+        .eq('agent_used', 'Discovery')
+        .eq('call_status', 'completed')
+      
+      if (previousCalls && previousCalls.length > 0) {
+        agentType = 'Daily Check-in'
       }
-
-      console.log('✅ call_records table exists and is accessible')
-
-    } catch (tableTestError) {
-      console.error('❌ Database connection test failed:', tableTestError)
-      return Response.json({ 
-        error: 'Database connection failed: ' + tableTestError.message 
-      }, { status: 500 })
     }
 
-    // Now try to insert a test record
+    console.log('🤖 Using agent type:', agentType)
+
+    // Now try to insert a call record using call_date instead of created_at
     console.log('📝 Attempting to create call record...')
     
+    const currentDate = new Date().toISOString()
     const testRecord = {
       caller_phone: targetPhone,
-      call_status: 'testing',
-      agent_used: 'Discovery',
-      created_at: new Date().toISOString()
+      call_status: 'calling',
+      agent_used: agentType,
+      call_date: currentDate  // Use call_date instead of created_at
     }
     
     console.log('📋 Record to insert:', testRecord)
@@ -119,27 +111,54 @@ export async function POST(request) {
           error: 'Failed to create call record: ' + callRecordError.message,
           errorCode: callRecordError.code,
           errorDetails: callRecordError.details,
-          errorHint: callRecordError.hint,
-          suggestion: 'Check if the call_records table has the correct columns: caller_phone, call_status, agent_used, created_at'
+          errorHint: callRecordError.hint
         }, { status: 500 })
       }
 
       console.log('✅ Database insert successful! Call record created:', callRecord)
 
+      // Now make the actual Twilio call
+      console.log('📞 Initiating Twilio call...')
+      const twilioResult = await makeTwilioCall(targetPhone, callRecord.id)
+
+      if (!twilioResult.success) {
+        console.error('❌ Twilio call failed:', twilioResult.error)
+
+        // Update call record with error
+        await supabase
+          .from('call_records')
+          .update({ call_status: 'failed' })
+          .eq('id', callRecord.id)
+
+        return Response.json({ 
+          error: `Call failed: ${twilioResult.error}` 
+        }, { status: 500 })
+      }
+
+      // Update call record with Twilio SID
+      await supabase
+        .from('call_records')
+        .update({
+          twilio_call_sid: twilioResult.callSid,
+          call_status: 'calling'
+        })
+        .eq('id', callRecord.id)
+
+      console.log('✅ Test call initiated successfully!')
+
       return Response.json({ 
         success: true, 
-        message: 'Database test successful!',
-        callRecordId: callRecord.id,
-        insertedData: callRecord,
-        environmentCheck: 'PASSED',
-        databaseCheck: 'PASSED'
+        message: `${agentType} call initiated successfully!`,
+        callSid: twilioResult.callSid,
+        agentType: agentType,
+        phoneNumber: targetPhone,
+        callRecordId: callRecord.id
       })
 
     } catch (insertError) {
       console.error('❌ Database insert error:', insertError)
       return Response.json({ 
-        error: 'Database insert failed: ' + insertError.message,
-        suggestion: 'This might be a permissions issue or missing columns in the call_records table'
+        error: 'Database insert failed: ' + insertError.message
       }, { status: 500 })
     }
 
@@ -149,5 +168,58 @@ export async function POST(request) {
       error: 'Test failed: ' + error.message,
       stack: error.stack
     }, { status: 500 })
+  }
+}
+
+async function makeTwilioCall(phoneNumber, callRecordId) {
+  try {
+    const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
+    const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN  
+    const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER
+
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+      return { success: false, error: 'Twilio credentials missing' }
+    }
+
+    // Get your repl URL automatically 
+    const repl = process.env.REPL_SLUG || process.env.REPL_ID
+    const webhookUrl = `https://${repl}.replit.app/api/incoming-call`
+    
+    console.log('🔗 Using webhook URL:', webhookUrl)
+
+    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Calls.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64')}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        To: phoneNumber,
+        From: TWILIO_PHONE_NUMBER,
+        Url: webhookUrl,
+        Method: 'POST'
+      })
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Twilio API error:', errorText)
+      return { success: false, error: `Twilio API error: ${response.status} - ${errorText}` }
+    }
+
+    const result = await response.json()
+    console.log('📞 Twilio call created:', result.sid)
+
+    return { 
+      success: true, 
+      callSid: result.sid 
+    }
+
+  } catch (error) {
+    console.error('Twilio call error:', error)
+    return { 
+      success: false, 
+      error: error.message 
+    }
   }
 }
