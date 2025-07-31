@@ -5,6 +5,12 @@ const nextConfig = {
   async rewrites() {
     return []
   },
+  // Ensure the dev server binds to all interfaces
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['*']
+    }
+  }
 }
 
 module.exports = nextConfig
