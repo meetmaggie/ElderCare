@@ -1,0 +1,109 @@
+The WebSocket approach won't work in Replit because external ports aren't accessible. Let's use a different approach that works with ElevenLabs. 
+
+Here's what we need to do:
+
+1. First, let's check if your ElevenLabs agents support direct API calls instead of WebSocket. 
+
+Please create a new file app/api/elevenlabs-direct/route.js with this approach:
+
+// app/api/elevenlabs-direct/route.js - Direct ElevenLabs API approach
+export async function POST(request) {
+  console.log('🔗 Testing direct ElevenLabs connection')
+  
+  try {
+    const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
+    const apiKey = process.env.ELEVENLABS_API_KEY
+    
+    if (!agentId || !apiKey) {
+      return Response.json({ error: 'Missing credentials' }, { status: 400 })
+    }
+    
+    // Test direct conversation creation
+    const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversations`, {
+      method: 'POST',
+      headers: {
+        'xi-api-key': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        agent_id: agentId,
+        mode: 'phone_call'
+      })
+    })
+    
+    const result = await response.json()
+    console.log('ElevenLabs response:', result)
+    
+    return Response.json({ 
+      success: response.ok,
+      status: response.status,
+      data: result
+    })
+    
+  } catch (error) {
+    console.error('ElevenLabs test error:', error)
+    return Response.json({ 
+      error: error.message 
+    }, { status: 500 })
+  }
+}
+
+2. Also, let's try a different TwiML approach that might work with ElevenLabs. Replace app/api/incoming-call/route.js with:
+
+// app/api/incoming-call/route.js - Alternative ElevenLabs approach
+export async function POST(request) {
+  console.log('📞 Incoming call webhook triggered!')
+  
+  try {
+    const formData = await request.formData()
+    const callSid = formData.get('CallSid')
+    const from = formData.get('From')
+    const to = formData.get('To')
+    
+    console.log('📋 Call details:', { callSid, from, to })
+
+    const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
+    const apiKey = process.env.ELEVENLABS_API_KEY
+    
+    // Try ElevenLabs phone integration URL format
+    const elevenLabsPhoneUrl = `https://api.elevenlabs.io/v1/convai/phone/agents/${agentId}/call`
+    
+    console.log('🔗 Trying ElevenLabs phone integration')
+
+    // Alternative TwiML for ElevenLabs phone integration
+    const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say>Connecting you to your AI companion...</Say>
+  <Redirect method="POST">${elevenLabsPhoneUrl}</Redirect>
+</Response>`
+    
+    console.log('📋 Sending redirect TwiML:')
+    console.log(twimlResponse)
+    
+    return new Response(twimlResponse, {
+      headers: { 
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'no-cache'
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Webhook error:', error)
+    
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Say>Sorry, connection failed. Please try again.</Say>
+        <Hangup/>
+      </Response>`,
+      { headers: { 'Content-Type': 'application/xml' } }
+    )
+  }
+}
+
+After implementing these, let's test:
+
+1. First test the direct API by visiting: /api/elevenlabs-direct (POST request)
+2. Then test a call with the new redirect approach
+
+This will help us determine if ElevenLabs has alternative integration methods that don't require custom WebSocket servers.
