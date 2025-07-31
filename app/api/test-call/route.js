@@ -1,132 +1,153 @@
-import { NextResponse } from 'next/server'
-import { supabase } from '../../../lib/supabase'
 
-export async function POST() {
-  console.log('Processing test call...')
+// app/api/test-call/route.js - Debug Version
+import { createClient } from '@supabase/supabase-js'
 
+export async function POST(request) {
   try {
-    const testEmail = 'testing@test.local'
-
-    // Find the family user first
-    const { data: familyUser, error: familyError } = await supabase
-      .from('family_users')
-      .select('*')
-      .eq('email', testEmail)
-      .single()
-
-    if (familyError) {
-      console.error('Family user not found:', familyError)
-      return NextResponse.json({ 
-        error: 'Test family user not found. Please run fix-test-account first.' 
-      }, { status: 404 })
+    console.log('🔍 DEBUG: Starting test call...')
+    
+    // Check all required environment variables
+    const requiredEnvVars = {
+      'ELEVENLABS_API_KEY': process.env.ELEVENLABS_API_KEY,
+      'ELEVENLABS_DISCOVERY_AGENT_ID': process.env.ELEVENLABS_DISCOVERY_AGENT_ID,
+      'ELEVENLABS_DAILY_AGENT_ID': process.env.ELEVENLABS_DAILY_AGENT_ID,
+      'TWILIO_ACCOUNT_SID': process.env.TWILIO_ACCOUNT_SID,
+      'TWILIO_AUTH_TOKEN': process.env.TWILIO_AUTH_TOKEN,
+      'TWILIO_PHONE_NUMBER': process.env.TWILIO_PHONE_NUMBER,
+      'NEXT_PUBLIC_SUPABASE_URL': process.env.NEXT_PUBLIC_SUPABASE_URL,
+      'SUPABASE_SERVICE_ROLE_KEY': process.env.SUPABASE_SERVICE_ROLE_KEY
     }
-
-    // Find the elderly user linked to this family
-    const { data: elderlyUser, error: elderlyError } = await supabase
-      .from('elderly_users')
-      .select('*')
-      .eq('family_user_id', familyUser.id)
-      .single()
-
-    if (elderlyError) {
-      console.error('Elderly user not found:', elderlyError)
-      return NextResponse.json({ 
-        error: 'Test elderly user not found. Please run fix-test-account first.' 
-      }, { status: 404 })
+    
+    // Log which variables are present/missing
+    const missingVars = []
+    
+    for (const [key, value] of Object.entries(requiredEnvVars)) {
+      if (!value) {
+        missingVars.push(key)
+        console.log(`❌ MISSING: ${key}`)
+      } else {
+        console.log(`✅ PRESENT: ${key} = ${value.substring(0, 10)}...`)
+      }
     }
-
-    console.log('Test users found:', {
-      family: familyUser.name,
-      elderly: elderlyUser.name,
-      phone: elderlyUser.phone
-    })
-
-    // Check required environment variables
-    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
-    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
-    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
-    const discoveryAgentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
-
-    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber || !discoveryAgentId) {
-      return NextResponse.json({ 
-        error: 'Missing required environment variables' 
+    
+    if (missingVars.length > 0) {
+      const errorMessage = `Missing required environment variables: ${missingVars.join(', ')}`
+      console.error('🚨', errorMessage)
+      return Response.json({ 
+        error: errorMessage,
+        missing: missingVars
       }, { status: 500 })
     }
 
-    // Use a test phone number
-    const phoneToCall = elderlyUser.phone || '+1-555-123-4567'
+    console.log('✅ All environment variables are present!')
+    
+    // Initialize Supabase
+    console.log('🔗 Connecting to Supabase...')
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
 
-    // Create call record
-    const { data: callRecord, error: recordError } = await supabase
-      .from('call_records')
-      .insert({
-        elderly_user_id: elderlyUser.id,
-        call_date: new Date().toISOString(),
-        status: 'initiating',
-        phone_number: phoneToCall,
-        agent_used: 'Discovery',
-        call_type: 'test'
-      })
-      .select()
-      .single()
+    // Parse request
+    const { userEmail, phoneNumber, callType = 'discovery' } = await request.json()
+    console.log('📞 Test call request:', { userEmail, phoneNumber, callType })
 
-    if (recordError) {
-      console.error('Error creating call record:', recordError)
-      return NextResponse.json({ 
-        error: 'Failed to create call record' 
+    // Verify this is a test account
+    if (!userEmail || !userEmail.endsWith('@test.local')) {
+      return Response.json({ error: 'Test calls only available for test accounts' }, { status: 403 })
+    }
+
+    // Use provided phone number or default to your test number
+    const targetPhone = phoneNumber || '+447562277268'
+    console.log('📱 Target phone:', targetPhone)
+
+    // Test database connection by checking if call_records table exists
+    console.log('🔍 Testing database connection and table structure...')
+    
+    try {
+      // First, try to query the table structure
+      const { data: tableCheck, error: tableError } = await supabase
+        .from('call_records')
+        .select('*')
+        .limit(1)
+
+      if (tableError) {
+        console.error('❌ Table check failed:', tableError)
+        return Response.json({ 
+          error: 'Database table check failed: ' + tableError.message,
+          details: tableError,
+          suggestion: 'The call_records table might not exist or has wrong permissions'
+        }, { status: 500 })
+      }
+
+      console.log('✅ call_records table exists and is accessible')
+
+    } catch (tableTestError) {
+      console.error('❌ Database connection test failed:', tableTestError)
+      return Response.json({ 
+        error: 'Database connection failed: ' + tableTestError.message 
       }, { status: 500 })
     }
 
-    // Make the Twilio call
-    const twilio = require('twilio')(twilioAccountSid, twilioAuthToken)
-
-    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-repl-url.replit.dev'}/api/incoming-call`
+    // Now try to insert a test record
+    console.log('📝 Attempting to create call record...')
+    
+    const testRecord = {
+      caller_phone: targetPhone,
+      call_status: 'testing',
+      agent_used: 'Discovery',
+      created_at: new Date().toISOString()
+    }
+    
+    console.log('📋 Record to insert:', testRecord)
 
     try {
-      const call = await twilio.calls.create({
-        to: phoneToCall,
-        from: twilioPhoneNumber,
-        url: webhookUrl,
-        method: 'POST'
+      const { data: callRecord, error: callRecordError } = await supabase
+        .from('call_records')
+        .insert(testRecord)
+        .select()
+        .single()
+
+      if (callRecordError) {
+        console.error('❌ Insert failed - Full error details:')
+        console.error('Error code:', callRecordError.code)
+        console.error('Error message:', callRecordError.message)
+        console.error('Error details:', callRecordError.details)
+        console.error('Error hint:', callRecordError.hint)
+        
+        return Response.json({ 
+          error: 'Failed to create call record: ' + callRecordError.message,
+          errorCode: callRecordError.code,
+          errorDetails: callRecordError.details,
+          errorHint: callRecordError.hint,
+          suggestion: 'Check if the call_records table has the correct columns: caller_phone, call_status, agent_used, created_at'
+        }, { status: 500 })
+      }
+
+      console.log('✅ Database insert successful! Call record created:', callRecord)
+
+      return Response.json({ 
+        success: true, 
+        message: 'Database test successful!',
+        callRecordId: callRecord.id,
+        insertedData: callRecord,
+        environmentCheck: 'PASSED',
+        databaseCheck: 'PASSED'
       })
 
-      // Update call record with Twilio SID
-      await supabase
-        .from('call_records')
-        .update({ 
-          twilio_call_sid: call.sid,
-          status: 'calling'
-        })
-        .eq('id', callRecord.id)
-
-      console.log('Test call initiated:', call.sid)
-
-      return NextResponse.json({
-        success: true,
-        message: 'Test call initiated successfully',
-        callSid: call.sid,
-        phoneNumber: phoneToCall,
-        elderlyUser: elderlyUser.name
-      })
-
-    } catch (twilioError) {
-      console.error('Twilio error:', twilioError)
-
-      // Update call record status
-      await supabase
-        .from('call_records')
-        .update({ status: 'failed' })
-        .eq('id', callRecord.id)
-
-      return NextResponse.json({ 
-        error: `Failed to initiate call: ${twilioError.message}` 
+    } catch (insertError) {
+      console.error('❌ Database insert error:', insertError)
+      return Response.json({ 
+        error: 'Database insert failed: ' + insertError.message,
+        suggestion: 'This might be a permissions issue or missing columns in the call_records table'
       }, { status: 500 })
     }
 
   } catch (error) {
-    console.error('Test call error:', error)
-    return NextResponse.json({ 
-      error: 'Internal server error' 
+    console.error('❌ General error:', error)
+    return Response.json({ 
+      error: 'Test failed: ' + error.message,
+      stack: error.stack
     }, { status: 500 })
   }
 }
