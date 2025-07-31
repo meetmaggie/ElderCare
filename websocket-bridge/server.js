@@ -1,3 +1,4 @@
+
 const { WebSocketServer } = require('ws')
 const WebSocket = require('ws')
 // Use dynamic import for node-fetch v3 compatibility
@@ -153,13 +154,6 @@ wss.on('connection', (twilioWs, request) => {
     }
   }
 
-  // Send a test message to verify connection
-  setTimeout(() => {
-    if (twilioWs.readyState === WebSocket.OPEN) {
-      console.log('✅ Sending connection test message to Twilio')
-    }
-  }, 1000)
-
   // Handle messages from Twilio
   twilioWs.on('message', (data) => {
     try {
@@ -170,15 +164,32 @@ wss.on('connection', (twilioWs, request) => {
         case 'start':
           streamSid = message.start.streamSid
           console.log('✅ Twilio stream started:', streamSid)
+          console.log('📋 Media format:', message.start.mediaFormat)
           connectToElevenLabs()
           break
 
         case 'media':
           if (elevenLabsWs?.readyState === WebSocket.OPEN && message.media?.payload) {
+            // ElevenLabs expects audio in a specific format
+            // Twilio sends mulaw audio as base64, we need to send it properly formatted
             const audioMessage = {
+              type: 'audio',
+              audio_event: {
+                audio_base_64: message.media.payload,
+                // ElevenLabs expects these additional fields for proper audio handling
+                sample_rate: 8000, // Twilio default
+                encoding: 'mulaw'   // Twilio's audio format
+              }
+            }
+            
+            // Alternative simpler format that ElevenLabs might accept
+            const simpleAudioMessage = {
               user_audio_chunk: message.media.payload
             }
-            elevenLabsWs.send(JSON.stringify(audioMessage))
+            
+            // Try the simpler format first as it's more commonly used
+            elevenLabsWs.send(JSON.stringify(simpleAudioMessage))
+            console.log('🎤 Sent audio chunk to ElevenLabs')
           }
           break
 
@@ -205,16 +216,6 @@ wss.on('connection', (twilioWs, request) => {
     console.error('❌ Twilio WebSocket error:', error)
     console.error('❌ Error details:', error.message)
   })
-
-  // Add connection state logging
-  twilioWs.on('open', () => {
-    console.log('✅ Twilio WebSocket fully opened')
-  })
-
-  twilioWs.on('close', (code, reason) => {
-    console.log('🔌 Twilio WebSocket closed:', code, reason.toString())
-    console.log('🔍 Close reason details:', { code, reason: reason.toString() })
-  })
 })
 
 const PORT = process.env.PORT || 5000
@@ -224,6 +225,5 @@ console.log(`🔍 Starting server on 0.0.0.0:${PORT}...`)
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 WebSocket bridge server running on 0.0.0.0:${PORT}`)
   console.log(`📞 Ready to bridge Twilio ↔ ElevenLabs`)
-  console.log(`🌐 External URL: wss://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev:${PORT}`)
   console.log(`✅ Server successfully bound to all interfaces`)
 })
