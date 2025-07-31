@@ -49,9 +49,10 @@ export async function POST(request) {
     const twilioResult = await twilioResponse.json()
     console.log('✅ Twilio call initiated:', twilioResult.sid)
 
-    // Step 2: Connect to local Replit WebSocket server
+    // Step 2: Connect to Replit WebSocket server
     const WebSocket = require('ws')
-    const replitWsUrl = `ws://localhost:8080`
+    const replId = process.env.REPL_ID
+    const replitWsUrl = `wss://${replId}.replit.dev:8080`
     
     console.log('🔌 Connecting to Replit WebSocket:', replitWsUrl)
 

@@ -14,8 +14,9 @@ export async function POST(request) {
     const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
     
-    // Use local Replit WebSocket bridge URL
-    const websocketUrl = `ws://localhost:8080`
+    // Use external Replit WebSocket bridge URL
+    const replId = process.env.REPL_ID
+    const websocketUrl = `wss://${replId}.replit.dev:8080`
     
     console.log('🔗 Using Replit WebSocket bridge:', websocketUrl)ocketUrl)
 
