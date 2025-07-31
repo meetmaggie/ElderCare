@@ -18,7 +18,7 @@ export async function POST(request) {
     const replId = process.env.REPL_ID
     const websocketUrl = `wss://${replId}.replit.dev:8080`
     
-    console.log('🔗 Using Replit WebSocket bridge:', websocketUrl)ocketUrl)
+    console.log('🔗 Using Replit WebSocket bridge:', websocketUrl)
 
     // TwiML for WebSocket bridge
     const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>

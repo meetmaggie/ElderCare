@@ -51,8 +51,8 @@ export async function POST(request) {
 
     // Step 2: Connect to Replit WebSocket server
     const WebSocket = require('ws')
-    const replId = process.env.REPL_ID
-    const replitWsUrl = `wss://${replId}.replit.dev:8080`
+    const replitId = process.env.REPL_ID
+    const replitWsUrl = `wss://${replitId}.replit.dev:8080`
     
     console.log('🔌 Connecting to Replit WebSocket:', replitWsUrl)
 
