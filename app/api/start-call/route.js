@@ -13,9 +13,13 @@ export async function POST(request) {
     const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID || 'your_account_sid_here'
     const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || 'your_auth_token_here'
     const TWILIO_FROM_NUMBER = process.env.TWILIO_PHONE_NUMBER || '+1234567890'
+    
+    // Auto-detect Replit URL
+    const replId = process.env.REPL_ID
+    const replSlug = process.env.REPL_SLUG
     const WEBHOOK_URL = process.env.NEXT_PUBLIC_SITE_URL 
       ? `${process.env.NEXT_PUBLIC_SITE_URL}/api/incoming-call`
-      : 'https://your-repl-url.replit.dev/api/incoming-call'
+      : `https://${replId}.replit.dev/api/incoming-call`
 
     console.log('📞 Initiating Twilio call to:', phoneNumber)
 
