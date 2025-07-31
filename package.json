@@ -8,7 +8,7 @@
     "websocket": "node websocket-bridge/server.js",
     "start:all": "concurrently \"npm run dev\" \"npm run websocket\"",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "lint": "next lint"
   },
   "dependencies": {
