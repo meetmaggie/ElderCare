@@ -9,7 +9,12 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['*']
-    }
+    },
+    allowedDevOrigins: ['*']
+  },
+  // Configure server to accept external connections
+  server: {
+    host: '0.0.0.0'
   }
 }
 
