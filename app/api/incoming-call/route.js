@@ -16,7 +16,7 @@ export async function POST(request) {
     
     // Use external Replit WebSocket bridge URL
     const replId = process.env.REPL_ID
-    const websocketUrl = `wss://${replId}.replit.dev:8080`
+    const websocketUrl = `wss://${replId}.replit.dev:3002`
     
     console.log('🔗 Using Replit WebSocket bridge:', websocketUrl)
 
