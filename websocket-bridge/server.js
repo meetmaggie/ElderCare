@@ -69,6 +69,7 @@ wss.on('connection', (twilioWs, request) => {
             conversation_type: 'discovery'
           }
         }
+        console.log('📤 Sending conversation initiation...')
         elevenLabsWs.send(JSON.stringify(initMessage))
       })
       
@@ -111,12 +112,13 @@ wss.on('connection', (twilioWs, request) => {
             case 'ping':
               // Respond to ping with pong including required event_id
               if (elevenLabsWs.readyState === WebSocket.OPEN) {
+                const eventId = message.event_id || `pong_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                 const pongMessage = {
                   type: 'pong',
-                  event_id: message.event_id || `pong_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                  event_id: eventId
                 }
                 elevenLabsWs.send(JSON.stringify(pongMessage))
-                console.log('🏓 Railway bridge sent pong with event_id:', pongMessage.event_id)
+                console.log('🏓 Sent pong with event_id:', eventId)
               }
               break
               
