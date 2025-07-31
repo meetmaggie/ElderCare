@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "websocket": "node app/api/websocket/route.js",
+    "websocket": "node websocket-bridge/server.js",
     "start:all": "concurrently \"npm run dev\" \"npm run websocket\"",
     "build": "next build",
     "start": "next start",
