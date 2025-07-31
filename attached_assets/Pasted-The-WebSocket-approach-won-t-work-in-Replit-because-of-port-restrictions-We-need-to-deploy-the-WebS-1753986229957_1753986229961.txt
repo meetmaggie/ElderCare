@@ -1,0 +1,276 @@
+The WebSocket approach won't work in Replit because of port restrictions. We need to deploy the WebSocket bridge externally. 
+
+Let me create the files for a Railway deployment that will handle the WebSocket bridge:
+
+1. Create a new folder called "websocket-bridge" in your project root
+2. Create websocket-bridge/package.json with:
+
+{
+  "name": "elevenlabs-twilio-bridge",
+  "version": "1.0.0",
+  "description": "WebSocket bridge for ElevenLabs and Twilio",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.14.2",
+    "node-fetch": "^2.6.7"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
+
+3. Create websocket-bridge/server.js with the WebSocket bridge code:
+
+const { WebSocketServer } = require('ws')
+const WebSocket = require('ws')
+const fetch = require('node-fetch')
+const http = require('http')
+
+// Create HTTP server
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' })
+  res.end('ElevenLabs-Twilio WebSocket Bridge Running')
+})
+
+// Create WebSocket server
+const wss = new WebSocketServer({ server })
+
+console.log('🚀 Starting ElevenLabs-Twilio bridge server...')
+
+wss.on('connection', (twilioWs, request) => {
+  console.log('📞 New Twilio WebSocket connection')
+  
+  let elevenLabsWs = null
+  let streamSid = null
+  let conversationId = null
+  
+  const connectToElevenLabs = async () => {
+    try {
+      console.log('🔗 Connecting to ElevenLabs...')
+      
+      const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID || 'agent_01k0q3vpk7f8bsrq2aqk71v9j9'
+      const apiKey = process.env.ELEVENLABS_API_KEY
+      
+      if (!agentId || !apiKey) {
+        console.error('❌ Missing ElevenLabs credentials')
+        return
+      }
+      
+      console.log('🤖 Using agent:', agentId)
+      
+      // Get signed URL from ElevenLabs
+      const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`, {
+        method: 'GET',
+        headers: {
+          'xi-api-key': apiKey,
+          'Content-Type': 'application/json'
+        }
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ Failed to get ElevenLabs signed URL:', response.status, errorText)
+        return
+      }
+      
+      const data = await response.json()
+      console.log('✅ Got ElevenLabs signed URL')
+      
+      // Connect to ElevenLabs WebSocket
+      elevenLabsWs = new WebSocket(data.signed_url)
+      
+      elevenLabsWs.on('open', () => {
+        console.log('✅ Connected to ElevenLabs agent')
+        
+        // Send conversation initiation
+        const initMessage = {
+          type: 'conversation_initiation_client_data',
+          conversation_initiation_client_data: {
+            user_name: 'James',
+            is_first_call: true,
+            conversation_type: 'discovery'
+          }
+        }
+        elevenLabsWs.send(JSON.stringify(initMessage))
+      })
+      
+      elevenLabsWs.on('message', (data) => {
+        try {
+          const message = JSON.parse(data.toString())
+          console.log('📨 ElevenLabs message:', message.type)
+          
+          switch (message.type) {
+            case 'conversation_initiation_metadata':
+              conversationId = message.conversation_initiation_metadata_event?.conversation_id
+              console.log('✅ ElevenLabs conversation initiated:', conversationId)
+              break
+              
+            case 'audio':
+              if (twilioWs.readyState === WebSocket.OPEN && streamSid && message.audio_event?.audio_base_64) {
+                const audioMessage = {
+                  event: 'media',
+                  streamSid: streamSid,
+                  media: {
+                    payload: message.audio_event.audio_base_64
+                  }
+                }
+                twilioWs.send(JSON.stringify(audioMessage))
+                console.log('🔊 Sent audio to Twilio')
+              }
+              break
+              
+            case 'interruption':
+              if (twilioWs.readyState === WebSocket.OPEN && streamSid) {
+                const clearMessage = {
+                  event: 'clear',
+                  streamSid: streamSid
+                }
+                twilioWs.send(JSON.stringify(clearMessage))
+                console.log('🛑 Cleared Twilio audio buffer')
+              }
+              break
+              
+            case 'ping':
+              if (elevenLabsWs.readyState === WebSocket.OPEN) {
+                elevenLabsWs.send(JSON.stringify({ type: 'pong' }))
+              }
+              break
+              
+            case 'conversation_end':
+              console.log('✅ ElevenLabs conversation ended')
+              if (twilioWs.readyState === WebSocket.OPEN) {
+                twilioWs.close()
+              }
+              break
+          }
+        } catch (error) {
+          console.error('❌ Error processing ElevenLabs message:', error)
+        }
+      })
+      
+      elevenLabsWs.on('error', (error) => {
+        console.error('❌ ElevenLabs WebSocket error:', error)
+      })
+      
+      elevenLabsWs.on('close', (code, reason) => {
+        console.log('🔌 ElevenLabs WebSocket closed:', code, reason.toString())
+      })
+      
+    } catch (error) {
+      console.error('❌ Failed to connect to ElevenLabs:', error)
+    }
+  }
+  
+  // Handle messages from Twilio
+  twilioWs.on('message', (data) => {
+    try {
+      const message = JSON.parse(data.toString())
+      
+      switch (message.event) {
+        case 'start':
+          streamSid = message.start.streamSid
+          console.log('✅ Twilio stream started:', streamSid)
+          connectToElevenLabs()
+          break
+          
+        case 'media':
+          if (elevenLabsWs?.readyState === WebSocket.OPEN && message.media?.payload) {
+            const audioMessage = {
+              user_audio_chunk: message.media.payload
+            }
+            elevenLabsWs.send(JSON.stringify(audioMessage))
+          }
+          break
+          
+        case 'stop':
+          console.log('🔌 Twilio stream stopped')
+          if (elevenLabsWs?.readyState === WebSocket.OPEN) {
+            elevenLabsWs.close()
+          }
+          break
+      }
+    } catch (error) {
+      console.error('❌ Error processing Twilio message:', error)
+    }
+  })
+  
+  twilioWs.on('close', (code, reason) => {
+    console.log('🔌 Twilio WebSocket closed:', code, reason.toString())
+    if (elevenLabsWs?.readyState === WebSocket.OPEN) {
+      elevenLabsWs.close()
+    }
+  })
+  
+  twilioWs.on('error', (error) => {
+    console.error('❌ Twilio WebSocket error:', error)
+  })
+})
+
+const PORT = process.env.PORT || 8080
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 WebSocket bridge server running on port ${PORT}`)
+  console.log(`📞 Ready to bridge Twilio ↔ ElevenLabs`)
+})
+
+4. Then update app/api/incoming-call/route.js to use the external bridge:
+
+// app/api/incoming-call/route.js - Updated for external bridge
+export async function POST(request) {
+  console.log('📞 Incoming call webhook triggered!')
+  
+  try {
+    const formData = await request.formData()
+    const callSid = formData.get('CallSid')
+    const from = formData.get('From')
+    const to = formData.get('To')
+    
+    console.log('📋 Call details:', { callSid, from, to })
+    
+    // This will be your Railway WebSocket URL once deployed
+    const websocketUrl = `wss://your-railway-app.railway.app`
+    
+    console.log('🔗 Using external WebSocket bridge:', websocketUrl)
+    
+    const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Connect>
+    <Stream url="${websocketUrl}">
+      <Parameter name="caller_phone" value="${from}" />
+      <Parameter name="call_sid" value="${callSid}" />
+      <Parameter name="agent_type" value="discovery" />
+    </Stream>
+  </Connect>
+</Response>`
+    
+    console.log('📋 Sending TwiML to external bridge')
+    
+    return new Response(twimlResponse, {
+      headers: { 
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'no-cache'
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Webhook error:', error)
+    
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Say>Sorry, connection failed. Please try again.</Say>
+        <Hangup/>
+      </Response>`,
+      { headers: { 'Content-Type': 'application/xml' } }
+    )
+  }
+}
+
+After creating these files, you'll need to:
+1. Deploy the websocket-bridge folder to Railway.app (free)
+2. Set your ElevenLabs environment variables in Railway
+3. Update the websocketUrl in your incoming-call handler with your Railway app URL
+
+This separates the WebSocket bridge from your main Replit app and should work properly with ElevenLabs.
