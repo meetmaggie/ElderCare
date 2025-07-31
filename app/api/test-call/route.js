@@ -235,8 +235,13 @@ async function makeTwilioCallDirect(elderlyUser, callRecordId, phoneNumber) {
       return { success: false, error: 'Twilio credentials not configured' }
     }
 
-    const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/incoming-call`
-    const statusCallbackUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/twilio-status`
+    // Generate webhook URL for incoming call handling - use correct replit.dev domain
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev'
+    const webhookUrl = `${baseUrl}/api/incoming-call`
+    const statusCallbackUrl = `${baseUrl}/api/twilio-status`
+
+    console.log('Using webhook URL:', webhookUrl)
+    console.log('Using status callback URL:', statusCallbackUrl)
 
     const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Calls.json`, {
       method: 'POST',

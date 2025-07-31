@@ -8,6 +8,7 @@ const DAILY_CHECKIN_AGENT_ID = 'agent_01k0pz5awhf8xbn85wrg227fve'
 
 export async function POST(request) {
   console.log('📞 Incoming call webhook received')
+  console.log('Request headers:', Object.fromEntries(request.headers.entries()))
 
   try {
     // Parse Twilio form data
@@ -17,6 +18,7 @@ export async function POST(request) {
     const to = formData.get('To')
 
     console.log('Incoming call details:', { callSid, from, to })
+    console.log('All form data:', Object.fromEntries(formData.entries()))
 
     if (!callSid) {
       console.error('Missing CallSid in webhook')
