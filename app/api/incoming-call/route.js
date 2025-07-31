@@ -1,60 +1,46 @@
-
-// app/api/incoming-call/route.js - Official ElevenLabs format
+// app/api/incoming-call/route.js - Updated for WebSocket bridge
 export async function POST(request) {
   console.log('📞 Incoming call webhook triggered!')
-  
+
   try {
     const formData = await request.formData()
     const callSid = formData.get('CallSid')
     const from = formData.get('From')
     const to = formData.get('To')
-    
+
     console.log('📋 Call details:', { callSid, from, to })
-    
-    // Get ElevenLabs credentials
-    const discoveryAgentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
-    const apiKey = process.env.ELEVENLABS_API_KEY
-    
-    console.log('🔑 Using agent:', discoveryAgentId)
-    
-    if (!discoveryAgentId || !apiKey) {
-      console.error('❌ Missing credentials!')
-      return new Response(
-        `<?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-          <Say>Configuration error.</Say>
-          <Hangup/>
-        </Response>`,
-        { headers: { 'Content-Type': 'application/xml' } }
-      )
-    }
-    
-    // Official ElevenLabs + Twilio format from their docs
-    const officialFormat = `<?xml version="1.0" encoding="UTF-8"?>
+
+    // Get your Replit WebSocket URL
+    const repl = process.env.REPL_SLUG || process.env.REPL_ID || '1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit'
+    const websocketUrl = `wss://${repl}.dev:8080`
+
+    console.log('🔗 Using WebSocket URL:', websocketUrl)
+
+    // TwiML to connect to our WebSocket bridge
+    const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+  <Say>Hello! Connecting you to your AI companion.</Say>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${discoveryAgentId}">
-      <Parameter name="xi-api-key" value="${apiKey}" />
-    </Stream>
+    <Stream url="${websocketUrl}" />
   </Connect>
 </Response>`
 
-    console.log('📋 Using OFFICIAL ElevenLabs format:')
-    console.log(officialFormat)
-    
-    return new Response(officialFormat, {
+    console.log('📋 Sending TwiML:')
+    console.log(twimlResponse)
+
+    return new Response(twimlResponse, {
       headers: { 
         'Content-Type': 'application/xml'
       }
     })
-    
+
   } catch (error) {
     console.error('❌ Webhook error:', error)
-    
+
     return new Response(
       `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
-        <Say>Technical error occurred.</Say>
+        <Say>Sorry, there was an error. Please try again.</Say>
         <Hangup/>
       </Response>`,
       { headers: { 'Content-Type': 'application/xml' } }
