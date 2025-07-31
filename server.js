@@ -124,7 +124,7 @@ wss.on('connection', (twilioWs, request) => {
               if (elevenLabsWs.readyState === WebSocket.OPEN) {
                 const pongMessage = {
                   type: 'pong',
-                  event_id: message.event_id || `pong_${Date.now()}`
+                  event_id: message.event_id || `pong_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
                 }
                 elevenLabsWs.send(JSON.stringify(pongMessage))
                 console.log('🏓 Sent pong response with event_id:', pongMessage.event_id)

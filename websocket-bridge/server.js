@@ -109,8 +109,14 @@ wss.on('connection', (twilioWs, request) => {
               break
               
             case 'ping':
+              // Respond to ping with pong including required event_id
               if (elevenLabsWs.readyState === WebSocket.OPEN) {
-                elevenLabsWs.send(JSON.stringify({ type: 'pong' }))
+                const pongMessage = {
+                  type: 'pong',
+                  event_id: message.event_id || `pong_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                }
+                elevenLabsWs.send(JSON.stringify(pongMessage))
+                console.log('🏓 Railway bridge sent pong with event_id:', pongMessage.event_id)
               }
               break
               
