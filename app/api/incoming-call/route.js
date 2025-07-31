@@ -1,21 +1,23 @@
-// app/api/incoming-call/route.js
+
+// app/api/incoming-call/route.js - For webhook-enabled agents
 export async function POST(request) {
   console.log('📞 Incoming call webhook triggered!')
-
+  
   try {
     const formData = await request.formData()
     const callSid = formData.get('CallSid')
     const from = formData.get('From')
     const to = formData.get('To')
-
+    
     console.log('Call details:', { callSid, from, to })
-
+    
     // Get ElevenLabs credentials
     const discoveryAgentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
-
+    
     console.log('Using Discovery agent:', discoveryAgentId)
-
+    console.log('API Key present:', !!apiKey)
+    
     if (!discoveryAgentId || !apiKey) {
       console.error('Missing ElevenLabs credentials!')
       return new Response(
@@ -27,28 +29,30 @@ export async function POST(request) {
         { headers: { 'Content-Type': 'application/xml' } }
       )
     }
-
-    // Create TwiML to connect to ElevenLabs
+    
+    // For agents with webhook data enabled, use this format
     const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Say>Hello! Connecting you to your AI companion.</Say>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation">
+    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation/twilio">
       <Parameter name="agent_id" value="${discoveryAgentId}" />
-      <Parameter name="authorization" value="Bearer ${apiKey}" />
+      <Parameter name="xi-api-key" value="${apiKey}" />
+      <Parameter name="user_name" value="James" />
     </Stream>
   </Connect>
 </Response>`
-
-    console.log('Sending TwiML response')
-
+    
+    console.log('📋 TwiML Response:')
+    console.log(twimlResponse)
+    
     return new Response(twimlResponse, {
       headers: { 'Content-Type': 'application/xml' }
     })
-
+    
   } catch (error) {
-    console.error('Webhook error:', error)
-
+    console.error('❌ Webhook error:', error)
+    
     return new Response(
       `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
