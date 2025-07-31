@@ -1,5 +1,5 @@
 
-// app/api/incoming-call/route.js - For webhook-enabled agents
+// app/api/incoming-call/route.js - Comprehensive debug version
 export async function POST(request) {
   console.log('📞 Incoming call webhook triggered!')
   
@@ -8,55 +8,86 @@ export async function POST(request) {
     const callSid = formData.get('CallSid')
     const from = formData.get('From')
     const to = formData.get('To')
+    const callStatus = formData.get('CallStatus')
     
-    console.log('Call details:', { callSid, from, to })
+    console.log('📋 Full call details:', { callSid, from, to, callStatus })
+    
+    // Log ALL form data to see what Twilio is sending
+    console.log('📋 All Twilio form data:')
+    for (const [key, value] of formData.entries()) {
+      console.log(`  ${key}: ${value}`)
+    }
     
     // Get ElevenLabs credentials
     const discoveryAgentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
     
-    console.log('Using Discovery agent:', discoveryAgentId)
-    console.log('API Key present:', !!apiKey)
+    console.log('🔑 ElevenLabs config:', {
+      agentId: discoveryAgentId,
+      hasApiKey: !!apiKey,
+      apiKeyPrefix: apiKey?.substring(0, 10) + '...'
+    })
     
     if (!discoveryAgentId || !apiKey) {
-      console.error('Missing ElevenLabs credentials!')
+      console.error('❌ Missing ElevenLabs credentials!')
       return new Response(
         `<?xml version="1.0" encoding="UTF-8"?>
         <Response>
-          <Say>Configuration error. Please check your settings.</Say>
+          <Say>Configuration error. API keys missing.</Say>
           <Hangup/>
         </Response>`,
         { headers: { 'Content-Type': 'application/xml' } }
       )
     }
     
-    // For agents with webhook data enabled, use this format
-    const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+    // Test ElevenLabs agent accessibility
+    console.log('🔍 Testing ElevenLabs agent accessibility...')
+    try {
+      const testResponse = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${discoveryAgentId}`, {
+        headers: {
+          'xi-api-key': apiKey
+        }
+      })
+      console.log('🔍 ElevenLabs agent test response:', testResponse.status)
+      if (!testResponse.ok) {
+        const errorText = await testResponse.text()
+        console.error('❌ ElevenLabs agent test failed:', errorText)
+      }
+    } catch (testError) {
+      console.error('❌ ElevenLabs agent test error:', testError.message)
+    }
+    
+    // Try the most basic TwiML format first
+    const basicTwimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Hello! Connecting you to your AI companion.</Say>
+  <Say>Hello! I am your AI companion. Let me introduce myself and learn about you.</Say>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation/twilio">
+    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation">
       <Parameter name="agent_id" value="${discoveryAgentId}" />
-      <Parameter name="xi-api-key" value="${apiKey}" />
-      <Parameter name="user_name" value="James" />
+      <Parameter name="authorization" value="Bearer ${apiKey}" />
     </Stream>
   </Connect>
 </Response>`
     
-    console.log('📋 TwiML Response:')
-    console.log(twimlResponse)
+    console.log('📋 Sending BASIC TwiML format:')
+    console.log(basicTwimlResponse)
     
-    return new Response(twimlResponse, {
-      headers: { 'Content-Type': 'application/xml' }
+    return new Response(basicTwimlResponse, {
+      headers: { 
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'no-cache'
+      }
     })
     
   } catch (error) {
-    console.error('❌ Webhook error:', error)
+    console.error('❌ Webhook error details:')
+    console.error('Error message:', error.message)
+    console.error('Error stack:', error.stack)
     
     return new Response(
       `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
-        <Say>Sorry, there was an error. Please try again.</Say>
+        <Say>Sorry, there was a technical error. Please try again later.</Say>
         <Hangup/>
       </Response>`,
       { headers: { 'Content-Type': 'application/xml' } }
