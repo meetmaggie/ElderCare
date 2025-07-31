@@ -14,7 +14,7 @@ export async function POST(request) {
     const apiKey = process.env.ELEVENLABS_API_KEY
 
     // Use external Railway WebSocket bridge
-    const websocketUrl = `wss://your-railway-app.railway.app` // Replace with your Railway WebSocket URL
+    const websocketUrl = `wss://elevenlabs-twilio-bridge-production-95ab.up.railway.app`
 
     console.log('🔗 Using WebSocket bridge URL:', websocketUrl)
 
