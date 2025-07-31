@@ -1,192 +1,132 @@
+import { NextResponse } from 'next/server'
 import { supabase } from '../../../lib/supabase'
 
-// Use environment variables for agent IDs
-const DISCOVERY_AGENT_ID = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
-const DAILY_CHECKIN_AGENT_ID = process.env.ELEVENLABS_DAILY_AGENT_ID
+export async function POST() {
+  console.log('Processing test call...')
 
-export async function POST(request) {
   try {
-    const { userEmail } = await request.json()
+    const testEmail = 'testing@test.local'
 
-    // Verify this is a test account
-    if (!userEmail || !userEmail.endsWith('@test.local')) {
-      return Response.json({ error: 'Test calls only available for test accounts' }, { status: 403 })
+    // Find the family user first
+    const { data: familyUser, error: familyError } = await supabase
+      .from('family_users')
+      .select('*')
+      .eq('email', testEmail)
+      .single()
+
+    if (familyError) {
+      console.error('Family user not found:', familyError)
+      return NextResponse.json({ 
+        error: 'Test family user not found. Please run fix-test-account first.' 
+      }, { status: 404 })
     }
 
-    console.log('Processing test call for:', userEmail)
-
-    // Simplified: Look for test elderly user directly
+    // Find the elderly user linked to this family
     const { data: elderlyUser, error: elderlyError } = await supabase
       .from('elderly_users')
       .select('*')
-      .eq('email', userEmail.replace('@test.local', '@elderly.local'))
+      .eq('family_user_id', familyUser.id)
       .single()
 
-    if (elderlyError || !elderlyUser) {
-      console.log('No elderly user found, creating test user...')
-
-      // Create a simple test elderly user
-      const { data: newElderlyUser, error: createError } = await supabase
-        .from('elderly_users')
-        .insert({
-          name: 'Test User',
-          email: userEmail.replace('@test.local', '@elderly.local'),
-          phone: '+1-555-123-4567', // Use US number for simplicity
-          first_call_completed: false,
-          emergency_contact: 'Test Family',
-          emergency_phone: '+1-555-987-6543'
-        })
-        .select()
-        .single()
-
-      if (createError) {
-        console.error('Error creating test user:', createError)
-        return Response.json({ error: 'Failed to create test user' }, { status: 500 })
-      }
-
-      elderlyUser = newElderlyUser
+    if (elderlyError) {
+      console.error('Elderly user not found:', elderlyError)
+      return NextResponse.json({ 
+        error: 'Test elderly user not found. Please run fix-test-account first.' 
+      }, { status: 404 })
     }
 
-    if (!elderlyUser.phone) {
-      return Response.json({ error: 'No phone number configured for test user' }, { status: 400 })
-    }
+    console.log('Test users found:', {
+      family: familyUser.name,
+      elderly: elderlyUser.name,
+      phone: elderlyUser.phone
+    })
 
-    console.log(`Initiating test call for ${elderlyUser.name} at ${elderlyUser.phone}`)
+    // Check required environment variables
+    const twilioAccountSid = process.env.TWILIO_ACCOUNT_SID
+    const twilioAuthToken = process.env.TWILIO_AUTH_TOKEN
+    const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER
+    const discoveryAgentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
 
-    // Determine which agent to use
-    const isFirstCall = !elderlyUser.first_call_completed
-    const agentId = isFirstCall ? DISCOVERY_AGENT_ID : DAILY_CHECKIN_AGENT_ID
-    const agentType = isFirstCall ? 'Discovery' : 'Daily check-in'
-
-    console.log(`Agent selection: ${agentType} (Agent ID: ${agentId})`)
-
-    // Verify agent IDs are configured
-    if (!DISCOVERY_AGENT_ID || !DAILY_CHECKIN_AGENT_ID) {
-      return Response.json({ 
-        error: 'Agent IDs not configured. Please check ELEVENLABS_DISCOVERY_AGENT_ID and ELEVENLABS_DAILY_AGENT_ID environment variables.' 
+    if (!twilioAccountSid || !twilioAuthToken || !twilioPhoneNumber || !discoveryAgentId) {
+      return NextResponse.json({ 
+        error: 'Missing required environment variables' 
       }, { status: 500 })
     }
 
-    // Create simple call record
-    const { data: callRecord, error: callRecordError } = await supabase
+    // Use a test phone number
+    const phoneToCall = elderlyUser.phone || '+1-555-123-4567'
+
+    // Create call record
+    const { data: callRecord, error: recordError } = await supabase
       .from('call_records')
       .insert({
         elderly_user_id: elderlyUser.id,
         call_date: new Date().toISOString(),
-        call_status: 'pending',
-        agent_used: agentId
+        status: 'initiating',
+        phone_number: phoneToCall,
+        agent_used: 'Discovery',
+        call_type: 'test'
       })
       .select()
       .single()
 
-    if (callRecordError) {
-      console.error('Error creating call record:', callRecordError)
-      return Response.json({ error: 'Failed to create call record' }, { status: 500 })
-    }
-
-    // Make the Twilio call
-    const twilioResult = await makeTwilioCallDirect(elderlyUser, callRecord.id, elderlyUser.phone)
-
-    if (!twilioResult.success) {
-      console.error('Twilio call failed:', twilioResult.error)
-
-      // Update call record with error status
-      await supabase
-        .from('call_records')
-        .update({ call_status: 'failed' })
-        .eq('id', callRecord.id)
-
-      return Response.json({ 
-        error: `Call initiation failed: ${twilioResult.error}` 
+    if (recordError) {
+      console.error('Error creating call record:', recordError)
+      return NextResponse.json({ 
+        error: 'Failed to create call record' 
       }, { status: 500 })
     }
 
-    // Update call record with Twilio CallSid
-    await supabase
-      .from('call_records')
-      .update({
-        twilio_call_sid: twilioResult.callSid,
-        call_status: 'calling'
+    // Make the Twilio call
+    const twilio = require('twilio')(twilioAccountSid, twilioAuthToken)
+
+    const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://your-repl-url.replit.dev'}/api/incoming-call`
+
+    try {
+      const call = await twilio.calls.create({
+        to: phoneToCall,
+        from: twilioPhoneNumber,
+        url: webhookUrl,
+        method: 'POST'
       })
-      .eq('id', callRecord.id)
 
-    console.log(`Test call initiated successfully for ${elderlyUser.name}`)
+      // Update call record with Twilio SID
+      await supabase
+        .from('call_records')
+        .update({ 
+          twilio_call_sid: call.sid,
+          status: 'calling'
+        })
+        .eq('id', callRecord.id)
 
-    return Response.json({ 
-      success: true, 
-      message: `Test call initiated for ${elderlyUser.name}`,
-      elderlyUser: elderlyUser.name,
-      phone: elderlyUser.phone,
-      callSid: twilioResult.callSid,
-      agentType: agentType,
-      isFirstCall: isFirstCall
-    })
+      console.log('Test call initiated:', call.sid)
+
+      return NextResponse.json({
+        success: true,
+        message: 'Test call initiated successfully',
+        callSid: call.sid,
+        phoneNumber: phoneToCall,
+        elderlyUser: elderlyUser.name
+      })
+
+    } catch (twilioError) {
+      console.error('Twilio error:', twilioError)
+
+      // Update call record status
+      await supabase
+        .from('call_records')
+        .update({ status: 'failed' })
+        .eq('id', callRecord.id)
+
+      return NextResponse.json({ 
+        error: `Failed to initiate call: ${twilioError.message}` 
+      }, { status: 500 })
+    }
 
   } catch (error) {
-    console.error('Error in test call API:', error)
-    return Response.json({ 
-      error: 'Failed to initiate test call: ' + error.message 
+    console.error('Test call error:', error)
+    return NextResponse.json({ 
+      error: 'Internal server error' 
     }, { status: 500 })
-  }
-}
-
-// Simplified Twilio calling function
-async function makeTwilioCallDirect(elderlyUser, callRecordId, phoneNumber) {
-  try {
-    const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
-    const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN  
-    const TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER
-
-    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      return { success: false, error: 'Twilio credentials not configured' }
-    }
-
-    // Use the current Replit domain
-    const baseUrl = process.env.REPLIT_DEV_DOMAIN 
-      ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
-      : 'https://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev'
-
-    const webhookUrl = `${baseUrl}/api/incoming-call`
-    const statusCallbackUrl = `${baseUrl}/api/twilio-status`
-
-    console.log('Using webhook URL:', webhookUrl)
-    console.log('Using status callback URL:', statusCallbackUrl)
-
-    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Calls.json`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${Buffer.from(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`).toString('base64')}`,
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        To: phoneNumber,
-        From: TWILIO_PHONE_NUMBER,
-        Url: webhookUrl,
-        StatusCallback: statusCallbackUrl,
-        StatusCallbackEvent: 'initiated,ringing,answered,completed',
-        StatusCallbackMethod: 'POST'
-      })
-    })
-
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Twilio API error:', errorText)
-      return { success: false, error: `Twilio API error: ${response.status}` }
-    }
-
-    const result = await response.json()
-    console.log('Twilio call initiated:', result.sid)
-
-    return { 
-      success: true, 
-      callSid: result.sid 
-    }
-
-  } catch (error) {
-    console.error('Error making Twilio call:', error)
-    return { 
-      success: false, 
-      error: error.message 
-    }
   }
 }
