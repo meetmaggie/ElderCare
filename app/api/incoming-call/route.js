@@ -14,9 +14,8 @@ export async function POST(request) {
     const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
     
-    // Use your deployed Replit WebSocket bridge URL
-    // You'll get this URL after deploying the websocket-bridge
-    const websocketUrl = `wss://your-replit-deployment.replit.app`
+    // Use your deployed Railway WebSocket bridge URL
+    const websocketUrl = `wss://elevenlabs-twilio-bridge-production.up.railway.app`
     
     console.log('🔗 Using Replit WebSocket bridge:', websocketUrl)
 
