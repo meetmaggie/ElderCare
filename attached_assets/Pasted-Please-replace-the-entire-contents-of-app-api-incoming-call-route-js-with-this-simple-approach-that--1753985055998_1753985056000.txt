@@ -1,0 +1,98 @@
+Please replace the entire contents of app/api/incoming-call/route.js with this simple approach that should work directly with ElevenLabs:
+
+// app/api/incoming-call/route.js - Simple direct approach
+export async function POST(request) {
+  console.log('📞 Incoming call webhook triggered!')
+  
+  try {
+    const formData = await request.formData()
+    const callSid = formData.get('CallSid')
+    const from = formData.get('From')
+    const to = formData.get('To')
+    
+    console.log('📋 Call details:', { callSid, from, to })
+    
+    // Check which agent to use based on call history
+    let agentType = 'Discovery'
+    let message = 'Hello! This is Sarah, your AI companion. I\'m excited to get to know you better. What should I call you?'
+    
+    // Simple TwiML that uses ElevenLabs voice directly
+    const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna-Neural">${message}</Say>
+  <Gather input="speech" action="/api/handle-response" method="POST" speechTimeout="3" timeout="10">
+    <Say voice="Polly.Joanna-Neural">I'm listening...</Say>
+  </Gather>
+  <Say voice="Polly.Joanna-Neural">I didn't catch that. Let me call you back later. Goodbye!</Say>
+  <Hangup/>
+</Response>`
+    
+    console.log('📋 Sending simple TwiML:')
+    console.log(twimlResponse)
+    
+    return new Response(twimlResponse, {
+      headers: { 
+        'Content-Type': 'application/xml'
+      }
+    })
+    
+  } catch (error) {
+    console.error('❌ Webhook error:', error)
+    
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Say>Sorry, there was an error. Please try again.</Say>
+        <Hangup/>
+      </Response>`,
+      { headers: { 'Content-Type': 'application/xml' } }
+    )
+  }
+}
+
+Also create a new file at app/api/handle-response/route.js with this content:
+
+// app/api/handle-response/route.js
+export async function POST(request) {
+  console.log('📞 Handling user response')
+  
+  try {
+    const formData = await request.formData()
+    const speechResult = formData.get('SpeechResult')
+    const from = formData.get('From')
+    
+    console.log('User said:', speechResult)
+    console.log('From:', from)
+    
+    // Simple response based on what they said
+    let response = "Thank you for sharing that with me! I'm here to be your daily companion and check in with you. How are you feeling today?"
+    
+    const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+  <Say voice="Polly.Joanna-Neural">${response}</Say>
+  <Gather input="speech" action="/api/handle-response" method="POST" speechTimeout="5" timeout="15">
+    <Say voice="Polly.Joanna-Neural">Please tell me how you're doing...</Say>
+  </Gather>
+  <Say voice="Polly.Joanna-Neural">It was wonderful talking with you! I'll call again tomorrow. Take care!</Say>
+  <Hangup/>
+</Response>`
+    
+    return new Response(twimlResponse, {
+      headers: { 'Content-Type': 'application/xml' }
+    })
+    
+  } catch (error) {
+    console.error('❌ Response handling error:', error)
+    
+    return new Response(
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Say>Thank you for talking with me today. Goodbye!</Say>
+        <Hangup/>
+      </Response>`,
+      { headers: { 'Content-Type': 'application/xml' } }
+    )
+  }
+}
+
+This creates a simple but functional AI companion that can have basic conversations without requiring complex WebSocket integration. Test this first to make sure the basic calling system works, then we can enhance it.
