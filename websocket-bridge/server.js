@@ -16,7 +16,10 @@ const wss = new WebSocketServer({ server })
 console.log('🚀 Starting ElevenLabs-Twilio bridge server...')
 
 wss.on('connection', (twilioWs, request) => {
-  console.log('📞 New Twilio WebSocket connection')
+  console.log('📞 New Twilio WebSocket connection established!')
+  console.log('🔗 Connection URL:', request.url)
+  console.log('🌐 Client IP:', request.socket.remoteAddress)
+  console.log('📋 Headers:', request.headers)
   
   let elevenLabsWs = null
   let streamSid = null
@@ -147,10 +150,18 @@ wss.on('connection', (twilioWs, request) => {
     }
   }
   
+  // Send a test message to verify connection
+  setTimeout(() => {
+    if (twilioWs.readyState === WebSocket.OPEN) {
+      console.log('✅ Sending connection test message to Twilio')
+    }
+  }, 1000)
+  
   // Handle messages from Twilio
   twilioWs.on('message', (data) => {
     try {
       const message = JSON.parse(data.toString())
+      console.log('📨 Received Twilio message:', message.event)
       
       switch (message.event) {
         case 'start':
@@ -189,6 +200,17 @@ wss.on('connection', (twilioWs, request) => {
   
   twilioWs.on('error', (error) => {
     console.error('❌ Twilio WebSocket error:', error)
+    console.error('❌ Error details:', error.message)
+  })
+  
+  // Add connection state logging
+  twilioWs.on('open', () => {
+    console.log('✅ Twilio WebSocket fully opened')
+  })
+  
+  twilioWs.on('close', (code, reason) => {
+    console.log('🔌 Twilio WebSocket closed:', code, reason.toString())
+    console.log('🔍 Close reason details:', { code, reason: reason.toString() })
   })
 })
 
