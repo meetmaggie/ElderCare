@@ -14,16 +14,22 @@ export async function POST(request) {
     const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
     
-    // Try ElevenLabs phone integration URL format
-    const elevenLabsPhoneUrl = `https://api.elevenlabs.io/v1/convai/phone/agents/${agentId}/call`
+    // Use your deployed Replit WebSocket bridge URL
+    // You'll get this URL after deploying the websocket-bridge
+    const websocketUrl = `wss://your-replit-deployment.replit.app`
     
-    console.log('🔗 Trying ElevenLabs phone integration')
+    console.log('🔗 Using Replit WebSocket bridge:', websocketUrl)
 
-    // Alternative TwiML for ElevenLabs phone integration
+    // TwiML for WebSocket bridge
     const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say>Connecting you to your AI companion...</Say>
-  <Redirect method="POST">${elevenLabsPhoneUrl}</Redirect>
+  <Connect>
+    <Stream url="${websocketUrl}">
+      <Parameter name="caller_phone" value="${from}" />
+      <Parameter name="call_sid" value="${callSid}" />
+      <Parameter name="agent_type" value="discovery" />
+    </Stream>
+  </Connect>
 </Response>`
     
     console.log('📋 Sending redirect TwiML:')
