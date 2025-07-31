@@ -14,10 +14,11 @@ export async function POST(request) {
     const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
     
-    // Use correct deployment WebSocket bridge URL
-    const websocketUrl = `wss://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev:3002`
+    // Dynamically determine WebSocket URL based on environment
+    const host = request.headers.get('host')
+    const websocketUrl = `wss://${host}:3002`
     
-    console.log('🔗 Using Replit WebSocket bridge:', websocketUrl)
+    console.log('🔗 Using WebSocket bridge URL:', websocketUrl)
 
     // TwiML for WebSocket bridge
     const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
