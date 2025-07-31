@@ -9,7 +9,7 @@ requiredFiles = [".replit", "replit.nix", "package.json", "package-lock.json"]
 channel = "stable-24_11"
 
 [deployment]
-run = ["sh", "-c", "node start-deployment.js"]
+run = ["sh", "-c", "npm run start"]
 deploymentTarget = "autoscale"
 ignorePorts = false
 build = ["sh", "-c", "npm run build"]
@@ -81,7 +81,3 @@ mode = "parallel"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=5000 node websocket-bridge/server.js"

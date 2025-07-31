@@ -1,22 +1,21 @@
-
 // app/api/incoming-call/route.js - Alternative ElevenLabs approach
 export async function POST(request) {
   console.log('📞 Incoming call webhook triggered!')
-  
+
   try {
     const formData = await request.formData()
     const callSid = formData.get('CallSid')
     const from = formData.get('From')
     const to = formData.get('To')
-    
+
     console.log('📋 Call details:', { callSid, from, to })
 
     const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
     const apiKey = process.env.ELEVENLABS_API_KEY
-    
-    // Use port 5000 which has better external accessibility on Replit
-    const websocketUrl = `wss://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev:5000`
-    
+
+    // Use external Railway WebSocket bridge
+    const websocketUrl = `wss://your-railway-app.railway.app` // Replace with your Railway WebSocket URL
+
     console.log('🔗 Using WebSocket bridge URL:', websocketUrl)
 
     // TwiML for WebSocket bridge
@@ -30,20 +29,20 @@ export async function POST(request) {
     </Stream>
   </Connect>
 </Response>`
-    
+
     console.log('📋 Sending redirect TwiML:')
     console.log(twimlResponse)
-    
+
     return new Response(twimlResponse, {
       headers: { 
         'Content-Type': 'application/xml',
         'Cache-Control': 'no-cache'
       }
     })
-    
+
   } catch (error) {
     console.error('❌ Webhook error:', error)
-    
+
     return new Response(
       `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
