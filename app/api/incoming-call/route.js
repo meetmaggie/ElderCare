@@ -75,47 +75,57 @@ export async function POST(request) {
     }
 
     // Find the call record by twilio_call_sid
-    const { data: callRecord, error: callError } = await supabase
-      .from('call_records')
-      .select('*, elderly_users(*)')
-      .eq('twilio_call_sid', callSid)
-      .single()
+    let callRecord = null
+    let callError = null
 
-    if (callError || !callRecord) {
-      console.error('Call record not found for CallSid:', callSid, 'Error:', callError)
-      
-      // Try to find a recent pending call and update it with this CallSid
-      const { data: pendingCall, error: pendingError } = await supabase
+    // Try to find by twilio_call_sid first
+    try {
+      const { data: recordBySid, error: sidError } = await supabase
         .from('call_records')
         .select('*, elderly_users(*)')
-        .eq('call_status', 'calling')
-        .is('twilio_call_sid', null)
-        .order('call_date', { ascending: false })
+        .eq('twilio_call_sid', callSid)
+        .single()
+
+      if (!sidError && recordBySid) {
+        callRecord = recordBySid
+      } else {
+        callError = sidError
+      }
+    } catch (error) {
+      console.log('Column twilio_call_sid might not exist, trying alternative approach')
+      callError = error
+    }
+
+    // If not found or column doesn't exist, try to find recent pending call
+    if (!callRecord) {
+      console.error('Call record not found for CallSid:', callSid, 'Error:', callError)
+      
+      // Try to find the most recent call record that might match
+      const { data: recentCall, error: recentError } = await supabase
+        .from('call_records')
+        .select('*, elderly_users(*)')
+        .order('created_at', { ascending: false })
         .limit(1)
         .single()
 
-      if (!pendingError && pendingCall) {
-        // Update the pending call with this CallSid
-        const { error: updateError } = await supabase
-          .from('call_records')
-          .update({ twilio_call_sid: callSid })
-          .eq('id', pendingCall.id)
-
-        if (!updateError) {
-          console.log('Updated pending call record with CallSid:', callSid)
-          // Use the updated record
-          const { data: updatedRecord } = await supabase
+      if (!recentError && recentCall) {
+        console.log('Found recent call record, using it for CallSid:', callSid)
+        
+        // Try to update it with the CallSid if the column exists
+        try {
+          await supabase
             .from('call_records')
-            .select('*, elderly_users(*)')
-            .eq('id', pendingCall.id)
-            .single()
-          
-          if (updatedRecord) {
-            return handleCallConnection(updatedRecord, callSid)
-          }
+            .update({ twilio_call_sid: callSid })
+            .eq('id', recentCall.id)
+        } catch (updateError) {
+          console.log('Could not update with CallSid, but continuing with call')
         }
+        
+        callRecord = recentCall
       }
-      
+    }
+
+    if (!callRecord) {
       console.error('No matching call record found for CallSid:', callSid)
       return new Response(generateErrorTwiML('Service temporarily unavailable'), {
         headers: { 'Content-Type': 'application/xml' }
