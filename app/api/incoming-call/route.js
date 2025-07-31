@@ -242,16 +242,27 @@ function generateElevenLabsTwiML(agentId, userContext, callSid) {
   }
 
   try {
+    // Prepare custom variables as JSON string for ElevenLabs
+    const customVariables = {
+      user_name: userContext.user_name || 'User',
+      is_first_call: userContext.is_first_call || false,
+      conversation_count: userContext.conversation_count || 0,
+      hobbies: userContext.hobbies || [],
+      family_updates: userContext.family_updates || [],
+      previous_topics: userContext.previous_topics || [],
+      last_mood: userContext.last_mood || null,
+      mood_trend: userContext.mood_trend || 'Stable',
+      emergency_contact: userContext.emergency_contact || '',
+      emergency_phone: userContext.emergency_phone || ''
+    }
+
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation/twilio">
+    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation">
       <Parameter name="agent_id" value="${agentId}" />
       <Parameter name="authorization" value="Bearer ${ELEVENLABS_API_KEY}" />
-      <Parameter name="user_name" value="${userContext.user_name || 'User'}" />
-      <Parameter name="is_first_call" value="${userContext.is_first_call || false}" />
-      <Parameter name="conversation_count" value="${userContext.conversation_count || 0}" />
-      <Parameter name="call_sid" value="${callSid}" />
+      <Parameter name="custom_variables" value="${JSON.stringify(customVariables).replace(/"/g, '&quot;')}" />
     </Stream>
   </Connect>
 </Response>`
