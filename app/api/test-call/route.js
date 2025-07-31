@@ -183,7 +183,7 @@ async function makeTwilioCall(phoneNumber, callRecordId) {
 
     // Get your repl URL automatically 
     const repl = process.env.REPL_SLUG || process.env.REPL_ID
-    const webhookUrl = `https://${repl}.replit.app/api/incoming-call`
+    const webhookUrl = `https://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev/api/incoming-call`
     
     console.log('🔗 Using webhook URL:', webhookUrl)
 
