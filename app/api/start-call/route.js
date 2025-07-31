@@ -49,18 +49,18 @@ export async function POST(request) {
     const twilioResult = await twilioResponse.json()
     console.log('✅ Twilio call initiated:', twilioResult.sid)
 
-    // Step 2: Connect to Railway WebSocket server
+    // Step 2: Connect to local Replit WebSocket server
     const WebSocket = require('ws')
-    const railwayWsUrl = 'wss://elevenlabs-twilio-bridge-production-95ab.up.railway.app'
+    const replitWsUrl = `ws://localhost:8080`
     
-    console.log('🔌 Connecting to Railway WebSocket:', railwayWsUrl)
+    console.log('🔌 Connecting to Replit WebSocket:', replitWsUrl)
 
     return new Promise((resolve) => {
-      const ws = new WebSocket(railwayWsUrl)
+      const ws = new WebSocket(replitWsUrl)
       let connectionTimeout
 
       ws.on('open', () => {
-        console.log('✅ Connected to Railway WebSocket')
+        console.log('✅ Connected to Replit WebSocket')
         
         // Step 3: Send start-call payload
         const payload = {
@@ -84,14 +84,14 @@ export async function POST(request) {
       ws.on('message', (data) => {
         try {
           const response = JSON.parse(data.toString())
-          console.log('📥 Railway WebSocket response:', response)
+          console.log('📥 Replit WebSocket response:', response)
         } catch (error) {
-          console.log('📥 Railway WebSocket raw response:', data.toString())
+          console.log('📥 Replit WebSocket raw response:', data.toString())
         }
       })
 
       ws.on('close', (code, reason) => {
-        console.log('🔌 Railway WebSocket closed:', code, reason.toString())
+        console.log('🔌 Replit WebSocket closed:', code, reason.toString())
         if (connectionTimeout) {
           clearTimeout(connectionTimeout)
         }
@@ -105,7 +105,7 @@ export async function POST(request) {
       })
 
       ws.on('error', (error) => {
-        console.error('❌ Railway WebSocket error:', error)
+        console.error('❌ Replit WebSocket error:', error)
         if (connectionTimeout) {
           clearTimeout(connectionTimeout)
         }
