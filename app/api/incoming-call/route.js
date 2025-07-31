@@ -6,70 +6,9 @@ const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY
 const DISCOVERY_AGENT_ID = 'agent_01k0q3vpk7f8bsrq2aqk71v9j9'
 const DAILY_CHECKIN_AGENT_ID = 'agent_01k0pz5awhf8xbn85wrg227fve'
 
-export async function POST(request) {
-  console.log('📞 Incoming call webhook received')
-  console.log('Request headers:', Object.fromEntries(request.headers.entries()))
-
+// Handle call connection logic
+async function handleCallConnection(callRecord, callSid) {
   try {
-    // Parse Twilio form data
-    const formData = await request.formData()
-    const callSid = formData.get('CallSid')
-    const from = formData.get('From')
-    const to = formData.get('To')
-
-    console.log('Incoming call details:', { callSid, from, to })
-    console.log('All form data:', Object.fromEntries(formData.entries()))
-
-    if (!callSid) {
-      console.error('Missing CallSid in webhook')
-      return new Response(generateErrorTwiML('System error'), {
-        headers: { 'Content-Type': 'application/xml' }
-      })
-    }
-
-    // Find the call record - try multiple approaches
-    let callRecord = null
-    let callError = null
-
-    // First try by twilio_call_sid
-    const { data: recordBySid, error: sidError } = await supabase
-      .from('call_records')
-      .select('*, elderly_users(*)')
-      .eq('twilio_call_sid', callSid)
-      .single()
-
-    if (!sidError && recordBySid) {
-      callRecord = recordBySid
-    } else {
-      // If not found, try to find the most recent call record for debugging
-      const { data: recentCall, error: recentError } = await supabase
-        .from('call_records')
-        .select('*, elderly_users(*)')
-        .is('twilio_call_sid', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .single()
-
-      if (!recentError && recentCall) {
-        // Update the record with the CallSid
-        await supabase
-          .from('call_records')
-          .update({ twilio_call_sid: callSid })
-          .eq('id', recentCall.id)
-        
-        callRecord = recentCall
-        console.log('Updated call record with CallSid:', callSid)
-      }
-    }
-
-    if (!callRecord) {
-      console.error('No call record found for CallSid:', callSid)
-      console.error('Available call records check needed')
-      return new Response(generateErrorTwiML('Service temporarily unavailable'), {
-        headers: { 'Content-Type': 'application/xml' }
-      })
-    }
-
     // Determine which agent to use
     const isFirstCall = !callRecord.elderly_users.first_call_completed
     const agentId = isFirstCall ? DISCOVERY_AGENT_ID : DAILY_CHECKIN_AGENT_ID
@@ -105,6 +44,87 @@ export async function POST(request) {
     return new Response(twiml, {
       headers: { 'Content-Type': 'application/xml' }
     })
+
+  } catch (error) {
+    console.error('Error in handleCallConnection:', error)
+    return new Response(generateErrorTwiML('Service temporarily unavailable'), {
+      headers: { 'Content-Type': 'application/xml' }
+    })
+  }
+}
+
+export async function POST(request) {
+  console.log('📞 Incoming call webhook received')
+  console.log('Request headers:', Object.fromEntries(request.headers.entries()))
+
+  try {
+    // Parse Twilio form data
+    const formData = await request.formData()
+    const callSid = formData.get('CallSid')
+    const from = formData.get('From')
+    const to = formData.get('To')
+
+    console.log('Incoming call details:', { callSid, from, to })
+    console.log('All form data:', Object.fromEntries(formData.entries()))
+
+    if (!callSid) {
+      console.error('Missing CallSid in webhook')
+      return new Response(generateErrorTwiML('System error'), {
+        headers: { 'Content-Type': 'application/xml' }
+      })
+    }
+
+    // Find the call record by twilio_call_sid
+    const { data: callRecord, error: callError } = await supabase
+      .from('call_records')
+      .select('*, elderly_users(*)')
+      .eq('twilio_call_sid', callSid)
+      .single()
+
+    if (callError || !callRecord) {
+      console.error('Call record not found for CallSid:', callSid, 'Error:', callError)
+      
+      // Try to find a recent pending call and update it with this CallSid
+      const { data: pendingCall, error: pendingError } = await supabase
+        .from('call_records')
+        .select('*, elderly_users(*)')
+        .eq('call_status', 'calling')
+        .is('twilio_call_sid', null)
+        .order('call_date', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (!pendingError && pendingCall) {
+        // Update the pending call with this CallSid
+        const { error: updateError } = await supabase
+          .from('call_records')
+          .update({ twilio_call_sid: callSid })
+          .eq('id', pendingCall.id)
+
+        if (!updateError) {
+          console.log('Updated pending call record with CallSid:', callSid)
+          // Use the updated record
+          const { data: updatedRecord } = await supabase
+            .from('call_records')
+            .select('*, elderly_users(*)')
+            .eq('id', pendingCall.id)
+            .single()
+          
+          if (updatedRecord) {
+            return handleCallConnection(updatedRecord, callSid)
+          }
+        }
+      }
+      
+      console.error('No matching call record found for CallSid:', callSid)
+      return new Response(generateErrorTwiML('Service temporarily unavailable'), {
+        headers: { 'Content-Type': 'application/xml' }
+      })
+    }
+
+    return handleCallConnection(callRecord, callSid)
+
+    
 
   } catch (error) {
     console.error('Error in incoming call handler:', error)
