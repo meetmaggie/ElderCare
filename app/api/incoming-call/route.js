@@ -11,8 +11,7 @@ export async function POST(request) {
     console.log('📋 Call details:', { callSid, from, to })
 
     // Get your Replit WebSocket URL
-    const repl = process.env.REPL_SLUG || process.env.REPL_ID || '1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit'
-    const websocketUrl = `wss://${repl}.dev:8080`
+    const websocketUrl = `wss://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev:3001`
 
     console.log('🔗 Using WebSocket URL:', websocketUrl)
 

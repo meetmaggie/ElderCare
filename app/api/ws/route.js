@@ -1,0 +1,137 @@
+
+import { WebSocketServer } from 'ws'
+import { createServer } from 'http'
+
+let wss = null
+
+// Initialize WebSocket server only once
+if (!wss) {
+  const server = createServer()
+  wss = new WebSocketServer({ server })
+  
+  wss.on('connection', async (twilioWs, request) => {
+    console.log('📞 Twilio WebSocket connected')
+    
+    let elevenLabsWs = null
+    let streamSid = null
+    
+    const connectToElevenLabs = async () => {
+      const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
+      const apiKey = process.env.ELEVENLABS_API_KEY
+      
+      console.log('🔑 Connecting to ElevenLabs with agent:', agentId)
+      
+      try {
+        // Get signed URL from ElevenLabs
+        const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`, {
+          method: 'GET',
+          headers: {
+            'xi-api-key': apiKey
+          }
+        })
+        
+        if (!response.ok) {
+          const errorText = await response.text()
+          console.error('❌ ElevenLabs signed URL failed:', response.status, errorText)
+          return
+        }
+        
+        const data = await response.json()
+        console.log('✅ Got ElevenLabs signed URL')
+        
+        // Connect to ElevenLabs WebSocket
+        const { WebSocket } = await import('ws')
+        elevenLabsWs = new WebSocket(data.signed_url)
+        
+        elevenLabsWs.on('open', () => {
+          console.log('✅ Connected to ElevenLabs agent')
+        })
+        
+        elevenLabsWs.on('message', (data) => {
+          try {
+            const message = JSON.parse(data.toString())
+            console.log('📨 ElevenLabs message type:', message.type)
+            
+            if (message.type === 'audio' && message.audio_event) {
+              // Forward audio to Twilio
+              if (twilioWs.readyState === 1 && streamSid) {
+                const audioMessage = {
+                  event: 'media',
+                  streamSid: streamSid,
+                  media: {
+                    payload: message.audio_event.audio_base_64
+                  }
+                }
+                twilioWs.send(JSON.stringify(audioMessage))
+              }
+            } else if (message.type === 'interruption') {
+              // Clear Twilio buffer
+              if (twilioWs.readyState === 1 && streamSid) {
+                twilioWs.send(JSON.stringify({
+                  event: 'clear',
+                  streamSid: streamSid
+                }))
+              }
+            }
+          } catch (error) {
+            console.error('❌ Error processing ElevenLabs message:', error)
+          }
+        })
+        
+        elevenLabsWs.on('error', (error) => {
+          console.error('❌ ElevenLabs WebSocket error:', error)
+        })
+        
+      } catch (error) {
+        console.error('❌ Failed to connect to ElevenLabs:', error)
+      }
+    }
+    
+    // Handle Twilio messages
+    twilioWs.on('message', (data) => {
+      try {
+        const message = JSON.parse(data.toString())
+        
+        switch (message.event) {
+          case 'start':
+            streamSid = message.start.streamSid
+            console.log('✅ Twilio stream started:', streamSid)
+            connectToElevenLabs()
+            break
+            
+          case 'media':
+            if (elevenLabsWs?.readyState === 1) {
+              elevenLabsWs.send(JSON.stringify({
+                user_audio_chunk: message.media.payload
+              }))
+            }
+            break
+            
+          case 'stop':
+            console.log('🔌 Twilio stream stopped')
+            if (elevenLabsWs?.readyState === 1) {
+              elevenLabsWs.close()
+            }
+            break
+        }
+      } catch (error) {
+        console.error('❌ Error processing Twilio message:', error)
+      }
+    })
+    
+    twilioWs.on('close', () => {
+      console.log('🔌 Twilio WebSocket closed')
+      if (elevenLabsWs?.readyState === 1) {
+        elevenLabsWs.close()
+      }
+    })
+  })
+  
+  server.listen(3001, '0.0.0.0', () => {
+    console.log('🚀 WebSocket server running on port 3001')
+  })
+}
+
+export async function GET() {
+  return new Response('WebSocket server running', { status: 200 })
+}
