@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "websocket": "node app/api/websocket/route.js",
+    "start:all": "concurrently \"npm run dev\" \"npm run websocket\"",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.4",
@@ -22,6 +25,7 @@
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.525.0",
     "next": "^15.4.2",
+    "node-fetch": "^3.3.2",
     "postcss": "^8.5.6",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
