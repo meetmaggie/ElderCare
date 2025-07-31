@@ -214,7 +214,7 @@ wss.on('connection', (twilioWs, request) => {
   })
 })
 
-const PORT = process.env.PORT || 3002
+const PORT = process.env.PORT || 5000
 console.log(`🔍 Environment PORT: ${process.env.PORT}`)
 console.log(`🔍 Using PORT: ${PORT}`)
 server.listen(PORT, '0.0.0.0', () => {
