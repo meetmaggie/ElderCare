@@ -11,7 +11,7 @@ let nextProcess = null
 console.log('🔌 Starting WebSocket bridge on port 3002...')
 const wsProcess = spawn('node', ['websocket-bridge/server.js'], {
   stdio: 'inherit',
-  env: { ...process.env, PORT: '3002' }
+  env: { ...process.env, PORT: 3002 }
 })
 
 // Give WebSocket server time to start

@@ -193,6 +193,8 @@ wss.on('connection', (twilioWs, request) => {
 })
 
 const PORT = process.env.PORT || 3002
+console.log(`🔍 Environment PORT: ${process.env.PORT}`)
+console.log(`🔍 Using PORT: ${PORT}`)
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 WebSocket bridge server running on 0.0.0.0:${PORT}`)
   console.log(`📞 Ready to bridge Twilio ↔ ElevenLabs`)
