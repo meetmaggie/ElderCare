@@ -80,6 +80,14 @@ export async function POST(request) {
     // Generate TwiML to connect to ElevenLabs
     const twiml = generateElevenLabsTwiML(agentId, userContext, callSid)
 
+    // Check if TwiML generation failed
+    if (twiml.includes('<Say')) {
+      console.error('TwiML generation failed, returning error response')
+      return new Response(twiml, {
+        headers: { 'Content-Type': 'application/xml' }
+      })
+    }
+
     // Update call record status
     await supabase
       .from('call_records')
@@ -89,7 +97,8 @@ export async function POST(request) {
       })
       .eq('id', callRecord.id)
 
-    console.log('TwiML response generated successfully')
+    console.log('TwiML response generated successfully for agent:', agentId)
+    console.log('TwiML content:', twiml.substring(0, 200) + '...')
 
     return new Response(twiml, {
       headers: { 'Content-Type': 'application/xml' }
@@ -189,39 +198,38 @@ async function prepareUserContext(elderlyUser) {
 
 // Generate TwiML for ElevenLabs connection
 function generateElevenLabsTwiML(agentId, userContext, callSid) {
-  const webhookUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://your-repl-url.replit.dev'}/api/elevenlabs-webhook`
-  
-  // Convert user context to URL parameters for ElevenLabs
-  const contextParams = new URLSearchParams({
-    user_name: userContext.user_name,
-    is_first_call: userContext.is_first_call.toString(),
-    conversation_count: userContext.conversation_count.toString(),
-    call_sid: callSid
-  })
-
-  // Add arrays and objects as JSON strings
-  if (userContext.hobbies?.length > 0) {
-    contextParams.append('hobbies', JSON.stringify(userContext.hobbies))
-  }
-  if (userContext.previous_topics?.length > 0) {
-    contextParams.append('previous_topics', JSON.stringify(userContext.previous_topics))
-  }
-  if (userContext.last_mood) {
-    contextParams.append('last_mood', userContext.last_mood)
+  // Validate required environment variables
+  if (!ELEVENLABS_API_KEY) {
+    console.error('ELEVENLABS_API_KEY not configured')
+    return generateErrorTwiML('Service configuration error')
   }
 
-  return `<?xml version="1.0" encoding="UTF-8"?>
+  if (!agentId) {
+    console.error('Agent ID not provided')
+    return generateErrorTwiML('Service configuration error')
+  }
+
+  try {
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
     <Stream url="wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${agentId}">
-      <Parameter name="authorization" value="${ELEVENLABS_API_KEY}" />
-      <Parameter name="user_name" value="${userContext.user_name}" />
-      <Parameter name="is_first_call" value="${userContext.is_first_call}" />
-      <Parameter name="conversation_count" value="${userContext.conversation_count}" />
+      <Parameter name="authorization" value="Bearer ${ELEVENLABS_API_KEY}" />
+      <Parameter name="user_name" value="${userContext.user_name || 'User'}" />
+      <Parameter name="is_first_call" value="${userContext.is_first_call || false}" />
+      <Parameter name="conversation_count" value="${userContext.conversation_count || 0}" />
       <Parameter name="call_sid" value="${callSid}" />
     </Stream>
   </Connect>
 </Response>`
+
+    console.log('Generated TwiML for agent:', agentId)
+    return twiml
+
+  } catch (error) {
+    console.error('Error generating TwiML:', error)
+    return generateErrorTwiML('Service temporarily unavailable')
+  }
 }
 
 // Generate error TwiML
