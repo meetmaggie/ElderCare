@@ -242,26 +242,18 @@ function generateElevenLabsTwiML(agentId, userContext, callSid) {
   }
 
   try {
+    // Create the WebSocket URL with proper format for ElevenLabs ConvAI
+    const wsUrl = `wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${agentId}&authorization=Bearer%20${encodeURIComponent(ELEVENLABS_API_KEY)}`
+    
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${agentId}">
-      <Parameter name="authorization" value="Bearer ${ELEVENLABS_API_KEY}" />
-      <Parameter name="user_name" value="${userContext.user_name || 'User'}" />
-      <Parameter name="is_first_call" value="${userContext.is_first_call ? 'true' : 'false'}" />
-      <Parameter name="conversation_count" value="${userContext.conversation_count || '0'}" />
-      <Parameter name="hobbies" value="${(userContext.hobbies || []).join(', ')}" />
-      <Parameter name="family_updates" value="${(userContext.family_updates || []).join(', ')}" />
-      <Parameter name="previous_topics" value="${(userContext.previous_topics || []).join('; ')}" />
-      <Parameter name="last_mood" value="${userContext.last_mood || 'unknown'}" />
-      <Parameter name="mood_trend" value="${userContext.mood_trend || 'Stable'}" />
-      <Parameter name="emergency_contact" value="${userContext.emergency_contact || ''}" />
-      <Parameter name="emergency_phone" value="${userContext.emergency_phone || ''}" />
-    </Stream>
+    <Stream url="${wsUrl}" />
   </Connect>
 </Response>`
 
     console.log('Generated TwiML for agent:', agentId)
+    console.log('WebSocket URL:', wsUrl.substring(0, 100) + '...')
     return twiml
 
   } catch (error) {
