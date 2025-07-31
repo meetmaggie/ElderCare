@@ -3,6 +3,7 @@
 const { WebSocketServer } = require('ws')
 const WebSocket = require('ws')
 const http = require('http')
+const fetch = require('node-fetch')
 
 // Create HTTP server
 const server = http.createServer()
@@ -27,14 +28,21 @@ wss.on('connection', (twilioWs, request) => {
       const agentId = process.env.ELEVENLABS_DISCOVERY_AGENT_ID
       const apiKey = process.env.ELEVENLABS_API_KEY
       
+      console.log('🔍 Environment check:')
+      console.log('- Agent ID:', agentId ? 'SET' : 'MISSING')
+      console.log('- API Key:', apiKey ? 'SET' : 'MISSING')
+      
       if (!agentId || !apiKey) {
         console.error('❌ Missing ElevenLabs credentials')
+        console.error('- ELEVENLABS_DISCOVERY_AGENT_ID:', agentId || 'NOT SET')
+        console.error('- ELEVENLABS_API_KEY:', apiKey ? 'SET' : 'NOT SET')
         return
       }
       
       console.log('🤖 Using agent:', agentId)
       
       // Get signed URL from ElevenLabs
+      console.log('🔑 Making request to ElevenLabs with agent:', agentId)
       const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`, {
         method: 'GET',
         headers: {
@@ -43,9 +51,12 @@ wss.on('connection', (twilioWs, request) => {
         }
       })
       
+      console.log('📡 ElevenLabs API Response Status:', response.status)
+      
       if (!response.ok) {
         const errorText = await response.text()
         console.error('❌ Failed to get ElevenLabs signed URL:', response.status, errorText)
+        console.error('❌ Headers used:', { 'xi-api-key': apiKey ? 'SET' : 'MISSING' })
         return
       }
       
@@ -111,7 +122,12 @@ wss.on('connection', (twilioWs, request) => {
             case 'ping':
               // Respond to ping with pong to keep connection alive
               if (elevenLabsWs.readyState === WebSocket.OPEN) {
-                elevenLabsWs.send(JSON.stringify({ type: 'pong' }))
+                const pongMessage = {
+                  type: 'pong',
+                  event_id: message.event_id || `pong_${Date.now()}`
+                }
+                elevenLabsWs.send(JSON.stringify(pongMessage))
+                console.log('🏓 Sent pong response with event_id:', pongMessage.event_id)
               }
               break
               
