@@ -80,4 +80,4 @@ args = "npm run dev"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server.js"
+args = "PORT=3002 node websocket-bridge/server.js"
