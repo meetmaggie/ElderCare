@@ -5,6 +5,8 @@ const { spawn } = require('child_process')
 
 console.log('🚀 Starting deployment services...')
 
+let nextProcess = null
+
 // Start WebSocket bridge server
 console.log('🔌 Starting WebSocket bridge on port 3002...')
 const wsProcess = spawn('node', ['websocket-bridge/server.js'], {
@@ -15,7 +17,7 @@ const wsProcess = spawn('node', ['websocket-bridge/server.js'], {
 // Give WebSocket server time to start
 setTimeout(() => {
   console.log('🌐 Starting Next.js on port 3000...')
-  const nextProcess = spawn('npm', ['run', 'start'], {
+  nextProcess = spawn('npm', ['run', 'start'], {
     stdio: 'inherit'
   })
   
@@ -27,11 +29,20 @@ setTimeout(() => {
 
 wsProcess.on('exit', (code) => {
   console.log('WebSocket bridge exited with code:', code)
+  if (nextProcess) {
+    nextProcess.kill()
+  }
   process.exit(code)
 })
 
 // Handle cleanup
 process.on('SIGTERM', () => {
-  wsProcess.kill()
-  nextProcess.kill()
+  if (wsProcess) wsProcess.kill()
+  if (nextProcess) nextProcess.kill()
+})
+
+process.on('SIGINT', () => {
+  if (wsProcess) wsProcess.kill()
+  if (nextProcess) nextProcess.kill()
+  process.exit(0)
 })
