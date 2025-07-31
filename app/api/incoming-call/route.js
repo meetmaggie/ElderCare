@@ -245,7 +245,8 @@ function generateElevenLabsTwiML(agentId, userContext, callSid) {
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
   <Connect>
-    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation?agent_id=${agentId}">
+    <Stream url="wss://api.elevenlabs.io/v1/convai/conversation/twilio">
+      <Parameter name="agent_id" value="${agentId}" />
       <Parameter name="authorization" value="Bearer ${ELEVENLABS_API_KEY}" />
       <Parameter name="user_name" value="${userContext.user_name || 'User'}" />
       <Parameter name="is_first_call" value="${userContext.is_first_call || false}" />
