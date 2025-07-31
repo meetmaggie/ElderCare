@@ -1,5 +1,5 @@
 
-// app/api/incoming-call/route.js - Simple direct approach
+// app/api/incoming-call/route.js - Updated for ElevenLabs
 export async function POST(request) {
   console.log('📞 Incoming call webhook triggered!')
   
@@ -11,27 +11,30 @@ export async function POST(request) {
     
     console.log('📋 Call details:', { callSid, from, to })
     
-    // Check which agent to use based on call history
-    let agentType = 'Discovery'
-    let message = 'Hello! This is Sarah, your AI companion. I\'m excited to get to know you better. What should I call you?'
+    // Your WebSocket bridge URL
+    const websocketUrl = `wss://1eb18c8d-306d-4d45-ac0c-3c9329f5aeaf-00-25f9yh2yq2vx4.janeway.replit.dev:8080`
     
-    // Simple TwiML that uses ElevenLabs voice directly
+    console.log('🔗 Using WebSocket URL:', websocketUrl)
+    
+    // TwiML to connect to ElevenLabs bridge
     const twimlResponse = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Say voice="Polly.Joanna-Neural">${message}</Say>
-  <Gather input="speech" action="/api/handle-response" method="POST" speechTimeout="3" timeout="10">
-    <Say voice="Polly.Joanna-Neural">I'm listening...</Say>
-  </Gather>
-  <Say voice="Polly.Joanna-Neural">I didn't catch that. Let me call you back later. Goodbye!</Say>
-  <Hangup/>
+  <Connect>
+    <Stream url="${websocketUrl}">
+      <Parameter name="caller_phone" value="${from}" />
+      <Parameter name="call_sid" value="${callSid}" />
+      <Parameter name="agent_type" value="discovery" />
+    </Stream>
+  </Connect>
 </Response>`
     
-    console.log('📋 Sending simple TwiML:')
+    console.log('📋 Sending ElevenLabs TwiML:')
     console.log(twimlResponse)
     
     return new Response(twimlResponse, {
       headers: { 
-        'Content-Type': 'application/xml'
+        'Content-Type': 'application/xml',
+        'Cache-Control': 'no-cache'
       }
     })
     
@@ -41,7 +44,7 @@ export async function POST(request) {
     return new Response(
       `<?xml version="1.0" encoding="UTF-8"?>
       <Response>
-        <Say>Sorry, there was an error. Please try again.</Say>
+        <Say>Sorry, there was an error connecting to your AI companion.</Say>
         <Hangup/>
       </Response>`,
       { headers: { 'Content-Type': 'application/xml' } }

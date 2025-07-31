@@ -26,7 +26,7 @@ localPort = 3001
 externalPort = 3001
 
 [workflows]
-runButton = "Full System (Next.js + WebSocket)"
+runButton = "ElevenLabs System"
 
 [[workflows.workflow]]
 name = "Next.js Dev Server"
@@ -54,3 +54,25 @@ mode = "parallel"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run start:all"
+
+[[workflows.workflow]]
+name = "WebSocket Bridge"
+author = 38954244
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+
+[[workflows.workflow]]
+name = "ElevenLabs System"
+author = 38954244
+mode = "parallel"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
