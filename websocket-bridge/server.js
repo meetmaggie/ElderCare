@@ -205,11 +205,7 @@ wss.on('connection', (twilioWs, request) => {
         case 'media':
           if (elevenLabsWs?.readyState === WebSocket.OPEN && message.media?.payload) {
             const audioMessage = {
-              user_audio_chunk: {
-                audio_base_64: message.media.payload,
-                encoding: "mulaw",
-                sample_rate: 8000
-              }
+              user_audio_chunk: message.media.payload
             }
             
             elevenLabsWs.send(JSON.stringify(audioMessage))
