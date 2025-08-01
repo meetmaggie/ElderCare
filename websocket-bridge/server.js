@@ -8,10 +8,22 @@ let fetch;
 })();
 const http = require('http')
 
-// Create HTTP server
+// Create HTTP server with TwiML endpoint
 const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' })
-  res.end('ElevenLabs-Twilio WebSocket Bridge Running')
+  if (req.url === '/twiml' && req.method === 'POST') {
+    const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Connect>
+        <Stream url="wss://elevenlabs-twilio-bridge-production-95ab.up.railway.app" />
+    </Connect>
+</Response>`
+    
+    res.writeHead(200, { 'Content-Type': 'application/xml' })
+    res.end(twiml)
+  } else {
+    res.writeHead(200, { 'Content-Type': 'text/plain' })
+    res.end('ElevenLabs-Twilio WebSocket Bridge Running')
+  }
 })
 
 // Create WebSocket server
