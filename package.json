@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
     "websocket": "node websocket-bridge/server.js",
     "start:all": "concurrently \"npm run dev\" \"npm run websocket\"",
     "build": "next build",

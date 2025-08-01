@@ -8,9 +8,12 @@ const nextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['*']
-    }
+    },
+    esmExternals: 'loose'
   },
+  allowedDevOrigins: ['*'],
   webpack: (config, { isServer }) => {
+    config.externals = config.externals || []
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
@@ -19,9 +22,13 @@ const nextConfig = {
         tls: false,
       }
     }
+    // Fix for clientReferenceManifest error
+    config.module = config.module || {}
+    config.module.rules = config.module.rules || []
     return config
   },
-  transpilePackages: ['ws', 'node-fetch']
+  transpilePackages: ['ws', 'node-fetch'],
+  outputFileTracing: false
 }
 
 module.exports = nextConfig
