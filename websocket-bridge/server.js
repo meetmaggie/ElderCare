@@ -13,9 +13,9 @@ const server = http.createServer((req, res) => {
   if (req.url === '/twiml' && req.method === 'POST') {
     const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Connect>
-        <Stream url="wss://elevenlabs-twilio-bridge-production-95ab.up.railway.app" />
-    </Connect>
+  <Connect>
+    <Stream url="wss://elevenlabs-twilio-bridge-production-95ab.up.railway.app" />
+  </Connect>
 </Response>`
     
     res.writeHead(200, { 'Content-Type': 'application/xml' })
